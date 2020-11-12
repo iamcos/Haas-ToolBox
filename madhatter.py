@@ -1,4 +1,6 @@
-
+from numpy import arange
+from haas import Haas
+from ratelimit import limits, sleep_and_retry
 
 class MadHatterBot(Haas):
     def __init__(self):
@@ -219,4 +221,5 @@ class MadHatterBot(Haas):
         for i in arange(start, stop, step):
             do = self.c.customBotApi.set_mad_hatter_safety_parameter(bot.guid, 0, i)
             print('sl', do.errorCode, do.errorMessage)
+
 
