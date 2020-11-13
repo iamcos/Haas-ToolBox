@@ -9,3 +9,4 @@ Misc
 /env/
 .idea/
 
+*.csv
