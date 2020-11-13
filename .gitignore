@@ -1,6 +1,11 @@
 
-
+.idea
 .history
 .vscode
 .DS_Store
 __pycache__
+Misc
+
+/env/
+.idea/
+

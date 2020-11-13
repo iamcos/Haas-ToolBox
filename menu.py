@@ -1,29 +1,9 @@
-import configparser as cp
-
-import datetime
-import os
-import time
 from builtins import Exception
 
-import inquirer
-import numpy as np
-
 import pandas as pd
-from alive_progress import alive_bar
-from haasomeapi.HaasomeClient import HaasomeClient
-from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
-from haasomeapi.enums.EnumErrorCode import EnumErrorCode
-from haasomeapi.enums.EnumIndicator import EnumIndicator
-from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
-from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-from numpy import arange
+import inquirer
 
 from ratelimit import limits, sleep_and_retry
-from tqdm import tqdm
-from configparser import ConfigParser
-from botsellector import BotSellector
-
-from haasomeapi.enums.EnumFlashSpreadOptions import EnumFlashSpreadOptions
 
 class MainMenu(Haas):
     def __init__(self):
@@ -430,56 +410,3 @@ class MainMenu(Haas):
 
 
 
-
-
-
-
-def time_limited_test_menu():
-    if datetime.date.today() < datetime.date(2020, 8, 24):
-        test_menu()
-    else:
-        print(
-            "Trial has ended. Contact Cosmos directly via twitter or discord for more."
-        )
-        time.sleep(120)
-        print("Exiting ...")
-        time.sleep(5)
-
-
-def test_menu():
-    M = MainMenu()
-    a = M.main_screen()
-
-
-
-def scalper_test_menu():
-    # sc = ScalperBotClass().return_scalper_bots()
-    # print(sc)
-    s = ScalperBotClass()
-    bots = s.scalper_bot_menu()
-
-    # ms = ScalperBotClass().markets_selector()
-
-
-def figuring_futures():
-    mm = MainMenu()
-
-    bots = mm.c.customBotApi.get_all_custom_bots().result
-    for i in bots:
-        if i.botType == 15:
-            print(i)
-            print(EnumPriceSource(i.priceMarket.priceSource))
-            markets = mm.c.marketDataApi.get_price_markets(
-                i.priceMarket.priceSource
-            ).result
-            for market in markets:
-                print(market.__dict__)
-
-    markets = mm.c.accountDataApi.get_all_account_details().result
-    ks = markets.keys()
-    for i in ks:
-        print(markets[i].__dict__)
-
-if __name__ == "__main__":
-    # main()
-    test_menu()
