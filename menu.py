@@ -2,16 +2,14 @@ from builtins import Exception
 
 import pandas as pd
 import inquirer
-
+from madhatter import MadHatterBot
 from ratelimit import limits, sleep_and_retry
+from scalperbot import ScalperBotClass
+from flashcrashbottools import FlashCrashBot
+from haas import Haas
 
 class MainMenu(Haas):
     def __init__(self):
-        self.Haas = Haas()
-        self.bot = None
-        self.file = None
-        self.configs = None
-        self.client = self.Haas.client()
         Haas.__init__(self)
 
     def main_screen(self):
@@ -19,9 +17,8 @@ class MainMenu(Haas):
         choices = [
             "Scalper Bots",
             "Mad-Hatter Bots",
-            "Set BT date",
-            'AssistedBT',
-            "Development Features",
+            'Flash-Crash Bots',
+            'Create bots from file',
             "Quit",
         ]
         loop_count = 10
@@ -39,32 +36,41 @@ class MainMenu(Haas):
 
             answers = inquirer.prompt(questions)
 
-            if answers['resp'] == 'AssistedBT':
-                BT = InteractiveBT().backtest(loop_count)
+
             if answers['resp'] == "Mad-Hatter Bots":
-                bt = self.multiple_bot_auto_bt_menu()
-
-            if answers['resp'] == "Select and apply config to bot":
-                self.apply_configs_menu()
-
-            if answers['resp'] == 'Set BT date':
-                Haas().write_date()
+                mh = MadHatterBot()
+                bt = mh.menu()
 
             if answers['resp'] == "Scalper Bots":
-                self.scalper_bot_menu()
+                sb = ScalperBotClass()
+                sb.scalper_bot_menu()
 
-            if answers['resp'] == 'Loops':
-                loop_count = input("Type New Loop Count: ")
-                print(f"Auto BT lool count has been set to: {loop_count}")
+            if answers['resp'] == "Flash-Crash Bots":
+                fcb = FlashCrashBot()
+                fcb.fcb_menu()
 
-            if answers['resp'] == "Development Features":
-                file = self.dev_features()
+            if answers['resp'] == "Create bots from file":
+                multicreate_choices =
+                questions = [inquirer.List('resp','Select below: ', choices = multicreate_choices)]
 
-            # if answers['resp'] =='':
 
             if answers['resp'] == 'Quit':
                 break
 
+            # irrelevant answers:
+            #
+            # if answers['resp'] == 'AssistedBT':
+            #     BT = InteractiveBT().backtest(loop_count)
+            if answers['resp'] == "Select and apply config to bot":
+                self.apply_configs_menu()
+            if answers['resp'] == "Development Features":
+                file = self.dev_features()
+
+            if answers['resp'] == 'Loops':
+                loop_count = input("Type New Loop Count: ")
+                print(f"Auto BT lool count has been set to: {loop_count}")
+            if answers['resp'] == 'Set BT date':
+                Haas().write_date()
     def dev_features(self):
         question = [
             inquirer.List(
@@ -410,3 +416,11 @@ class MainMenu(Haas):
 
 
 
+def main():
+
+    mm = MainMenu()
+    mm.main_screen()
+
+
+if __name__ == '__main__':
+    main()

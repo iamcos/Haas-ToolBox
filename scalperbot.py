@@ -1,10 +1,10 @@
-
+import pandas as pd
+import inquirer
+from haas import Haas
 class ScalperBotClass(Haas):
     def __init__(self):
         Haas.__init__(self)
-        self.config = Haas().config
-        self.c = HaasomeClient(self.ip, self.secret)
-        self.ticks = Haas().read_ticks()
+
         self.safetythreshold = [1, 5, 0.2]
         self.targetpercentage = [1, 3, 0.1]
 

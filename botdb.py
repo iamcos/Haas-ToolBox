@@ -1,9 +1,14 @@
 
+import pandas as pd
+from alive_progress import alive_bar
+from haasomeapi.HaasomeClient import HaasomeClient
+
+from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
+from haas import Haas
 class BotDB(Haas):
     def __init__(self):
         Haas.__init__(self)
         self.config = Haas().config
-        self.c = HaasomeClient(self.ip, self.secret)
 
     def csv_to_sellectionbox(self):
         files = self.get_csv_files()
@@ -131,7 +136,7 @@ class BotDB(Haas):
                 config["macdsign"],
             )
         if bot.interval != config.interval:
-            sbfcsv = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
+            do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
                 botName=bot.name,
                 botGuid=bot.guid,
                 accountGuid=bot.accountId,
@@ -151,7 +156,8 @@ class BotDB(Haas):
                 mappedBuySignal=bot.mappedBuySignal,
                 mappedSellSignal=bot.mappedSellSignal,
             )
-            return sbfcsv
+            print('MH FROM CSV', do.errorCode, do.errorMessage)
+            return do
         # print(bot.name, ' Has been configured')
         # Indicator parameters have been set
         # calling it setup_bot_from_obj. It checks each parameter against new config.
@@ -355,7 +361,7 @@ class BotDB(Haas):
                 if bt.roi > best_roi:
                     best_roi = bt.roi
                 configs["roi"][i] = bt.roi
-                os.system("clear")
+
                 bar()
 
         return configs

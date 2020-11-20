@@ -3,10 +3,8 @@ import os
 from haasomeapi.HaasomeClient import HaasomeClient
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 import inquirer
-
-import time
 import datetime
-
+import pandas as pd
 
 class Haas:
     """
@@ -215,7 +213,7 @@ class Haas:
 
         selection = inquirer.prompt(question)
         self.file = selection["file"]
-        self.configs = BotDB().read_csv(self.file)
+        self.configs = pd.read_csv(self.file)
 
         return self.file
 
