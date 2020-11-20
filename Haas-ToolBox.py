@@ -53,7 +53,7 @@ class MainMenu(Haas):
 
             if answers['resp'] == "Create bots from CSV":
                 # multicreate_choices = ['Mad-Hatter',
-                                       'Scalper',
+                                       ['Scalper',
                                        # 'PingPong',
                                        # 'FlashCrash'
                                        ]
