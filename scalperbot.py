@@ -1,10 +1,15 @@
 import pandas as pd
 import inquirer
 from haas import Haas
+import datetime
+from alive_progress import alive_bar
+from tqdm import tqdm
+import numpy as np
+from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 class ScalperBotClass(Haas):
     def __init__(self):
         Haas.__init__(self)
-
+        self.ticks = self.read_ticks()
         self.safetythreshold = [1, 5, 0.2]
         self.targetpercentage = [1, 3, 0.1]
 
@@ -14,30 +19,7 @@ class ScalperBotClass(Haas):
         botlist = [x for x in bl if x.botType == 3]
         return botlist
 
-    def bot_selector(self):
-        bots = self.return_scalper_bots()
-        b2 = [
-            (
-                f"{i.name} {i.priceMarket.primaryCurrency}-{i.priceMarket.secondaryCurrency}, {i.roi}",
-                i,
-            )
-            for i in bots
-        ]
-        question = [
-            inquirer.Checkbox(
-                "bots",
-                message="Select one or more bots using spacebar and then press return",
-                choices=b2,
-            )
-        ]
-        selection = inquirer.prompt(question)
-        try:
-            self.bot = selection["bots"]
-        except TypeError:
-            print("No bot has been selected, you must select one")
-            self.bot_selector()
-        return selection["bots"]
-
+ 
     def markets_selector(self):
 
         markets = self.c.marketDataApi.get_all_price_markets().result
@@ -216,6 +198,7 @@ class ScalperBotClass(Haas):
                     "Set range for target percentage",
                     "Backtest",
                     "backtest every bot",
+                    "Change backtesting date",
                     "Main menu",
                 ],
             )
@@ -224,11 +207,14 @@ class ScalperBotClass(Haas):
         while True:
             user_response = inquirer.prompt(menu)["response"]
             if user_response == "Select bots":
-                self.bot_selector()
+                self.bot_selector(3, multi=True)
             elif user_response == "Set range for safety threshold":
                 self.set_safetythreshold_range()
             elif user_response == "Set range for target percentage":
                 self.set_targetpercentage_range()
+            elif user_response == "Change backtesting date":
+                self.write_date()
+
             elif user_response == "Backtest":
                 self.backtest()
             elif user_response == "backtest every bot":
@@ -240,3 +226,8 @@ class ScalperBotClass(Haas):
             elif user_response == "Main menu":
                 break
 
+
+
+def main():
+    sb = ScalperBotClass()
+    sb.bot = sb.return_scalper_bots[0:1]

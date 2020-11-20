@@ -424,15 +424,15 @@ class MadHatterBot(Haas):
             menu = [
                 inquirer.List(
                     "response",
-                    message="Please chose an action:",
+                    message=f"{self.limit}, {self.num_configs}",
                     choices=[
-                        'Test create',
+                        # 'Test create',
                         "Select Bots",
                         "Select config file",
                         "Set configs limit",
                         "Set create limit",
-                        "Start Backtesting",
                         "Change backtesting date",
+                        "Start Backtesting",
                         "Main Menu",
                     ],
                 )
@@ -441,7 +441,7 @@ class MadHatterBot(Haas):
             while True:
                 user_response = inquirer.prompt(menu)["response"]
                 if user_response == "Select Bots":
-                    bot = self.bot_selector(15)
+                    bot = self.bot_selector(15, multi=True)
                 elif user_response == "Select config file":
                     file = pd.read_csv(self.file_selector())
                 elif user_response == "Set configs limit":

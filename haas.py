@@ -20,6 +20,7 @@ class Haas:
         self.secret = None
         self.check_config()
         self.c = self.client()
+      
 
     def return_config(self):
         # print('CONFIG 1',self.config)
@@ -167,6 +168,7 @@ class Haas:
 
         bots = [x for x in self.c.customBotApi.get_all_custom_bots().result if x.botType == botType]
         # print(bots)
+
         b2 = [
             (
                 f"{i.name} {i.priceMarket.primaryCurrency}-{i.priceMarket.secondaryCurrency}, {i.roi}",
@@ -192,9 +194,15 @@ class Haas:
                     choices=b2,
                 )
             ]
-        selection = inquirer.prompt(question)
-        self.bot = selection['bots']
-        return selection["bots"]
+        
+        try:
+            selection = inquirer.prompt(question)
+            self.bot = selection['bots']
+            return selection['bots']
+        except Exception as e:
+            print('Bot Selection error', e)
+            # print('')
+       
 
     def get_csv_files(self, path="./"):
         files = []

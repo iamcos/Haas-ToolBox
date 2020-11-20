@@ -14,6 +14,7 @@ from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from haasomeapi.enums.EnumIndicator import EnumIndicator
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 
+
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from haasomeapi.HaasomeClient import HaasomeClient
 from numpy import arange

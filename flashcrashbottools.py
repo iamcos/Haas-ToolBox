@@ -30,7 +30,9 @@ class FlashCrashBot(Haas):
         fee = bot.currentFeePercentage
         baseprice = self.c.marketDataApi.get_price_ticker(bot.priceMarket.priceSource,bot.priceMarket.primaryCurrency,
                                                           bot.priceMarket.secondaryCurrency,
+                                                          # bot.priceMarket.contractName)
                                                           bot.priceMarket.contractName).result.currentBuyValue
+        
         # print(baseprice.__dict__)
         pricespread = bot.priceSpread
         priceSpreadType = EnumFlashSpreadOptions(bot.priceSpreadType).value
@@ -204,16 +206,18 @@ class FlashCrashBot(Haas):
 
 
     def fcb_menu(self):
-
+        while True:
             menu_items = []
+            
             if self.bot == None:
 
-
+                print(self.bot, 'BOT')
                 menu_items = ['Select Bot','Quit']
-                menu = [inquirer.List('resp', 'Welcome to Flash Crash Tollset', menu_items)]
+                menu = [inquirer.List('resp', 'FlashCrash Tools', menu_items)]
                 resp = inquirer.prompt(menu)['resp']
-
-            else:
+                
+            
+            elif self.bot.botType == 6:
                 menu_items = ['Select another bot']
 
                 if self.bot.priceSpreadType == 0 or self.bot.priceSpreadType == 1:
@@ -226,7 +230,7 @@ class FlashCrashBot(Haas):
                     menu_items.append('Set mib %')
                     menu_items.append('Set max %')
 
-
+                menu_items.append('Set BT date')
                 menu_items.append('Backtest')
                 menu_items.append('Quit')
                 menu = [inquirer.List('resp', 'Do stuff', menu_items)]
@@ -234,32 +238,34 @@ class FlashCrashBot(Haas):
 
 
                 resp = inquirer.prompt(menu)['resp']
-                print('resp',resp)
 
+            if resp == 'Set price spread range':
+                self.set_price_spread_range()
 
-                if resp == 'Set price spread range':
-                    self.set_price_spread_range()
-
-                if resp == "Set percentage range":
-                    self.set_percentage_range()
-
-                if resp == "Set multiplyer range":
-                    self.set_multiplier_range()
-                if resp == "Set mib %":
-                    self.set_min_range()
-                if resp == "Set max %":
-                    self.set_max_range()
-
-                if resp == "Backtest":
-                    self.setup_fcb(self.bot)
-                if resp == "Main Menu" or 'Back':
-                    # break
-                    pass
+            if resp == "Set percentage range":
+                self.set_percentage_range()
+           
+            if resp == "Set multiplyer range":
+                self.set_multiplier_range()
+            if resp == "Set mib %":
+                self.set_min_range()
+            if resp == "Set max %":
+                self.set_max_range()
+   
+            if resp == "Set BT date":
+                self.write_date()
+            if resp == "Backtest":
+                self.setup_fcb(self.bot)
+            if resp == 'Quit':
+                break
+                # pass
             if resp == 'Select Bot' or 'Select another bot':
-                self.bot = self.bot_selector(6)
+                self.bot_selector(6)
                 print('self.bot', self.bot)
                 self.fcb_menu()
-                # continue
+ 
+
+            return resp
 def test():
     h = FlashCrashBot()
     # print(h.__dict__)

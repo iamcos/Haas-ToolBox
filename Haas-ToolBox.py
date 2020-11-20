@@ -18,7 +18,7 @@ class MainMenu(Haas):
             "Scalper Bots",
             "Mad-Hatter Bots",
             'Flash-Crash Bots',
-            'Create bots from file',
+            # 'Create bots from CSV',
             "Quit",
         ]
         loop_count = 10
@@ -47,11 +47,24 @@ class MainMenu(Haas):
 
             if answers['resp'] == "Flash-Crash Bots":
                 fcb = FlashCrashBot()
-                fcb.fcb_menu()
+                d = fcb.fcb_menu()
+                
 
-            if answers['resp'] == "Create bots from file":
-                multicreate_choices =
-                questions = [inquirer.List('resp','Select below: ', choices = multicreate_choices)]
+            if answers['resp'] == "Create bots from CSV":
+                multicreate_choices = [' Mad-Hatter',' Scalper',' PingPong','FlashCrash']
+                
+                questions2 = [inquirer.List('resp','Select below: ', choices = multicreate_choices)]
+                
+                multicreate_answer = inquirer.prompt(questions2)
+                
+                if multicreate_answer == 'Mad-Hatter':
+                    pass
+                elif multicreate_answer == 'Scalper':
+                    pass
+                elif multicreate_answer == 'PingPong':
+                    pass
+                elif multicreate_answer == 'FlashCrash':
+                    pass
 
 
             if answers['resp'] == 'Quit':
