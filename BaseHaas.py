@@ -113,6 +113,24 @@ class MainMenu(Haas):
 
         elif answer["resp"] == "Create Order Bots bots from Tradingview CSV file":
             self.main_screen()
+    
+    def return_marketobjects_from_tradingview_csv_file(self):
+        tw_df = self.format_tw_csv()
+        markets = MarketData().get_all_markets()
+        '''
+        Merging databases into one that contains data from both
+        '''
+        combined_df = pd.merge(tw_df, markets, how='outer', indicator='Exist')
+        combined_df = combined_df.loc[combined_df['Exist'] == 'both']
+
+        # print(len(combined_df.index)-len(tw_df.index),'from Tradingview csv were not identified')
+        missing = pd.merge(tw_df, combined_df, how='outer', indicator='Missing')
+        missing = missing.loc[missing['Missing'] != 'both']
+
+        # prints combined lisst of tickers from tw and combined db
+        # print(list(zip(tw_df.sort_values(by='Ticker', ascending=False)['Ticker'].values,combined_df.sort_values(by='Ticker', ascending=False)['Ticker'].values)))
+        # print('tw_df',len(tw_df),'markets',len(markets),'combined_df',len(combined_df),'missing',len(missing))
+        return combined_df
 
     @sleep_and_retry
     @limits(calls=2, period=1)
@@ -192,51 +210,7 @@ class MainMenu(Haas):
         return newbot.result
 
 
-    def apply_configs_menu(self):
-        options = [
-            "Select Bot",
-            "Select file with configs",
-            "Apply configs",
-            "Main Menu",
-        ]
-        config_questions = [inquirer.List("response", "Select an option: ", options)]
-
-        while True:
-            response = inquirer.prompt(config_questions)
-            if response["response"] in options:
-                ind = options.index(response["response"])
-            if ind == 0:
-                bot = self.bot_selector()
-            elif ind == 1:
-                file = pd.read_csv(self.file_selector())
-            elif ind == 2:
-                # print(self.configs)
-
-                configs = self.configs.sort_values(by="roi", ascending=False)
-                configs.drop_duplicates()
-                configs.reset_index(inplace=True, drop=True)
-                while True:
-                    print(configs)
-                    print(
-                        "To apply bot type config number from the left column and hit return."
-                    )
-                    print("To return to the main menu, type q and hit return")
-                    resp = input("Config number: ")
-                    try:
-                        if int(resp) >= 0:
-
-                            BotDB().setup_bot_from_csv(
-                                self.bot, configs.iloc[int(resp)]
-                            )
-                            # print(Haas().read_ticks)
-                            BotDB().bt_bot(self.bot, Haas().read_ticks())
-                        else:
-                            break
-                    except ValueError as e:
-                        break
-
-            elif ind == 3:
-                break
+    
 
     def file_selector(self, path="."):
         files = BotDB().get_csv_files(path)

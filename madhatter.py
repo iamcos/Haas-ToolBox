@@ -495,3 +495,53 @@ class MadHatterBot(Haas):
 if __name__ == "__main__":
     mh = MadHatterBot()
     mh.menu()
+    
+    
+    
+    """
+        def apply_configs_menu(self):
+        options = [
+            "Select Bot",
+            "Select file with configs",
+            "Apply configs",
+            "Main Menu",
+        ]
+        config_questions = [inquirer.List("response", "Select an option: ", options)]
+
+        while True:
+            response = inquirer.prompt(config_questions)
+            if response["response"] in options:
+                ind = options.index(response["response"])
+            if ind == 0:
+                bot = self.bot_selector()
+            elif ind == 1:
+                file = pd.read_csv(self.file_selector())
+            elif ind == 2:
+                # print(self.configs)
+
+                configs = self.configs.sort_values(by="roi", ascending=False)
+                configs.drop_duplicates()
+                configs.reset_index(inplace=True, drop=True)
+                while True:
+                    print(configs)
+                    print(
+                        "To apply bot type config number from the left column and hit return."
+                    )
+                    print("To return to the main menu, type q and hit return")
+                    resp = input("Config number: ")
+                    try:
+                        if int(resp) >= 0:
+
+                            BotDB().setup_bot_from_csv(
+                                self.bot, configs.iloc[int(resp)]
+                            )
+                            # print(Haas().read_ticks)
+                            BotDB().bt_bot(self.bot, Haas().read_ticks())
+                        else:
+                            break
+                    except ValueError as e:
+                        break
+
+            elif ind == 3:
+                break
+    """

@@ -1,5 +1,5 @@
 from builtins import Exception
-
+from marketdata import MarketData
 import pandas as pd
 import inquirer
 from madhatter import MadHatterBot
@@ -7,7 +7,8 @@ from ratelimit import limits, sleep_and_retry
 from scalperbot import ScalperBotClass
 from flashcrashbottools import FlashCrashBot
 from haas import Haas
-
+from haasomeapi.enums.EnumPriceSource import EnumPriceSource
+from botdb import BotDB
 class MainMenu(Haas):
     def __init__(self):
         Haas.__init__(self)
@@ -18,7 +19,7 @@ class MainMenu(Haas):
             "Scalper Bots",
             "Mad-Hatter Bots",
             'Flash-Crash Bots',
-            # 'Create bots from CSV',
+            'Create bots from CSV',
             "Quit",
         ]
         loop_count = 10
@@ -51,16 +52,17 @@ class MainMenu(Haas):
                 
 
             if answers['resp'] == "Create bots from CSV":
-                multicreate_choices = [' Mad-Hatter',' Scalper',' PingPong','FlashCrash']
+                multicreate_choices = ['Mad-Hatter','Scalper','PingPong','FlashCrash']
                 
                 questions2 = [inquirer.List('resp','Select below: ', choices = multicreate_choices)]
                 
-                multicreate_answer = inquirer.prompt(questions2)
+                multicreate_answer = inquirer.prompt(questions2)['resp']
                 
                 if multicreate_answer == 'Mad-Hatter':
                     pass
                 elif multicreate_answer == 'Scalper':
-                    pass
+                    # new_bots = self.tw_to_bots(3)
+                    new_bots = self.tw_to_scalpers()
                 elif multicreate_answer == 'PingPong':
                     pass
                 elif multicreate_answer == 'FlashCrash':
@@ -116,6 +118,8 @@ class MainMenu(Haas):
     @sleep_and_retry
     @limits(calls=2, period=1)
     def tw_to_bots(self, file=None):
+        pass
+    def tw_to_scalpers(self, file=None):
 
         markets_df = self.return_marketobjects_from_tradingview_csv_file()
         accounts_with_details = self.tw_to_haas_market_translator()
@@ -427,8 +431,40 @@ class MainMenu(Haas):
 
         return self.file
 
+    def return_marketobjects_from_tradingview_csv_file(self):
+        tw_df = self.format_tw_csv()
+        markets = MarketData().get_all_markets()
+        '''
+        Merging databases into one that contains data from both
+        '''
+        combined_df = pd.merge(tw_df, markets, how='outer', indicator='Exist')
+        combined_df = combined_df.loc[combined_df['Exist'] == 'both']
 
+        # print(len(combined_df.index)-len(tw_df.index),'from Tradingview csv were not identified')
+        missing = pd.merge(tw_df, combined_df, how='outer', indicator='Missing')
+        missing = missing.loc[missing['Missing'] != 'both']
 
+        # prints combined lisst of tickers from tw and combined db
+        # print(list(zip(tw_df.sort_values(by='Ticker', ascending=False)['Ticker'].values,combined_df.sort_values(by='Ticker', ascending=False)['Ticker'].values)))
+        # print('tw_df',len(tw_df),'markets',len(markets),'combined_df',len(combined_df),'missing',len(missing))
+        return combined_df
+    
+    def format_tw_csv(self):
+        tw = pd.read_csv(self.file_selector('./tradingview'))
+        # print(tw.columns)
+        tw2 = pd.DataFrame()
+        tw2['Ticker'] = tw['Ticker']
+        Exchange = tw['Exchange'].values
+        priceSources = []
+        for i in Exchange:
+            try:
+                priceSources.append(EnumPriceSource[i].value)
+            except Exception as e:
+                print(e, 'format_tw_csv')
+                priceSources.append(None)
+        tw2['pricesource'] = priceSources
+        # print(tw2)
+        return tw2
 def main():
 
     mm = MainMenu()
