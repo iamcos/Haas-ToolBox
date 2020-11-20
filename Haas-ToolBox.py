@@ -52,7 +52,11 @@ class MainMenu(Haas):
                 
 
             if answers['resp'] == "Create bots from CSV":
-                multicreate_choices = ['Mad-Hatter','Scalper','PingPong','FlashCrash']
+                # multicreate_choices = ['Mad-Hatter',
+                                       'Scalper',
+                                       # 'PingPong',
+                                       # 'FlashCrash'
+                                       ]
                 
                 questions2 = [inquirer.List('resp','Select below: ', choices = multicreate_choices)]
                 
