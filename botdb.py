@@ -257,7 +257,7 @@ class BotDB(Haas):
             )
 
         if bot.interval != config.interval:
-            setup_bot_from_obj = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
+            do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
                 botName=bot.name,
                 botGuid=bot.guid,
                 accountGuid=bot.accountId,
@@ -288,84 +288,96 @@ class BotDB(Haas):
         return bt.result
 
     def iterate_csv(self, configs, bot, depth):
-        best_roi = 0
-        configs.roi[0:-1] = 0
-        cols = [
-            "interval",
-            "signalconsensus",
-            "fcc",
-            "resetmiddle",
-            "allowmidsells",
-            "matype",
-            "rsil",
-            "rsib",
-            "rsis",
-            "bbl",
-            "devup",
-            "devdn",
-            "macdfast",
-            "macdslow",
-            "macdsign",
-            "trades",
-            "roi",
-        ]
-        for c in configs.columns:
-            if c not in cols:
-                configs.drop(c, axis=1, inplace=True)
         try:
-            bot.currentTradeAmount = 10000
-        #     markets = self.c.marketDataApi.get_price_markets(
-        #         bot.priceMarket.priceSource).result
-        #     for market in markets:
-        #         if market.primaryCurrency == bot.priceMarket.primaryCurrency:
-        #             if market.secondaryCurrency == bot.priceMarket.secondaryCurrency:
-        #                 if bot.currentTradeAmount < market.minimumTradeAmount:
-
-        except Exception as e:
-            print("Iterate CSV exception", e)
-        with alive_bar(len(configs.index), title=f"{bot.name} backtesting. ") as bar:
-
-            for i in configs.index:
-                try:
-                    print(
-                        "Current Backtest ROI: ",
-                        bt.roi,
-                        "%",
-                        "best ROI:",
-                        best_roi,
-                        "%",
+            best_roi = 0
+            configs.roi[0:-1] = 0
+            cols = [
+                "interval",
+                "signalconsensus",
+                "fcc",
+                "resetmiddle",
+                "allowmidsells",
+                "matype",
+                "rsil",
+                "rsib",
+                "rsis",
+                "bbl",
+                "devup",
+                "devdn",
+                "macdfast",
+                "macdslow",
+                "macdsign",
+                "trades",
+                "roi",
+            ]
+            for c in configs.columns:
+                if c not in cols:
+                    configs.drop(c, axis=1, inplace=True)
+            try:
+                bot.currentTradeAmount = 10000
+            #     markets = self.c.marketDataApi.get_price_markets(
+            #         bot.priceMarket.priceSource).result
+            #     for market in markets:
+            #         if market.primaryCurrency == bot.priceMarket.primaryCurrency:
+            #             if market.secondaryCurrency == bot.priceMarket.secondaryCurrency:
+            #                 if bot.currentTradeAmount < market.minimumTradeAmount:
+    
+            except Exception as e:
+                print("Iterate CSV exception", e)
+            with alive_bar(len(configs.index), title=f"{bot.name} backtesting. ") as bar:
+    
+                for i in configs.index:
+                    try:
+                        print(
+                            "Current Backtest ROI: ",
+                            bt.roi,
+                            "%",
+                            "best ROI:",
+                            best_roi,
+                            "%",
+                        )
+                        print("\nTop 5 configs so far:\n")
+                        print(configs.sort_values(by="roi", ascending=False)[0:5])
+                    except:
+                        pass
+                    config = configs.iloc[i]
+                    s = self.setup_bot_from_csv(bot, config)
+                    try:
+                        print("setup bot from CSV", s.errorCode)
+                    except Exception as e:
+                        print("Setup exception", e)
+                    bt = self.c.customBotApi.backtest_custom_bot_on_market(
+                        bot.accountId,
+                        bot.guid,
+                        int(depth),
+                        bot.priceMarket.primaryCurrency,
+                        bot.priceMarket.secondaryCurrency,
+                        bot.priceMarket.contractName,
                     )
-                    print("\nTop 5 configs so far:\n")
-                    print(configs.sort_values(by="roi", ascending=False)[0:5])
-                except:
-                    pass
-                config = configs.iloc[i]
-                s = self.setup_bot_from_csv(bot, config)
-                try:
-                    print("setup bot from CSV", s.errorCode)
-                except Exception as e:
-                    print("Setup exception", e)
-                bt = self.c.customBotApi.backtest_custom_bot_on_market(
-                    bot.accountId,
-                    bot.guid,
-                    int(depth),
-                    bot.priceMarket.primaryCurrency,
-                    bot.priceMarket.secondaryCurrency,
-                    bot.priceMarket.contractName,
-                )
-                try:
-                    print("BT", bt.errorCode)
-                    bt = bt.result
-                except Exception as e:
-                    print("bt exception", e)
-                if bt.roi > best_roi:
-                    best_roi = bt.roi
-                configs["roi"][i] = bt.roi
-
-                bar()
-
-        return configs
-
+                    try:
+                        print("BT", bt.errorCode)
+                        bt = bt.result
+                    except Exception as e:
+                        print("bt exception", e)
+                    if bt.roi > best_roi:
+                        best_roi = bt.roi
+                    configs["roi"][i] = bt.roi
+    
+                    bar()
+    
+            return configs
+        except (KeyboardInterrupt,SystemExit):
+            filename = (
+                  str(b.name.replace("/","_"))
+                  + str("_")
+                  + str(datetime.date.today().month)
+                  + str("-")
+                  + str(datetime.date.today().day)
+                  + str("_")
+                  + str(len(bt_results))
+                  + str(".csv"))
+            print("Iterate CSV exception,saving current progress")
+            configs.to_csv(filename)
     def verify_cfg(self):
         c = ConfigParser
 

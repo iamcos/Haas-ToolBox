@@ -230,4 +230,7 @@ class ScalperBotClass(Haas):
 
 def main():
     sb = ScalperBotClass()
-    sb.bot = sb.return_scalper_bots[0:1]
+    sb.bot = sb.return_scalper_bots()[0:2]
+    print(sb.bot)
+if __name__ == "__main__":
+    main()
