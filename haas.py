@@ -5,7 +5,7 @@ from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 import inquirer
 import datetime
 import pandas as pd
-
+import time
 class Haas:
     """
     Haasonline trading software interaction class: get botlist, marketdata,
@@ -16,6 +16,7 @@ class Haas:
     def __init__(self):
         self.config = cp.ConfigParser()
         self.bot = None
+        self.bots = None
         self.ip = None
         self.secret = None
         self.check_config()
@@ -132,7 +133,25 @@ class Haas:
         }
 
         self.write_file()
+    def write_limits(self):
 
+        self.config["MH_LIMITS"] = {
+            "number_of_configs_to_apply": self.num_configs,
+            "limit_to_create" : self.limit
+            }
+
+        self.write_file()
+    def read_limits(self):
+        try:
+            self.limit = int(self.config['MH_LIMITS'].get('number_of_configs_to_apply'))
+        except Exception as e:
+            print(e)
+        try:
+            self.num_configs =int( self.config['MH_LIMITS'].get('limit_to_create'))
+        except Exception as e:
+            print(e)
+            
+        
     def read_ticks(self):
         date_dict = {}
 
@@ -197,7 +216,7 @@ class Haas:
         
         try:
             selection = inquirer.prompt(question)
-            self.bot = selection['bots']
+            self.bots = selection['bots']
             return selection['bots']
         except Exception as e:
             print('Bot Selection error', e)

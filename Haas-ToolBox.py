@@ -218,7 +218,7 @@ class MainMenu(Haas):
                 file = pd.read_csv(self.file_selector())
             elif ind == 2:
                 # print(self.configs)
-
+             
                 configs = self.configs.sort_values(by="roi", ascending=False)
                 configs.drop_duplicates()
                 configs.reset_index(inplace=True, drop=True)
@@ -229,18 +229,16 @@ class MainMenu(Haas):
                     )
                     print("To return to the main menu, type q and hit return")
                     resp = input("Config number: ")
-                    try:
-                        if int(resp) >= 0:
-
-                            BotDB().setup_bot_from_csv(
-                                self.bot, configs.iloc[int(resp)]
-                            )
-                            # print(Haas().read_ticks)
-                            BotDB().bt_bot(self.bot, Haas().read_ticks())
-                        else:
-                            break
-                    except ValueError as e:
+                   
+                    if int(resp) >= 0:
+                 
+                        self.setup_bot_from_csv(self.bot, configs.iloc[int(resp)]
+                                )
+                           
+                        self.bt(self.bot)
+                    else:
                         break
+             
 
             elif ind == 3:
                 break
@@ -303,7 +301,8 @@ class MainMenu(Haas):
 
             elif user_response == "Start Backtesting":
 
-                for b in self.bot:
+                for b in self.bots:
+                    self.bot = b
                     self.bt(b)
                     self.create_mh_bots(b)
 
@@ -316,7 +315,7 @@ class MainMenu(Haas):
             print(f'config limit bigger than configs in config file, setting it to {self.num_configs}')
         print('index', self.configs.index)
         print('the configs', self.configs)
-        bt_results = BotDB().iterate_csv(self.configs[0:self.num_configs], b, depth=Haas().read_ticks())
+        bt_results = self.iterate_csv(self.configs[0:self.num_configs], b, depth=Haas().read_ticks())
         filename = (
                 str(b.name.replace("/", "_"))
                 + str("_")
@@ -332,6 +331,7 @@ class MainMenu(Haas):
         bt_results.reset_index(inplace=True, drop=True)
         bt_results.to_csv(filename)
         self.configs = bt_results
+        
 
     def create_mh_bots(self, b):
         if self.limit > len(self.configs.index):
@@ -356,14 +356,14 @@ class MainMenu(Haas):
                 if i not in bl2:
                     print(i.guid
                           )
-                    i2 = BotDB().bt_bot(i, 5)
+                    i2 = self.bt(i)
                     # print(i2.__dict__)
                     # print([{x:i2.__dict__[x]} for x in i2.__dict__])
 
-                    BotDB().setup_bot_from_csv(i2, self.configs.iloc[c])
+                    self.setup_bot_from_csv(i2, self.configs.iloc[c])
 
                     # BotDB().setup_bot_from_obj(i2,self.configs.iloc[c])
-                    BotDB().bt_bot(i2, Haas().read_ticks())
+                    self.bt(i2)
             name = f"{b.name} #{c}: {b.roi}%"
             # new_bot = self.client.customBotApi.clone_custom_bot_simple(b.accountId, b.guid, name).result
             new_bot = self.client.customBotApi.new_custom_bot(b.accountId, b.botType, name,
@@ -377,14 +377,14 @@ class MainMenu(Haas):
                 if i not in bl2:
                     print(i.guid
                           )
-                    i2 = BotDB().bt_bot(i, 5)
+                    i2 = self.bt(i)
                     # print(i2.__dict__)
                     # print([{x:i2.__dict__[x]} for x in i2.__dict__])
 
-                    BotDB().setup_bot_from_csv(i2, self.configs.iloc[c])
+                    self.setup_bot_from_csv(i2, self.configs.iloc[c])
 
                     # BotDB().setup_bot_from_obj(i2,self.configs.iloc[c])
-                    BotDB().bt_bot(i2, Haas().read_ticks())
+                    self.bt(i)
     def file_selector(self, path="."):
         files = BotDB().get_csv_files(path)
         # print(files[0:5])
@@ -416,7 +416,7 @@ class MainMenu(Haas):
         ]
         selection = inquirer.prompt(question)
         try:
-            self.bot = selection["bots"]
+            self.bots = selection["bots"]
         except TypeError:
             print("No bot has been selected, you must select one")
             self.multiple_bot_sellector()
