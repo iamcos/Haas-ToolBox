@@ -701,6 +701,10 @@ class MadHatterBot(Haas):
 								# self.config["MH_LIMITS"] = {
 								# 		"number_of_configs_to_apply":self.num_configs
 								# 		}
+								try:
+									self.config.add_section("MH_LIMITS")
+								except:
+									pass
 								self.config.set("MH_LIMITS",'number_of_configs_to_apply',str(self.num_configs))
 								self.write_file()
 								self.read_limits()
