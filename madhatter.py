@@ -666,7 +666,7 @@ class MadHatterBot(Haas):
 										"Change backtesting date",
 										"Start Backtesting",
 										"Main Menu",
-										"Test",
+										# "Test",
 										],
 								)
 						]
@@ -712,7 +712,7 @@ class MadHatterBot(Haas):
 										inquirer.Text("limit",message="Type how many top bots to create ")
 										]
 								create_limit_response = inquirer.prompt(create_limit)["limit"]
-								
+								self.limit = int(create_limit_response)
 								self.config.set("MH_LIMITS",'limit_to_create',str(self.limit))
 								self.write_file()
 								self.read_limits()
