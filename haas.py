@@ -188,7 +188,7 @@ class Haas:
 
         bots = [x for x in self.c.customBotApi.get_all_custom_bots().result if x.botType == botType]
         # print(bots)
-
+        bots.sort(key=lambda x:x.name,reverse=False)
         b2 = [
             (
                 f"{i.name} {i.priceMarket.primaryCurrency}-{i.priceMarket.secondaryCurrency}, {i.roi}",
@@ -196,6 +196,7 @@ class Haas:
             )
             for i in bots
         ]
+       
         if multi == False:
             question = [
                 inquirer.List(
