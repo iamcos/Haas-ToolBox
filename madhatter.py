@@ -379,7 +379,7 @@ class MadHatterBot(Haas):
 		# calling it setup_bot_from_obj. It checks each parameter against new config.
 		# updated_bot = self.c.customBotApi.get_custom_bot(self.bot.guid,self.bot.botType)
 		
-		def setup_bot_from_obj(self,bot,config,print_errors=True):
+		def setup_bot_from_obj(self,bot,config,print_errors=False):
 				
 				if bot.bBands["Length"] != config.bBands["Length"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
@@ -566,7 +566,7 @@ class MadHatterBot(Haas):
 				for c in range(self.limit):
 						name = f"{bot.name} {c} {configs.roi.iloc[c]}%"
 						
-						self.setup_bot_from_csv(bot,configs.iloc[c],print_errors=True)
+						self.setup_bot_from_csv(bot,configs.iloc[c],print_errors=False)
 						
 						self.c.customBotApi.backtest_custom_bot(bot.guid,self.ticks)
 						self.c.customBotApi.clone_custom_bot_simple(bot.accountId,bot.guid,name)
@@ -646,7 +646,7 @@ class MadHatterBot(Haas):
 									+ str("-")
 									+ str(datetime.date.today().day)
 									+ str("_")
-									+ str(len(bt_results))
+									+ str(len(configs.index))
 									+ str(".csv"))
 						print("Iterate CSV exception,saving current progress")
 						configs.to_csv(filename)
@@ -658,7 +658,6 @@ class MadHatterBot(Haas):
 								"response",
 								message=f"{self.limit}, {self.num_configs}",
 								choices=[
-										# 'Test create',
 										"Select Bots",
 										"Select config file",
 										"Set configs limit",
@@ -666,7 +665,6 @@ class MadHatterBot(Haas):
 										"Change backtesting date",
 										"Start Backtesting",
 										"Main Menu",
-										# "Test",
 										],
 								)
 						]
@@ -720,15 +718,12 @@ class MadHatterBot(Haas):
 								self.write_date()
 						
 						elif user_response == "Start Backtesting":
-								if self.configs == None:
+								if self.configs is None:
 										self.configs = pd.read_csv('./bots.csv')
 								for b in self.bots:
 										self.bot = b
 										self.bt()
 										self.setup_mh_bot2()
-						
-						
-						
 						
 						elif user_response == "Main Menu":
 								break
