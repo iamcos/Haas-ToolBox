@@ -229,22 +229,25 @@ class MadHatterBot(Haas):
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										bot.guid,
 										EnumMadHatterIndicators.BBANDS,
-										6,
+										5,
 										bool(config["fcc"]),
 										)
 								if print_errors == True:
 										
-										# print('bot.bBands["RequireFcc"]','type: ',type(bot.bBands["RequireFcc"]),bot.bBands[
-										# 		"RequireFcc"], \
-										#       'bool(config["fcc"]: ',bool(config["fcc"]))
-										print('bBands',do.errorCode,do.errorMessage)
+										print('Bot FCC: ',bot.bBands["RequireFcc"],'. Type: ',type(bot.bBands["RequireFcc"]),
+										      '. Config FCC: ',
+										                                                         config["fcc"],' type : ',type(config[
+												                                                                                     "fcc"]),
+										                                                         '. If bool type: ',type(bool(config[
+												                                                                                     "fcc"])))
+										print('bBands FCC',do.errorCode,do.errorMessage)
 						
 						if bot.bBands["ResetMid"] != bool(config["resetmiddle"]):
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										bot.guid,
 										EnumMadHatterIndicators.BBANDS,
 										6,
-										bool(config["fcc"]),
+										bool(config["resetmiddle"]),
 										)
 								if print_errors == True:
 										# print('bot.bBands["ResetMid"]','type: ',type(bot.bBands["ResetMid"]),bot.bBands["ResetMid"], \
@@ -255,7 +258,7 @@ class MadHatterBot(Haas):
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										bot.guid,
 										EnumMadHatterIndicators.BBANDS,
-										5,
+										7,
 										bool(config["allowmidsells"]),
 										)
 								if print_errors == True:
@@ -343,7 +346,7 @@ class MadHatterBot(Haas):
 										)
 								if print_errors == True:
 										print('macd',do.errorCode,do.errorMessage)
-						if bot.useTwoSignals != config['signalconsensus']:
+						if bot.useTwoSignals != bool(config['signalconsensus']):
 								do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
 										botName=bot.name,
 										botGuid=bot.guid,
@@ -585,10 +588,13 @@ class MadHatterBot(Haas):
 		
 		def setup_mh_bot2(self,bot):
 				configs = self.config_storage[bot.guid]
+				if self.limit > len(configs.index):
+						self.limit = len(configs.index)
+						# print('set configs limit', self.limit)
 				for c in range(self.limit):
 						name = f"{bot.name} {c} {configs.roi.iloc[c]}%"
 						
-						self.setup_bot_from_csv(bot,configs.iloc[c],print_errors=True)
+						self.setup_bot_from_csv(bot,configs.iloc[c],print_errors=False)
 						
 						self.c.customBotApi.backtest_custom_bot(bot.guid,self.ticks)
 						self.c.customBotApi.clone_custom_bot_simple(bot.accountId,bot.guid,name)
@@ -755,20 +761,27 @@ class MadHatterBot(Haas):
 								break
 						
 						elif user_response == "Test":
-								
+								self.bot=self.bots[0]
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
-										self.bot[0].guid,
+										self.bot.guid,
 										EnumMadHatterIndicators.BBANDS,
-										5,
-										True,
-										)
-								time.sleep(5)
-								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
-										self.bot[0].guid,
-										EnumMadHatterIndicators.BBANDS,
-										5,
+										5, #FCC
 										False,
 										)
+								
+								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
+										self.bot.guid,
+										EnumMadHatterIndicators.BBANDS,
+										6, #resetmid
+										False,
+										)
+								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
+										self.bot.guid,
+										EnumMadHatterIndicators.BBANDS,
+										7, #idsells
+										True,
+										)
+						
 						
 						elif user_response == 'Test create':
 								self.bots = [x for x in self.c.customBotApi.get_all_custom_bots().result if x.botType == 15][0:1]
