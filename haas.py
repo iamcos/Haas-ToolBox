@@ -42,6 +42,7 @@ class Haas:
             self.secret = secret
             client = self.client()
             print(f'Connection status: {client.accountDataApi.get_all_wallets().errorCode.value}')
+           
             if client.accountDataApi.get_all_wallets().errorCode.value == 100:
                 print('Successfully connected!')
                 print(f'there are {len(client.accountDataApi.get_all_wallets().result)} active wallets, '
@@ -143,11 +144,11 @@ class Haas:
         self.write_file()
     def read_limits(self):
         try:
-            self.limit = int(self.config['MH_LIMITS'].get('number_of_configs_to_apply'))
+            self.num_configs = int(self.config['MH_LIMITS'].get('number_of_configs_to_apply'))
         except Exception as e:
             print(e)
         try:
-            self.num_configs =int( self.config['MH_LIMITS'].get('limit_to_create'))
+            self.limit =int(self.config['MH_LIMITS'].get('limit_to_create'))
         except Exception as e:
             print(e)
             

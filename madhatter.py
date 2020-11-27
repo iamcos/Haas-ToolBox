@@ -9,6 +9,8 @@ import datetime
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 import time
 from alive_progress import alive_bar
+
+
 class MadHatterBot(Haas):
 		def __init__(self):
 				Haas.__init__(self)
@@ -182,7 +184,7 @@ class MadHatterBot(Haas):
 				bt_results.sort_values(by="roi",ascending=False,inplace=True)
 				bt_results.drop_duplicates()
 				bt_results.reset_index(inplace=True,drop=True)
-				print('Stoploss results: ', bt_results)
+				print('Stoploss results: ',bt_results)
 				print(f'Best result: {bot.guid,0,bt_results.stoploss.iloc[0]} will be set')
 				do = self.c.customBotApi.set_mad_hatter_safety_parameter(bot.guid,0,bt_results.stoploss.iloc[0])
 				do = self.bt(bot)
@@ -196,7 +198,7 @@ class MadHatterBot(Haas):
 										bot.guid,EnumMadHatterIndicators.BBANDS,0,config["bbl"]
 										)
 								if print_errors == True:
-											print('bBands',do.errorCode,do.errorMessage)
+										print('bBands',do.errorCode,do.errorMessage)
 						if bot.bBands["Devup"] != config["devup"]:
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										bot.guid,
@@ -205,7 +207,7 @@ class MadHatterBot(Haas):
 										config["devup"],
 										)
 								if print_errors == True:
-											print('bBands',do.errorCode,do.errorMessage)
+										print('bBands',do.errorCode,do.errorMessage)
 						if bot.bBands["Devdn"] != config["devdn"]:
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										bot.guid,
@@ -214,7 +216,7 @@ class MadHatterBot(Haas):
 										config["devdn"],
 										)
 						if print_errors == True:
-										print('bBands',do.errorCode,do.errorMessage)
+								print('bBands',do.errorCode,do.errorMessage)
 						if bot.bBands["MaType"] != config["matype"]:
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										bot.guid,
@@ -223,7 +225,6 @@ class MadHatterBot(Haas):
 										config["matype"],
 										)
 						
-							
 						if bot.bBands["RequireFcc"] != bool(config["fcc"]):
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										bot.guid,
@@ -232,8 +233,12 @@ class MadHatterBot(Haas):
 										bool(config["fcc"]),
 										)
 								if print_errors == True:
-											print('bBands',do.errorCode,do.errorMessage)
 										
+										# print('bot.bBands["RequireFcc"]','type: ',type(bot.bBands["RequireFcc"]),bot.bBands[
+										# 		"RequireFcc"], \
+										#       'bool(config["fcc"]: ',bool(config["fcc"]))
+										print('bBands',do.errorCode,do.errorMessage)
+						
 						if bot.bBands["ResetMid"] != bool(config["resetmiddle"]):
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										bot.guid,
@@ -242,7 +247,9 @@ class MadHatterBot(Haas):
 										bool(config["fcc"]),
 										)
 								if print_errors == True:
-											print('bBands',do.errorCode,do.errorMessage)
+										# print('bot.bBands["ResetMid"]','type: ',type(bot.bBands["ResetMid"]),bot.bBands["ResetMid"], \
+										#       'bool(config["fcc"]: ',bool(config["resetmiddle"]))
+										print('bBands',do.errorCode,do.errorMessage)
 						
 						if bot.bBands["AllowMidSell"] != bool(config["allowmidsells"]):
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
@@ -252,8 +259,12 @@ class MadHatterBot(Haas):
 										bool(config["allowmidsells"]),
 										)
 								if print_errors == True:
-											print('bBands',do.errorCode,do.errorMessage)
-								
+										# print('bot.bBands["AllowMidSell"]','type: ',type(bot.bBands["AllowMidSell"]),bot.bBands[
+										# 		"AllowMidSell"],'bool(config['
+										#                     '"resetmiddle"]: ',bool(config[
+										# 		                                            "resetmiddle"]))
+										print('bBands',do.errorCode,do.errorMessage)
+						
 						if bot.rsi["RsiLength"] != bool(config["rsil"]):
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										bot.guid,
@@ -262,7 +273,8 @@ class MadHatterBot(Haas):
 										config["rsil"],
 										)
 								if print_errors == True:
-											print('bBands',do.errorCode,do.errorMessage)
+										print('bool(config["fcc"]: ',bool(config["fcc"]))
+										print('bBands',do.errorCode,do.errorMessage)
 						
 						if bot.rsi["RsiOverbought"] != config["rsib"]:
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
@@ -272,7 +284,7 @@ class MadHatterBot(Haas):
 										config["rsib"],
 										)
 								if print_errors == True:
-											print('rsi',do.errorCode,do.errorMessage)
+										print('rsi',do.errorCode,do.errorMessage)
 						
 						if bot.rsi["RsiOversold"] != config["rsis"]:
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
@@ -287,7 +299,7 @@ class MadHatterBot(Haas):
 										config["macdfast"],
 										)
 								if print_errors == True:
-											print('rsi',do.errorCode,do.errorMessage)
+										print('rsi',do.errorCode,do.errorMessage)
 						
 						if bot.macd["MacdSlow"] != config["macdslow"]:
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
@@ -297,7 +309,7 @@ class MadHatterBot(Haas):
 										config["macdslow"],
 										)
 								if print_errors == True:
-											print('rsi',do.errorCode,do.errorMessage)
+										print('rsi',do.errorCode,do.errorMessage)
 						
 						if bot.macd["MacdSign"] != config["macdsign"]:
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
@@ -307,7 +319,7 @@ class MadHatterBot(Haas):
 										config["macdsign"],
 										)
 								if print_errors == True:
-											print('macd',do.errorCode,do.errorMessage)
+										print('macd',do.errorCode,do.errorMessage)
 						if bot.interval != config['interval']:
 								do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
 										botName=bot.name,
@@ -330,7 +342,7 @@ class MadHatterBot(Haas):
 										mappedSellSignal=bot.mappedSellSignal,
 										)
 								if print_errors == True:
-											print('macd',do.errorCode,do.errorMessage)
+										print('macd',do.errorCode,do.errorMessage)
 						if bot.useTwoSignals != config['signalconsensus']:
 								do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
 										botName=bot.name,
@@ -353,32 +365,31 @@ class MadHatterBot(Haas):
 										mappedSellSignal=bot.mappedSellSignal,
 										)
 								if print_errors == True:
-											print('macd',do.errorCode,do.errorMessage)
+										print('macd',do.errorCode,do.errorMessage)
 						print('MH FROM CSV',do.errorCode,do.errorMessage)
 						updated_bot = do
 						try:
 								print('updated_bot',updated_bot.errorCode,updated_bot.errorMessage)
 						except Exception as e:
 								print(e)
-					
+						
 						return do
 				except Exception as e:
 						print(e)
-				# print(bot.name, ' Has been configured')
-				# Indicator parameters have been set
-				# calling it setup_bot_from_obj. It checks each parameter against new config.
-				# updated_bot = self.c.customBotApi.get_custom_bot(self.bot.guid,self.bot.botType)
-				
-				
+		
+		# print(bot.name, ' Has been configured')
+		# Indicator parameters have been set
+		# calling it setup_bot_from_obj. It checks each parameter against new config.
+		# updated_bot = self.c.customBotApi.get_custom_bot(self.bot.guid,self.bot.botType)
 		
 		def setup_bot_from_obj(self,bot,config,print_errors=False):
-	
+				
 				if bot.bBands["Length"] != config.bBands["Length"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,EnumMadHatterIndicators.BBANDS,0,config.bBands["Length"]
 								)
 				if print_errors == True:
-								print('interval',do.errorCode,do.errorMessage)
+						print('interval',do.errorCode,do.errorMessage)
 				if bot.bBands["Devup"] != config.bBands["Devup"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -387,7 +398,7 @@ class MadHatterBot(Haas):
 								config.bBands["Devup"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.bBands["Devdn"] != config.bBands["Devdn"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -396,7 +407,7 @@ class MadHatterBot(Haas):
 								config.bBands["Devdn"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.bBands["MaType"] != config.bBands["MaType"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -405,7 +416,7 @@ class MadHatterBot(Haas):
 								config.bBands["MaType"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.bBands["AllowMidSell"] != config.bBands["AllowMidSell"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -414,7 +425,7 @@ class MadHatterBot(Haas):
 								config.bBands["AllowMidSell"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.bBands["RequireFcc"] != config.bBands["RequireFcc"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -423,7 +434,7 @@ class MadHatterBot(Haas):
 								config.bBands["fcc"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.rsi["RsiLength"] != config.rsi["RsiLength"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -432,7 +443,7 @@ class MadHatterBot(Haas):
 								config.rsi["RsiLength"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.rsi["RsiOverbought"] != config.rsi["RsiOverbought"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -441,13 +452,13 @@ class MadHatterBot(Haas):
 								config.rsi["RsiOverbought"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.rsi["RsiOversold"] != config.rsi["RsiOversold"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,EnumMadHatterIndicators.RSI,2,config.rsi["RsiOversold"]
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.macd["MacdFast"] != config.macd["MacdFast"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -456,7 +467,7 @@ class MadHatterBot(Haas):
 								config.macd["MacdFast"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.macd["MacdSlow"] != config.macd["MacdSlow"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -465,7 +476,7 @@ class MadHatterBot(Haas):
 								config.macd["MacdSlow"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.macd["MacdSign"] != config.macd["MacdSign"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
@@ -474,7 +485,7 @@ class MadHatterBot(Haas):
 								config.macd["MacdSign"],
 								)
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.interval != config.interval:
 						do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
 								botName=bot.name,
@@ -497,7 +508,7 @@ class MadHatterBot(Haas):
 								mappedSellSignal=bot.mappedSellSignal,
 								).result
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
 				if bot.useTwoSignals != config.useTwoSignals:
 						do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
 								botName=bot.name,
@@ -520,7 +531,8 @@ class MadHatterBot(Haas):
 								mappedSellSignal=bot.mappedSellSignal,
 								).result
 				if print_errors == True:
-							print(do.errorCode,do.errorMessage)
+						print(do.errorCode,do.errorMessage)
+		
 		def bt(self,b):
 				if self.num_configs > len(self.configs.index):
 						self.num_configs == len(self.configs.index)
@@ -569,15 +581,16 @@ class MadHatterBot(Haas):
 										#                                                        new_bot.priceMarket.contractName).result
 										
 										self.c.customBotApi.clone_custom_bot_simple(new_bot.accountId,new_bot.guid,name)
-										# self.c.customBotApi.backtest_custom_bot(new_bot.guid,self.ticks)
+						# self.c.customBotApi.backtest_custom_bot(new_bot.guid,self.ticks)
+		
 		def setup_mh_bot2(self,bot):
 				configs = self.config_storage[bot.guid]
 				for c in range(self.limit):
-						name = f"{bot.name} {c} {configs.roi.iloc[c]}%" # not yet used
-				
-						self.setup_bot_from_csv(bot,configs.iloc[c])
-			
-						self.c.customBotApi.backtest_custom_bot(bot,self.ticks)
+						name = f"{bot.name} {c} {configs.roi.iloc[c]}%"
+						
+						self.setup_bot_from_csv(bot,configs.iloc[c],print_errors=True)
+						
+						self.c.customBotApi.backtest_custom_bot(bot.guid,self.ticks)
 						self.c.customBotApi.clone_custom_bot_simple(bot.accountId,bot.guid,name)
 		
 		def iterate_csv(self,configs,bot,depth):
@@ -623,8 +636,8 @@ class MadHatterBot(Haas):
 														best_roi,
 														"%",
 														)
-												print("\nTop 5 configs so far:\n")
-												print(configs.sort_values(by="roi",ascending=False)[0:5])
+												print("\nTop 10 configs so far:\n")
+												print(configs.sort_values(by="roi",ascending=False)[0:10])
 										except:
 												pass
 										config = configs.iloc[i]
@@ -659,6 +672,7 @@ class MadHatterBot(Haas):
 									+ str(".csv"))
 						print("Iterate CSV exception,saving current progress")
 						configs.to_csv(filename)
+		
 		def menu(self):
 				self.read_limits()
 				menu = [
@@ -686,7 +700,7 @@ class MadHatterBot(Haas):
 						elif user_response == "Select config file":
 								file = pd.read_csv(self.file_selector())
 						elif user_response == "Set configs limit":
-						
+								
 								try:
 										
 										num_configs = [
@@ -713,33 +727,35 @@ class MadHatterBot(Haas):
 								# 		}
 								self.config.set("MH_LIMITS",'number_of_configs_to_apply',str(self.num_configs))
 								self.write_file()
+								self.read_limits()
 						elif user_response == "Set create limit":
 								
 								create_limit = [
 										inquirer.Text("limit",message="Type how many top bots to create ")
 										]
 								create_limit_response = inquirer.prompt(create_limit)["limit"]
-								self.limit = int(create_limit_response)
-				
+								
 								self.config.set("MH_LIMITS",'limit_to_create',str(self.limit))
 								self.write_file()
+								self.read_limits()
 						elif user_response == 'Change backtesting date':
 								self.write_date()
 						
 						elif user_response == "Start Backtesting":
 								
 								for b in self.bots:
-												self.bot = b
-												self.bt(b)
-												self.setup_mh_bot2(b)
-												
-
+										self.bot = b
+										self.bt(b)
+										self.setup_mh_bot2(b)
+						
+						
+						
 						
 						elif user_response == "Main Menu":
 								break
 						
 						elif user_response == "Test":
-							
+								
 								do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 										self.bot[0].guid,
 										EnumMadHatterIndicators.BBANDS,
@@ -756,15 +772,11 @@ class MadHatterBot(Haas):
 						
 						elif user_response == 'Test create':
 								self.bots = [x for x in self.c.customBotApi.get_all_custom_bots().result if x.botType == 15][0:1]
-								self.limit = 5
+								
 								self.configs = pd.read_csv('./bots.csv')
-								if type(self.bot) == list:
-										for b in self.bot:
-												self.bt(b)
-												self.setup_mh_bot(b)
-								else:
-										self.bt(self.bot)
-										self.setup_mh_bot(self.bot)
+								for b in self.bot:
+										self.bt(b)
+										self.setup_mh_bot(b)
 
 
 if __name__ == "__main__":
