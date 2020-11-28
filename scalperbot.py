@@ -120,11 +120,22 @@ class ScalperBotClass(Haas):
         return btd
 
     def backtest(self):
+        safety_combinations = list(np.arange(
+                                float(self.safetythreshold[0]),
+                                float(self.safetythreshold[1]),
+                                float(self.safetythreshold[2]),
+                            ))
+        target_combinations = list(np.arange(
+                                    float(self.targetpercentage[0]),
+                                    float(self.targetpercentage[1]),
+                                    float(self.targetpercentage[2]),
+                                ))
+        total_combs = len(safety_combinations)*len(target_combinations)
         btd = self.bt_date_to_unix()
-        if len(self.bot) > 0:
-            with alive_bar(len(self.bot)) as bar:
-                for bot in self.bot:
-
+        if self.bots is not None:
+            for bot in self.bots:
+                self.bot = bot
+                with alive_bar(total_combs,title=f"{self.bot.name} backtesting. ") as bar:
                     results = []
                     columns = ["roi", "safetythreshold", "targetpercentage"]
 
@@ -152,8 +163,8 @@ class ScalperBotClass(Haas):
 
                             bt_result = self.c.customBotApi.backtest_custom_bot(
                                 bot.guid, self.ticks
-                            )
-                            bt_result = bt_result.result
+                            ).result
+                            
                             try:
                                 print("ROI: ", bt_result.roi, round(t, 2))
                                 total_results = {
@@ -162,12 +173,12 @@ class ScalperBotClass(Haas):
                                     "safetythreshold": round(s, 2),
                                 }
 
-                                # results.append(total_results)
+                                
                                 results.append(
                                     [bt_result.roi, round(t, 2), round(s, 2)]
                                 )
-                            except:
-                                pass
+                            except Exception as e:
+                                print('backtesting error: ',e)
 
                     df_res = pd.DataFrame(
                         results, columns=columns, index=range(len(results))
@@ -182,10 +193,9 @@ class ScalperBotClass(Haas):
                     )
 
                     self.c.customBotApi.backtest_custom_bot(bot.guid, self.ticks)
-
         else:
-            self.bot_selector()
-
+            self.bot_selector(3,multi=True)
+            
     def scalper_bot_menu(self):
         # choices =
         menu = [
