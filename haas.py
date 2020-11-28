@@ -197,14 +197,20 @@ class Haas:
             for i in bots
         ]
        
-        if multi == False:
+        if multi != True:
             question = [
                 inquirer.List(
-                    "bots",
+                    "bot",
                     message="Enter to select bot",
                     choices=b2,
                 )
             ]
+            try:
+                selection = inquirer.prompt(question)
+                self.bot = selection['bot']
+            except Exception as e:
+                print('Bot Selection error',e)
+                # print('')
 
 
         else:
@@ -216,14 +222,14 @@ class Haas:
                 )
             ]
         
-        try:
-            selection = inquirer.prompt(question)
-            self.bots = selection['bots']
-            return selection['bots']
-        except Exception as e:
-            print('Bot Selection error', e)
-            # print('')
-       
+            try:
+                selection = inquirer.prompt(question)
+                self.bots = selection['bots']
+                return selection['bots']
+            except Exception as e:
+                print('Bot Selection error', e)
+                # print('')
+           
 
     def get_csv_files(self, path="./"):
         files = []

@@ -195,7 +195,7 @@ class FlashCrashBot(Haas):
 				while True:
 						menu_items = []
 						
-						if self.bot == None:
+						if self.bot is None:
 								
 								print(self.bot,'BOT')
 								menu_items = ['Select Bot','Quit']
