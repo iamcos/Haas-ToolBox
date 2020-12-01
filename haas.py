@@ -6,6 +6,7 @@ import inquirer
 import datetime
 import pandas as pd
 import time
+from inquirer.themes import GreenPassion
 class Haas:
     """
     Haasonline trading software interaction class: get botlist, marketdata,
@@ -21,6 +22,7 @@ class Haas:
         self.secret = None
         self.check_config()
         self.c = self.client()
+        
       
 
     def return_config(self):
@@ -89,7 +91,7 @@ class Haas:
                 "Type Haas Local Key (Secret) like so: 123",
             ),
         ]
-        connection_data = inquirer.prompt(server_api_data)
+        connection_data = inquirer.prompt(server_api_data,theme=GreenPassion())
 
         self.config["SERVER DATA"] = {
             "server_address": "http://"
@@ -123,7 +125,7 @@ class Haas:
         menu = [
             inquirer.List("response", message="Go through each step", choices=choices)
         ]
-        answers = inquirer.prompt(date_q)
+        answers = inquirer.prompt(date_q,theme=GreenPassion())
 
         self.config["BT DATE"] = {
             "year": answers["y"],
@@ -134,25 +136,7 @@ class Haas:
         }
 
         self.write_file()
-    def write_limits(self):
-
-        self.config["MH_LIMITS"] = {
-            "number_of_configs_to_apply": self.num_configs,
-            "limit_to_create" : self.limit
-            }
-
-        self.write_file()
-    def read_limits(self):
-        try:
-            self.num_configs = int(self.config['MH_LIMITS'].get('number_of_configs_to_apply'))
-        except Exception as e:
-            print(e)
-        try:
-            self.limit =int(self.config['MH_LIMITS'].get('limit_to_create'))
-        except Exception as e:
-            print(e)
-            
-        
+  
     def read_ticks(self):
         date_dict = {}
 
@@ -206,7 +190,7 @@ class Haas:
                 )
             ]
             try:
-                selection = inquirer.prompt(question)
+                selection = inquirer.prompt(question,theme=GreenPassion())
                 self.bot = selection['bot']
             except Exception as e:
                 print('Bot Selection error',e)
@@ -223,7 +207,7 @@ class Haas:
             ]
         
             try:
-                selection = inquirer.prompt(question)
+                selection = inquirer.prompt(question,theme=GreenPassion())
                 self.bots = selection['bots']
                 return selection['bots']
             except Exception as e:
@@ -246,7 +230,7 @@ class Haas:
             inquirer.List("file", "Please Select file from list: ", [i for i in files])
         ]
 
-        selection = inquirer.prompt(question)
+        selection = inquirer.prompt(question,theme=GreenPassion())
         self.file = selection["file"]
         self.configs = pd.read_csv(self.file)
 
