@@ -9,3 +9,5 @@ Misc
 .idea/
 
 *.csv
+debug.log
+output/Haas-ToolBox.exe
