@@ -5,73 +5,129 @@ import inquirer
 import time
 import pandas as pd
 
+
 class FlashCrashBot(Haas):
 		def __init__(self):
 				Haas.__init__(self)
 				self.ticks = Haas().read_ticks()
 				# self.current_menu = None
 				self.bot = None
-				self.pricespread = [0.9,1.5,0.3]
-				self.percentageboost = [0.1,0.5,0.1]
-				self.multiplyer = [0.5,1.5,0.3]
-				self.multiplyer_min = [0.5,1.5,0.3]
-				self.multiplyer_max = [2,3,0.2]
+				self.pricespread = None
+				self.percentageboost = None
+				self.multiplyer = None
+				self.multiplyer_min = None
+				self.multiplyer_max = None
 		
+		
+		def read_limits(self):
+				for i in ['pricespread','percentageboost','multiplyer','multiplyer_min','multiplyer_max']:
+						self
 		def bt(self):
-				bt_results = []
+
 				
-				bt = self.c.customBotApi.backtest_custom_bot_on_market(self.bot.accountId,
-				                                                       self.bot.guid,
-				                                                       self.ticks,
-				                                                       self.bot.priceMarket.primaryCurrency,
-				                                                       self.bot.priceMarket.secondaryCurrency,
-				                                                       self.bot.priceMarket.contractName,
-				                                                       )
+				# bt = self.c.customBotApi.backtest_custom_bot_on_market(
+				# 		self.bot.accountId,
+				# 		self.bot.guid,
+				# 		self.ticks,
+				# 		self.bot.priceMarket.primaryCurrency,
+				# 		self.bot.priceMarket.secondaryCurrency,
+				# 		self.bot.priceMarket.contractName,
+				# 		)
+				
+				bt = self.c.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks)
+				print('fcb_bt1',bt.errorCode,bt.errorMessage)
+				print('the_bot', self.bot)
+				orders_df = self.trades_to_df(bt.result)
+				slots_df = self.slots_to_df(bt.result)
+				if len(orders_df.index)>0:
+					filled_orders = orders_df[orders_df.orderStatus == 5]
+					print('filled_orders',filled_orders)
+					# print('bagged_orders',slots_df[slots_df.active==True])
+					# print(bt.result.__dict__)
+				
+				
 				print('bt',bt.errorCode,bt.errorMessage,bt.result.roi,' % ','Orders: ',
 				      len(bt.result.completedOrders))
+				print(f'ROI: {bt.result.roi}, Total Gain: {bt.result.totalProfits}, '
+				      f'Completed Orders: {len(bt.result.completedOrders)}, '
+				      # f'Completed Orders: {len(bt.result.completedOrders)}, '
+				      f'Open Sell Orders: {len(slots_df[slots_df.orderType == 1][slots_df.active==True])}, '
+				      f'Open Buy Orders: {len(slots_df[slots_df.orderType == 0][slots_df.active==True])}'
+				      )
+				
 				if bt.errorCode.value == 1021:
 						for i in range(5):
 								time.sleep(5)
-								bt = self.c.customBotApi.backtest_custom_bot(bot.guid,int(self.ticks))
-								print('bt_loop',bt.errorCode,bt.errorMessage)
+								bt = self.c.customBotApi.backtest_custom_bot(self.bot.guid,int(self.ticks))
+								
 				
-				bt_results.append([bt.result.roi,len(bt.result.completedOrders)])
 				
-				return bt_results
+				
+				return bt.result
 		
-		def setup_fcb(self,bot):
+		def read_limits(self):
+				try:
+						self.pricespread = [self.config['FCB_LIMITS'].get('pricespread_start'),self.config['FCB_LIMITS'].get(
+								'pricespread_end'),self.config['FCB_LIMITS'].get('pricespread_step')]
+				except Exception as e:
+						print(e)
 				
-				accountguid = bot.accountId
-				botguid = bot.guid
-				botname = bot.name
-				primarycoin = bot.priceMarket.primaryCurrency
-				secondarycoin = bot.priceMarket.secondaryCurrency
-				fee = bot.currentFeePercentage
-				baseprice = self.c.marketDataApi.get_price_ticker(bot.priceMarket.priceSource,bot.priceMarket.primaryCurrency,
-				                                                  bot.priceMarket.secondaryCurrency,
-				                                                  # bot.priceMarket.contractName)
-				                                                  bot.priceMarket.contractName).result.currentBuyValue
+				try:
+						self.percentageboost = [self.config['FCB_LIMITS'].get('percentageboost_start'),self.config['FCB_LIMITS'].get(
+								'percentageboost_end'),self.config['FCB_LIMITS'].get('percentageboost_step')]
+				except Exception as e:
+						print(e)
+				try:
+						self.multiplyer = [self.config['FCB_LIMITS'].get('multiplyer_start'),self.config['FCB_LIMITS'].get(
+								'multiplyer_end'),self.config['FCB_LIMITS'].get('multiplyer_step')]
+				except Exception as e:
+						print(e)
+				try:
+						self.multiplyer_min = [self.config['FCB_LIMITS'].get('multiplyer_min_start'),self.config['FCB_LIMITS'].get(
+								'multiplyer_min_end'),self.config['FCB_LIMITS'].get('multiplyer_min_step')]
+				except Exception as e:
+						print(e)
+				try:
+						self.multiplyer_max = [self.config['FCB_LIMITS'].get('multiplyer_max_start'),self.config['FCB_LIMITS'].get(
+								'multiplyer_max_end'),self.config['FCB_LIMITS'].get('multiplyer_max_step')]
+				except Exception as e:
+						print(e)
+		
+		def setup_fcb(self,print_errors=False):
+				
+				accountguid = self.bot.accountId
+				botguid = self.bot.guid
+				botname = self.bot.name
+				primarycoin = self.bot.priceMarket.primaryCurrency
+				secondarycoin = self.bot.priceMarket.secondaryCurrency
+				fee = self.bot.currentFeePercentage
+				baseprice = self.c.marketDataApi.get_price_ticker(self.bot.priceMarket.priceSource,
+				                                                  self.bot.priceMarket.primaryCurrency,
+				                                                  self.bot.priceMarket.secondaryCurrency,
+				                                                  # self.bot.priceMarket.contractName)
+				                                                  self.bot.priceMarket.contractName).result.currentBuyValue
 				
 				# print(baseprice.__dict__)
-				pricespread = bot.priceSpread
-				priceSpreadType = EnumFlashSpreadOptions(bot.priceSpreadType).value
-				buyamount = bot.totalBuyAmount
-				sellamount = bot.totalSellAmount
-				amountspread = bot.amountSpread
-				refilldelay = bot.refillDelay
-				percentageboost = bot.percentageBoost
-				minpercentage = bot.minPercentage
-				maxpercentage = bot.maxPercentage
-				safetyenabled = bot.safetyEnabled
-				safetytriggerlevel = bot.safetyTriggerLevel
-				safetymovein = bot.safetyMoveInMarket
-				safetymoveout = bot.safetyMoveOutMarket
-				followthetrend = bot.followTheTrend
-				followthetrendchannelrange = bot.followTheTrendChannelRange
-				followthetrendchanneloffset = bot.followTheTrendChannelOffset
-				followthetrendtimeout = bot.followTheTrendTimeout
+				pricespread = self.bot.priceSpread
+				priceSpreadType = EnumFlashSpreadOptions(self.bot.priceSpreadType).value
+				buyamount = self.bot.totalBuyAmount
+				sellamount = self.bot.totalSellAmount
+				amountspread = self.bot.amountSpread
+				# refilldelay = self.bot.refillDelay
+				refilldelay = 0
+				percentageboost = self.bot.percentageBoost
+				minpercentage = self.bot.minPercentage
+				maxpercentage = self.bot.maxPercentage
+				safetyenabled = self.bot.safetyEnabled
+				safetytriggerlevel = self.bot.safetyTriggerLevel
+				safetymovein = self.bot.safetyMoveInMarket
+				safetymoveout = self.bot.safetyMoveOutMarket
+				followthetrend = self.bot.followTheTrend
+				followthetrendchannelrange = self.bot.followTheTrendChannelRange
+				followthetrendchanneloffset = self.bot.followTheTrendChannelOffset
+				followthetrendtimeout = self.bot.followTheTrendTimeout
 				
-				amounttype = bot.amountType
+				amounttype = self.bot.amountType
 				
 				def setup_fcb(accountguid=accountguid,botguid=botguid,botname=botname,primarycoin=primarycoin,
 				              secondarycoin=secondarycoin,fee=fee,baseprice=baseprice,priceSpreadType=priceSpreadType,
@@ -109,33 +165,54 @@ class FlashCrashBot(Haas):
 								minpercentage=minpercentage,
 								maxpercentage=maxpercentage,
 								)
+					
 						print('result: ',do.errorCode,do.errorMessage)
 						return do.result
-				
-				if bot.priceSpreadType == 0 or 1:
+				bt_results = []
+				if self.bot.priceSpreadType <= 1:
 						if self.pricespread:
 								for p in arange(float(self.pricespread[0]),float(self.pricespread[1]),float(self.pricespread[2])):
 										print('p',p)
 										fcb_setup = setup_fcb(pricespread=p)
-										bt_results = self.bt()
-				if bot.priceSpreadType == 2:
+										bt_results.append([self.bt().roi,self.bt().totalProfits,p])
+						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','pricespread',])
+				if self.bot.priceSpreadType == 2:
 						for p in arange(float(self.pricespread[0]),float(self.pricespread[1]),float(self.pricespread[2])):
 								for b in arange(float(self.percentageboost[0]),float(self.percentageboost[1]),
 								                float(self.percentageboost[2])):
 										resp = setup_fcb(pricespread=p,percentageboost=b)
-										bt_results = self.bt()
+										bt_results.append([self.bt().roi,self.bt().totalProfits,p,b])
+						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','pricespread','percentageboost'])
+				if self.bot.priceSpreadType == 3:
+						for multiplyer in arange(float(self.multiplyer[0]),float(self.multiplyer[1]),float(self.multiplyer[2])):
+								for min in arange(float(self.multiplyer_min[0]),float(self.multiplyer_min[1]),
+								                  float(self.multiplyer_min[2])):
+										for max in arange(float(self.multiplyer_max[0]),float(self.multiplyer_max[1]),
+										                  float(self.multiplyer_max[2])):
+												fcb_setup = setup_fcb(minpercentage=min,maxpercentage=max,percentageboost=  multiplyer)
+										
+												bt_results.append([self.bt().roi,self.bt().totalProfits,multiplyer,min,max])
+						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','multiplyer','min','max'])
 				
-				if bot.priceSpreadType == 3:
-						for min in arange(float(self.multiplyer_min[0]),float(self.multiplyer_min[1]),
-						                  float(self.multiplyer_min[2])):
-								for max in arange(float(self.multiplyer_max[0]),float(self.multiplyer_max[1]),
-								                  float(self.multiplyer_max[2])):
-										fcb_setup = setup_fcb(minpercentage=min,maxpercentage=max)
-										bt_results = self.bt()
-				
-				df = pd.DataFrame(bt_results)
-				print(df)
+				print(df_results)
 				return
+		
+		def slots_to_df(self,bot):
+				for i in bot.slots:
+						print(bot.slots[i]['Price'])
+				open_slots = [
+						{
+								"price":bot.slots[x]['Price'],
+								"amount":bot.slots[x]['Amount'],
+								"orderType":bot.slots[x]['Type'],
+								'active': bot.slots[x]['ActiveSlot'],
+								}
+						for x in bot.slots
+						]
+				# for x in self.bot.completed
+				
+				slots_df = pd.DataFrame(open_slots)
+				return slots_df
 		
 		def set_price_spread_range(self):
 				
@@ -146,7 +223,14 @@ class FlashCrashBot(Haas):
 				
 				answers = inquirer.prompt(choices)
 				self.pricespread = [answers['start'],answers['end'],answers['step']]
-		
+				try:
+						self.config.add_section("FCB_LIMITS")
+				except Exception as e:
+						print(e)
+				self.config.set('FCB_LIMITS','pricespread_start',self.pricespread[0])
+				self.config.set('FCB_LIMITS','pricespread_end',self.pricespread[1])
+				self.config.set('FCB_LIMITS','pricespread_step',self.pricespread[2])
+				self.write_file()
 		def set_percentage_range(self):
 				
 				choices = [
@@ -158,6 +242,14 @@ class FlashCrashBot(Haas):
 				self.percentageboost = [answers['start'],answers['end'],answers['step']]
 				print(self.percentageboost,self.bot)
 		
+				try:
+						self.config.add_section("FCB_LIMITS")
+				except Exception as e:
+						print(e)
+				self.config.set('FCB_LIMITS','percentageboost_start',self.percentageboost[0])
+				self.config.set('FCB_LIMITS','percentageboost_end',self.percentageboost[1])
+				self.config.set('FCB_LIMITS','percentageboost_step',self.percentageboost[2])
+				self.write_file()
 		def set_multiplier_range(self):
 				
 				choices = [
@@ -169,6 +261,15 @@ class FlashCrashBot(Haas):
 				self.multiplyer = [answers['start'],answers['end'],answers['step']]
 				print(self.multiplyer,self.bot)
 		
+				try:
+						self.config.add_section("FCB_LIMITS")
+				except Exception as e:
+						print(e)
+				self.config.set('FCB_LIMITS','multiplyer_start',self.multiplyer[0])
+				self.config.set('FCB_LIMITS','multiplyer_end',self.multiplyer[1])
+				self.config.set('FCB_LIMITS','multiplyer_step',self.multiplyer[2])
+				self.write_file()
+				
 		def set_min_range(self):
 				
 				choices = [
@@ -180,6 +281,15 @@ class FlashCrashBot(Haas):
 				self.multiplyer_min = [answers['start'],answers['end'],answers['step']]
 				print(self.multiplyer_min,self.bot)
 		
+				try:
+						self.config.add_section("FCB_LIMITS")
+				except Exception as e:
+						print(e)
+				self.config.set('FCB_LIMITS','multiplyer_min_start',self.multiplyer_min[0])
+				self.config.set('FCB_LIMITS','multiplyer_min_end',self.multiplyer_min[1])
+				self.config.set('FCB_LIMITS','multiplyer_min_step',self.multiplyer_min[2])
+				self.write_file()
+				
 		def set_max_range(self):
 				
 				choices = [
@@ -191,7 +301,17 @@ class FlashCrashBot(Haas):
 				self.multiplyer_max = [answers['start'],answers['end'],answers['step']]
 				print(self.multiplyer_max,self.bot)
 		
+				try:
+						self.config.add_section("FCB_LIMITS")
+				except Exception as e:
+						print(e)
+				self.config.set('FCB_LIMITS','multiplyer_max_start',self.multiplyer_max[0])
+				self.config.set('FCB_LIMITS','multiplyer_max_end',self.multiplyer_max[1])
+				self.config.set('FCB_LIMITS','multiplyer_max_step',self.multiplyer_max[2])
+				self.write_file()
 		def fcb_menu(self):
+				self.read_limits()
+				
 				while True:
 						menu_items = []
 						
@@ -242,7 +362,7 @@ class FlashCrashBot(Haas):
 								self.setup_fcb(self.bot)
 						if resp == 'Quit':
 								break
-								# pass
+						# pass
 						if resp == 'Select Bot' or 'Select another bot':
 								self.bot_selector(6)
 								print('self.bot',self.bot)

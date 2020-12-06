@@ -237,6 +237,26 @@ class Haas:
         return self.file
 
 
+    def trades_to_df(self,bot):
+        print('Orders from bot',self.bot)
+        completedOrders = [
+            {
+                "orderId":x.orderId,
+                "orderStatus":x.orderStatus,
+                "orderType":x.orderType,
+                "price":x.price,
+                "amount":x.amount,
+                "amountFilled":x.amountFilled,
+                "date":pd.to_datetime(x.unixAddedTime,unit="s"),
+                }
+            for x in self.bot.completedOrders
+            ]
+        
+        orders_df = pd.DataFrame(completedOrders)
+        return orders_df
+
+
+
 def test():
     h = Haas()
     # print(h.__dict__)

@@ -138,40 +138,7 @@ class MadHatterBot(Haas):
 				
 				configure = self.setup(bot,df)
 		
-		def trades_to_df(self,bot):
-				if len(bot.completedOrders) > 0:
-						completedOrders = [
-								{
-										"orderId":x.orderId,
-										"orderStatus":x.orderStatus,
-										"orderType":x.orderType,
-										"price":x.price,
-										"amount":x.amount,
-										"amountFilled":x.amountFilled,
-										"date":pd.to_datetime(x.unixAddedTime,unit="s"),
-										}
-								for x in bot.completedOrders
-								]
-						orders_df = pd.DataFrame(completedOrders)
-						return orders_df
-				
-				else:
-						
-						completedOrders = [
-								{
-										"orderId":None,
-										"orderStatus":None,
-										"orderType":None,
-										"price":None,
-										"amount":None,
-										"amountFilled":None,
-										"unixTimeStamp":datetime.datetime.today().year(),
-										}
-								for x in range(1)
-								]
-						orders_df = pd.DataFrame(completedOrders)
-				return orders_df
-	
+		
 		
 		
 		

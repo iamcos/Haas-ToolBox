@@ -6,7 +6,7 @@ from alive_progress import alive_bar
 from tqdm import tqdm
 import numpy as np
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-class ScalperBotClass(Haas):
+class ScalperBot(Haas):
     def __init__(self):
         Haas.__init__(self)
         self.ticks = self.read_ticks()
@@ -228,7 +228,7 @@ class ScalperBotClass(Haas):
             elif user_response == "Backtest":
                 self.backtest()
             elif user_response == "backtest every bot":
-                sb = ScalperBotClass()
+                sb = ScalperBot()
                 sb.bot = self.c.customBotApi.get_all_custom_bots().result
                 sb.targetpercentage = [0.5, 5, 0.2]
                 sb.safetythreshold = [1, 2, 0.2]
@@ -239,7 +239,7 @@ class ScalperBotClass(Haas):
 
 
 def main():
-    sb = ScalperBotClass()
+    sb = ScalperBot()
     sb.bot = sb.return_scalper_bots()[0:2]
     print(sb.bot)
 if __name__ == "__main__":

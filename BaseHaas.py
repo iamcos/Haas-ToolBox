@@ -249,12 +249,12 @@ def test_menu():
 
 
 def scalper_test_menu():
-    # sc = ScalperBotClass().return_scalper_bots()
+    # sc = ScalperBot().return_scalper_bots()
     # print(sc)
     s = ScalperBotClass()
     bots = s.scalper_bot_menu()
 
-    # ms = ScalperBotClass().markets_selector()
+    # ms = ScalperBot().markets_selector()
 
 
 def figuring_futures():

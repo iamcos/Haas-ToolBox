@@ -3,12 +3,14 @@ from marketdata import MarketData
 import pandas as pd
 import inquirer
 from madhatter import MadHatterBot
-from ratelimit import limits, sleep_and_retry
-from scalperbot import ScalperBotClass
+# from ratelimit import limits, sleep_and_retry
+from scalperbot import ScalperBot
 from flashcrashbottools import FlashCrashBot
 from haas import Haas
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from botdb import BotDB
+from inquirer.themes import GreenPassion
+import time
 class MainMenu(Haas):
     def __init__(self):
         Haas.__init__(self)
@@ -28,68 +30,68 @@ class MainMenu(Haas):
         questions = [
             inquirer.List(
                 "resp",
-                "Select an option using keyboard up and down keys, then hit Return : ",
+                "Choose action: ",
                 choices=choices,
             )
         ]
 
-        while True:
+      
 
-            answers = inquirer.prompt(questions)
-
-
-            if answers['resp'] == "Mad-Hatter Bots":
-                mh = MadHatterBot()
-                bt = mh.menu()
-
-            if answers['resp'] == "Scalper Bots":
-                sb = ScalperBotClass()
-                sb.scalper_bot_menu()
-
-            if answers['resp'] == "Flash-Crash Bots":
-                fcb = FlashCrashBot()
-                d = fcb.fcb_menu()
-                
-
-            if answers['resp'] == "Create bots from CSV":
-                multicreate_choices = ['Scalper',
-                                       # 'PingPong',
-                                       # 'FlashCrash'
-                                       #'Mad-Hatter',
-                                       ]
-                
-                questions2 = [inquirer.List('resp','Select below: ', choices = multicreate_choices)]
-                
-                multicreate_answer = inquirer.prompt(questions2)['resp']
-                
-                if multicreate_answer == 'Mad-Hatter':
-                    pass
-                elif multicreate_answer == 'Scalper':
-                    # new_bots = self.tw_to_bots(3)
-                    new_bots = self.tw_to_scalpers()
-                elif multicreate_answer == 'PingPong':
-                    pass
-                elif multicreate_answer == 'FlashCrash':
-                    pass
+        answers = inquirer.prompt(questions,theme=GreenPassion())
 
 
-            if answers['resp'] == 'Quit':
-                break
+        if answers['resp'] == "Mad-Hatter Bots":
+            mh = MadHatterBot()
+            bt = mh.menu()
 
-            # irrelevant answers:
-            #
-            # if answers['resp'] == 'AssistedBT':
-            #     BT = InteractiveBT().backtest(loop_count)
-            if answers['resp'] == "Select and apply config to bot":
-                self.apply_configs_menu()
-            if answers['resp'] == "Development Features":
-                file = self.dev_features()
+        if answers['resp'] == "Scalper Bots":
+            sb = ScalperBot()
+            sb.scalper_bot_menu()
 
-            if answers['resp'] == 'Loops':
-                loop_count = input("Type New Loop Count: ")
-                print(f"Auto BT lool count has been set to: {loop_count}")
-            if answers['resp'] == 'Set BT date':
-                Haas().write_date()
+        if answers['resp'] == "Flash-Crash Bots":
+            fcb = FlashCrashBot()
+            d = fcb.fcb_menu()
+            
+
+        if answers['resp'] == "Create bots from CSV":
+            multicreate_choices = ['Scalper',
+                                   # 'PingPong',
+                                   # 'FlashCrash'
+                                   #'Mad-Hatter',
+                                   ]
+            
+            questions2 = [inquirer.List('resp','Select below: ', choices = multicreate_choices)]
+            
+            multicreate_answer = inquirer.prompt(questions2)['resp']
+            
+            if multicreate_answer == 'Mad-Hatter':
+                pass
+            elif multicreate_answer == 'Scalper':
+                # new_bots = self.tw_to_bots(3)
+                new_bots = self.tw_to_scalpers()
+            elif multicreate_answer == 'PingPong':
+                pass
+            elif multicreate_answer == 'FlashCrash':
+                pass
+
+
+        if answers['resp'] == 'Quit':
+            KeyboardInterrupt()
+
+        # irrelevant answers:
+        #
+        # if answers['resp'] == 'AssistedBT':
+        #     BT = InteractiveBT().backtest(loop_count)
+        if answers['resp'] == "Select and apply config to bot":
+            self.apply_configs_menu()
+        if answers['resp'] == "Development Features":
+            file = self.dev_features()
+
+        if answers['resp'] == 'Loops':
+            loop_count = input("Type New Loop Count: ")
+            print(f"Auto BT lool count has been set to: {loop_count}")
+        if answers['resp'] == 'Set BT date':
+            Haas().write_date()
     def dev_features(self):
         question = [
             inquirer.List(
@@ -116,13 +118,7 @@ class MainMenu(Haas):
             self.bot = fcb.fcb_menu()
 
 
-        elif answer["resp"] == "Create Order Bots bots from Tradingview CSV file":
-            self.main_screen()
 
-    @sleep_and_retry
-    @limits(calls=2, period=1)
-    def tw_to_bots(self, file=None):
-        pass
     def tw_to_scalpers(self, file=None):
 
         markets_df = self.return_marketobjects_from_tradingview_csv_file()
@@ -159,7 +155,7 @@ class MainMenu(Haas):
                 self.setup_bot(bot, 3)
                 newbots.append(bot)
 
-        sb = ScalperBotClass()
+        sb = ScalperBot()
 
         sb.bot = newbots
         sb.targetpercentage = [0.5, 5, 0.2]
