@@ -238,15 +238,14 @@ class Haas:
 
 
     def trades_to_df(self,bot):
-        print('Orders from bot',self.bot)
         completedOrders = [
             {
                 "orderId":x.orderId,
                 "orderStatus":x.orderStatus,
-                "orderType":x.orderType,
-                "price":x.price,
-                "amount":x.amount,
                 "amountFilled":x.amountFilled,
+                "orderType":x.orderType,
+                "amount":x.amount,
+                "price":x.price,
                 "date":pd.to_datetime(x.unixAddedTime,unit="s"),
                 }
             for x in self.bot.completedOrders

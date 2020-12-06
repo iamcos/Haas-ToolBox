@@ -4,7 +4,7 @@ from haasomeapi.enums.EnumFlashSpreadOptions import EnumFlashSpreadOptions
 import inquirer
 import time
 import pandas as pd
-
+import datetime
 
 class FlashCrashBot(Haas):
 		def __init__(self):
@@ -35,24 +35,21 @@ class FlashCrashBot(Haas):
 				# 		)
 				
 				bt = self.c.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks)
-				print('fcb_bt1',bt.errorCode,bt.errorMessage)
-				print('the_bot', self.bot)
+				# print('fcb_bt1',bt.errorCode,bt.errorMessage)
+				# print('the_bot', self.bot)
 				orders_df = self.trades_to_df(bt.result)
 				slots_df = self.slots_to_df(bt.result)
 				if len(orders_df.index)>0:
 					filled_orders = orders_df[orders_df.orderStatus == 5]
-					print('filled_orders',filled_orders)
+					# print('filled_orders',filled_orders)
 					# print('bagged_orders',slots_df[slots_df.active==True])
 					# print(bt.result.__dict__)
 				
 				
-				print('bt',bt.errorCode,bt.errorMessage,bt.result.roi,' % ','Orders: ',
-				      len(bt.result.completedOrders))
+				# print('bt',bt.errorCode,bt.errorMessage,bt.result.roi,' % ','Orders: ',
+				#       len(bt.result.completedOrders))
 				print(f'ROI: {bt.result.roi}, Total Gain: {bt.result.totalProfits}, '
 				      f'Completed Orders: {len(bt.result.completedOrders)}, '
-				      # f'Completed Orders: {len(bt.result.completedOrders)}, '
-				      f'Open Sell Orders: {len(slots_df[slots_df.orderType == 1][slots_df.active==True])}, '
-				      f'Open Buy Orders: {len(slots_df[slots_df.orderType == 0][slots_df.active==True])}'
 				      )
 				
 				if bt.errorCode.value == 1021:
@@ -166,40 +163,56 @@ class FlashCrashBot(Haas):
 								maxpercentage=maxpercentage,
 								)
 					
-						print('result: ',do.errorCode,do.errorMessage)
+						# print('result: ',do.errorCode,do.errorMessage)
 						return do.result
 				bt_results = []
 				if self.bot.priceSpreadType <= 1:
 						if self.pricespread:
 								for p in arange(float(self.pricespread[0]),float(self.pricespread[1]),float(self.pricespread[2])):
-										print('p',p)
-										fcb_setup = setup_fcb(pricespread=p)
-										bt_results.append([self.bt().roi,self.bt().totalProfits,p])
-						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','pricespread',])
+										# print('p',p)
+										fcb_setup = setup_fcb(pricespread=round(p,2))
+										bt_results.append([self.bt().roi,self.bt().totalProfits,len(self.bt(
+												
+												).completedOrders),round(p,
+										                                                                                               2)])
+						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','Orders','pricespread',])
 				if self.bot.priceSpreadType == 2:
 						for p in arange(float(self.pricespread[0]),float(self.pricespread[1]),float(self.pricespread[2])):
 								for b in arange(float(self.percentageboost[0]),float(self.percentageboost[1]),
 								                float(self.percentageboost[2])):
-										resp = setup_fcb(pricespread=p,percentageboost=b)
-										bt_results.append([self.bt().roi,self.bt().totalProfits,p,b])
-						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','pricespread','percentageboost'])
+										resp = setup_fcb(pricespread=round(p,2),percentageboost=round(b,2))
+										bt_results.append([self.bt().roi,self.bt().totalProfits,len(self.bt(
+												
+												).completedOrders),round(p,
+										                                                                                             2),round(b,2)])
+						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','Orders','pricespread','percentageboost'])
 				if self.bot.priceSpreadType == 3:
 						for multiplyer in arange(float(self.multiplyer[0]),float(self.multiplyer[1]),float(self.multiplyer[2])):
 								for min in arange(float(self.multiplyer_min[0]),float(self.multiplyer_min[1]),
 								                  float(self.multiplyer_min[2])):
 										for max in arange(float(self.multiplyer_max[0]),float(self.multiplyer_max[1]),
 										                  float(self.multiplyer_max[2])):
-												fcb_setup = setup_fcb(minpercentage=min,maxpercentage=max,percentageboost=  multiplyer)
+												fcb_setup = setup_fcb(minpercentage=round(min,2),maxpercentage=round(max,2),
+												                      percentageboost=round(multiplyer,2))
 										
-												bt_results.append([self.bt().roi,self.bt().totalProfits,multiplyer,min,max])
-						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','multiplyer','min','max'])
+												bt_results.append([self.bt().roi,self.bt().totalProfits,
+												                   len(self.bt().completedOrders),round(
+														multiplyer,2),round(min,2),
+												                   round(max,2)])
+						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','Orders','multiplyer','min','max'])
 				
-				print(df_results)
-				return
+	
+				filename = f'FCB_{self.bot.name.replace("/","_")}_{datetime.date.today().month}-{datetime.date.today().day}' \
+				           f'.csv'
+				df_results.sort_values(by="total Profits",ascending=False,inplace=True)
+				df_results.drop_duplicates()
+				df_results.reset_index(inplace=True,drop=True)
+				df_results.to_csv(filename)
+				
+				return df_results
 		
 		def slots_to_df(self,bot):
-				for i in bot.slots:
-						print(bot.slots[i]['Price'])
+
 				open_slots = [
 						{
 								"price":bot.slots[x]['Price'],

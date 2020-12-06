@@ -101,7 +101,7 @@ class MarketData(Haas):
         )
         # print('get_market_data', 'errorcode', marketdata.errorCode,
         #       'errormessage', marketdata.errorMessage)
-        if marketdata.errorCode == EnumErrorCode.SUCCESS:
+        if marketdata.errorCode.value == 100:
 
             if type(marketdata.result) == list:
                 if len(marketdata.result) > 0:
