@@ -330,9 +330,11 @@ class Optimize():
 						new_configs = new_configs.drop(['obj','roi'],axis=1)
 						for i in configs.columns:
 								if i not in columns:
-										configs.drop(i,axis=1,inplace=True)
-										new_configs.drop(i,axis=1,inplace=True)
-						
+										try:
+												configs.drop(i,axis=1,inplace=True)
+												new_configs.drop(i,axis=1,inplace=True)
+										except:
+												pass
 						print('configs',configs)
 						print('new configs',new_configs)
 						

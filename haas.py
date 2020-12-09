@@ -226,7 +226,21 @@ class Haas:
 
         return self.file
 
-
+    def last_trades_to_df(self,trades):
+        df = [
+            {
+                "orderId":x.orderId,
+                "orderStatus":x.orderStatus,
+                "amountFilled":x.amountFilled,
+                "orderType":x.orderType,
+                "amount":x.amount,
+                "price":x.price,
+                "date":pd.to_datetime(x.unixAddedTime,unit="s"),
+                }
+            for x in trades
+            ]
+            return df
+        
     def trades_to_df(self,bot):
         completedOrders = [
             {

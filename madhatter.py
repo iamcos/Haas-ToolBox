@@ -785,8 +785,16 @@ class MadHatterBot(Haas,Optimize):
 				self.configs.reset_index(inplace=True,drop=True)
 				self.bt()
 				self.setup_mh_bot()
-
-
+	
+	def calculate_average_trade(self):
+			# orderbook_storage = []
+			# orderbook_data = self.c.marketDataApi.get_order_book_from_market(self.bot.priceMarket).result
+			last_trades_storage = []
+			last_trades = self.c.marketDataApi.get_last_trades_from_market(self.bot.priceMarket).result
+			df = self.last_trades_to_df(self.bot,last_trades)
+			print(f"Average Trade for {self.bot.priceMarket.name} is aprox {df.mean()}")
+			last_trades_storage.expand(last_trades)
+		
 		def calculate_possible_roi(self):
 				print('calculating possible profit for current bot...')
 				interval = self.bot.interval
@@ -805,7 +813,7 @@ class MadHatterBot(Haas,Optimize):
 
 				print(f'low: {lowest} {idxmi} - index and high: {highest} {idxma} - index')
 				percentage = (float(first) / float(second)) * float(100)
-				print(f'{} is possible profit')
+				print(f'{percentage} is possible profit')
 				self.possible_profit = round(percentage,2)
 if __name__ == "__main__":
 		mh = MadHatterBot()
