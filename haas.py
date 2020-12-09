@@ -1,12 +1,14 @@
 import configparser as cp
-import os
-from haasomeapi.HaasomeClient import HaasomeClient
-from haasomeapi.enums.EnumErrorCode import EnumErrorCode
-import inquirer
 import datetime
-import pandas as pd
+import os
 import time
+
+import inquirer
+import pandas as pd
+from haasomeapi.HaasomeClient import HaasomeClient
 from inquirer.themes import GreenPassion
+
+
 class Haas:
     """
     Haasonline trading software interaction class: get botlist, marketdata,
@@ -23,8 +25,6 @@ class Haas:
         self.check_config()
         self.c = self.client()
         self.live = False
-        
-      
 
     def return_config(self):
         # print('CONFIG 1',self.config)
@@ -45,60 +45,98 @@ class Haas:
             self.secret = secret
             client = self.client()
             # print(f'Connection status: {client.accountDataApi.get_all_wallets().errorCode.value}')
-           
+
             if client.accountDataApi.get_all_wallets().errorCode.value == 100:
-                print('Successfully connected!')
-              
+                print("Successfully connected!")
+
             elif client.accountDataApi.get_all_wallets().errorCode.value == 9002:
                 for i in range(10):
-                    print(f'Server may be offline...')
-                    print(f'Retrying {i} out of 10')
+                    print(f"Server may be offline...")
+                    print(f"Retrying {i} out of 10")
                     time.sleep(5)
                     if client.accountDataApi.get_all_wallets().errorCode.value == 100:
                         break
             else:
-
+    
                 self.get_server_data()
                 self.check_config()
             return client
-
+    
     def client(self):
         config_data = self.config
-
-        haasomeclient = HaasomeClient(self.ip, self.secret)
+        
+        haasomeclient = HaasomeClient(self.ip,self.secret)
         return haasomeclient
-
+    
+    def read_limits(self):
+        try:
+            vars = ['pricespread_start','pricespread_end','pricespread_step']
+            self.pricespread = self.read_range(vars)
+        
+        except Exception as e:
+            print(e)
+        
+        try:
+            vars = ["percentageboost_start","percentageboost_end",
+                    "percentageboost_step"]
+            self.percentageboost = self.read_range(vars)
+        
+        except Exception as e:
+            print(e)
+        try:
+            vars = ["percentageboost_start","percentageboost_end",
+                    "percentageboost_step"]
+            self.multiplyer = self.read_range(vars)
+        except Exception as e:
+            print(e)
+        try:
+            vars = ['multiplyer_min_end','multiplyer_min_start','multiplyer_min_step']
+            self.multiplyer_min = self.read_range(vars)
+        except Exception as e:
+            print(e)
+        try:
+            vars = ['multiplyer_max_start','multiplyer_max_stop','multiplyer_max_step']
+            self.multiplyer_max = self.read_range(vars)
+        except Exception as e:
+            print(e)
+        try:
+            vars = ['Total_buy','Total_sell']
+            self.totalbuy,self.totalsell = self.read_range(vars)
+        except Exception as e:
+            print(e)
+    
     def write_file(self):
-        self.config.write(open("config.ini", "w"))
-
+        self.config.write(open("config.ini","w"))
+        self.read_limits()
+    
     def init_config(self):
         # self.config = cp.ConfigParser().read('config.ini')
         # return .read('config.ini')‹#3  £
         pass
-
+    
     def get_server_data(self):
 
         server_api_data = [
             inquirer.Text(
-                "ip", "Type Haas Local api IP like so: 127.0.0.1", default="127.0.0.1"
-            ),
+                "ip","Type Haas Local api IP like so: 127.0.0.1",default="127.0.0.1"
+                ),
             inquirer.Text(
-                "port", "Type Haas Local api PORT like so: 8095", default="8095"
-            ),
+                "port","Type Haas Local api PORT like so: 8095",default="8095"
+                ),
             inquirer.Text(
                 "secret",
                 "Type Haas Local Key (Secret) like so: 123",
-            ),
-        ]
+                ),
+            ]
         connection_data = inquirer.prompt(server_api_data,theme=GreenPassion())
 
         self.config["SERVER DATA"] = {
-            "server_address": "http://"
-                              + connection_data["ip"]
-                              + ":"
-                              + connection_data["port"],
-            "secret": connection_data["secret"],
-        }
+            "server_address":"http://"
+                             + connection_data["ip"]
+                             + ":"
+                             + connection_data["port"],
+            "secret":connection_data["secret"],
+            }
         self.ip = self.config["SERVER DATA"].get("server_address")
         self.secret = self.config["SERVER DATA"].get("secret")
         self.write_file()
@@ -122,8 +160,8 @@ class Haas:
         ]
 
         menu = [
-            inquirer.List("response", message="Go through each step", choices=choices)
-        ]
+            inquirer.List("response",message="Go through each step",choices=choices)
+            ]
         answers = inquirer.prompt(date_q,theme=GreenPassion())
 
         self.config["BT DATE"] = {
@@ -135,7 +173,7 @@ class Haas:
         }
 
         self.write_file()
-  
+
     def read_ticks(self):
         date_dict = {}
 
@@ -143,7 +181,7 @@ class Haas:
             for i in ["min", "hour", "day", "month", "year"]:
                 date_dict[i] = self.config["BT DATE"].get(i)
         except Exception as e:
-            print('read ticks', e)
+            print("read ticks",e)
             self.write_date()
 
         dt_from = datetime.datetime(
@@ -158,62 +196,64 @@ class Haas:
         delta_minutes = delta.total_seconds() / 60
 
         return int(delta_minutes)
-
-    def bot_selector(self, botType, multi=False):
+    
+    def bot_selector(self,botType,multi=False):
+        try:
+            bots = [
+                x
+                for x in self.c.customBotApi.get_all_custom_bots().result
+                if x.botType == botType
+                ]
+        except Exception as e:
+            print('Bot_selector exception',e)
+            print(f'There are zero bots of selected type.\n'
+                  f'Create at least one manally and re-run the app')
         
-        bots = [x for x in self.c.customBotApi.get_all_custom_bots().result if x.botType == botType]
-        # print(bots)
         bots.sort(key=lambda x:x.name,reverse=False)
-        b2 = [
-            (
-                f"{i.name} {i.priceMarket.primaryCurrency}-{i.priceMarket.secondaryCurrency}, {i.roi}",
-                i,
-            )
-            for i in bots
-        ]
-       
+        b2 = [(f"{i.name} {i.priceMarket.primaryCurrency}-"
+               f"{i.priceMarket.secondaryCurrency}, {i.roi}",i) for i in bots]
+        
         if multi != True:
             question = [
                 inquirer.List(
                     "bot",
-                    message="Enter to select bot",
+                    message="Select SINGLE BOT using arrow and ENTER keys",
                     choices=b2,
-                )
-            ]
+                    )
+                ]
             try:
-                selection = inquirer.prompt(question,theme=GreenPassion())
-                self.bot = selection['bot']
+                self.bot = inquirer.prompt(question,theme=GreenPassion())['bot']
+                self.bots = [self.bot]
             except Exception as e:
-                print('Bot Selection error',e)
-                # print('')
-
-
+                print("Bot Selection error",e)
+        
+        
         else:
             question = [
                 inquirer.Checkbox(
                     "bots",
-                    message="Spacebar on bots to select. Enter to confirm selection",
+                    message="Select MULTIPLE BOTS (or just one) using SPACEBAR.\n"
+                            "   Confirm selection using ENTER.",
                     choices=b2,
-                )
-            ]
-        
+                    )
+                ]
+            
             try:
-                selection = inquirer.prompt(question,theme=GreenPassion())
-                self.bots = selection['bots']
-                return selection['bots']
+                self.bots = inquirer.prompt(question,theme=GreenPassion())['bots']
+            
             except Exception as e:
-                print('Bot Selection error', e)
-                # print('')
-       
-    def get_csv_files(self, path="./"):
+                print("Bot Selection error",e)
+    
+    
+    def get_csv_files(self,path="./"):
         files = []
         for file in os.listdir(path):
             # if file.endswith(".csv") or file.endswith('.json'):
             if file.endswith(".csv"):
-                files.append(os.path.join(path, file))
+                files.append(os.path.join(path,file))
         return files
-
-    def file_selector(self, path="."):
+    
+    def file_selector(self,path="."):
         files = self.get_csv_files(path)
         # print(files[0:5])
         question = [
@@ -225,7 +265,7 @@ class Haas:
         self.configs = pd.read_csv(self.file)
 
         return self.file
-
+    
     def last_trades_to_df(self,trades):
         df = [
             {
@@ -240,7 +280,7 @@ class Haas:
             for x in trades
             ]
         return df
-        
+    
     def trades_to_df(self,bot):
         completedOrders = [
             {
@@ -259,11 +299,10 @@ class Haas:
         return orders_df
 
 
-
 def test():
     h = Haas()
     # print(h.__dict__)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()

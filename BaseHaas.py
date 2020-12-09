@@ -1,29 +1,12 @@
-import configparser as cp
-
 import datetime
-import os
 import time
 from builtins import Exception
 
 import inquirer
-import numpy as np
-
 import pandas as pd
-from alive_progress import alive_bar
-from haasomeapi.HaasomeClient import HaasomeClient
-from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
-from haasomeapi.enums.EnumErrorCode import EnumErrorCode
-from haasomeapi.enums.EnumIndicator import EnumIndicator
-from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-from numpy import arange
+from ratelimit import limits,sleep_and_retry
 
-from ratelimit import limits, sleep_and_retry
-from tqdm import tqdm
-from configparser import ConfigParser
-from botsellector import BotSellector
-
-from haasomeapi.enums.EnumFlashSpreadOptions import EnumFlashSpreadOptions
 
 class MainMenu(Haas):
     def __init__(self):
@@ -108,7 +91,7 @@ class MainMenu(Haas):
             new_bots = self.tw_to_bots(4)
         elif answer["resp"] == "Flash Crash Bot":
             fcb = FlashCrashBot()
-            self.bot = fcb.fcb_menu()
+            self.bot = fcb.menu()
 
 
         elif answer["resp"] == "Create Order Bots bots from Tradingview CSV file":

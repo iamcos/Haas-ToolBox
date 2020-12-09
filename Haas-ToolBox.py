@@ -1,16 +1,20 @@
+import time
 from builtins import Exception
-from marketdata import MarketData
-import pandas as pd
+
 import inquirer
-from madhatter import MadHatterBot
-# from ratelimit import limits, sleep_and_retry
-from scalperbot import ScalperBot
+import pandas as pd
+from haasomeapi.enums.EnumPriceSource import EnumPriceSource
+from inquirer.themes import GreenPassion
+
+from botdb import BotDB
 from flashcrashbottools import FlashCrashBot
 from haas import Haas
-from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-from botdb import BotDB
-from inquirer.themes import GreenPassion
-import time
+from madhatter import MadHatterBot
+from marketdata import MarketData
+# from ratelimit import limits, sleep_and_retry
+from scalperbot import ScalperBot
+
+
 class MainMenu(Haas):
     def __init__(self):
         Haas.__init__(self)
@@ -50,7 +54,7 @@ class MainMenu(Haas):
 
         if answers['resp'] == "Flash-Crash Bots":
             fcb = FlashCrashBot()
-            d = fcb.fcb_menu()
+            d = fcb.menu()
             
 
         if answers['resp'] == "Create bots from CSV":
@@ -115,7 +119,7 @@ class MainMenu(Haas):
             new_bots = self.tw_to_bots(4)
         elif answer["resp"] == "Flash Crash Bot":
             fcb = FlashCrashBot()
-            self.bot = fcb.fcb_menu()
+            self.bot = fcb.menu()
 
 
 
