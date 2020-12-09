@@ -33,10 +33,12 @@ class FlashCrashBot(Haas):
 				
 				if len(orders_df.index) > 0:
 						filled_orders = orders_df[orders_df.orderStatus == 5]
-						print(f'ROI: {bt.result.roi}, Total Gain: {bt.result.totalProfits}, '
-						      f'Completed Orders: {len(bt.result.completedOrders)}, '
-						      )
-				
+						try:
+								print(f'ROI: {bt.result.roi}, Total Gain: {bt.result.totalProfits}, '
+								      f'Completed Orders: {len(bt.result.completedOrders)}, '
+								      )
+						except:
+								pass
 				if bt.errorCode.value == 1021:
 						for i in range(5):
 								time.sleep(5)
@@ -46,29 +48,29 @@ class FlashCrashBot(Haas):
 		
 		def read_limits(self):
 				try:
-						self.pricespread = [self.config['FCB_LIMITS'].get('pricespread_start'),self.config['FCB_LIMITS'].get(
-								'pricespread_end'),self.config['FCB_LIMITS'].get('pricespread_step')]
+						self.pricespread = [(self.config['FCB_LIMITS'].get('pricespread_start')),(self.config['FCB_LIMITS'].get(
+								'pricespread_end')),(self.config['FCB_LIMITS'].get('pricespread_step'))]
 				except Exception as e:
 						print(e)
 				
 				try:
-						self.percentageboost = [self.config['FCB_LIMITS'].get('percentageboost_start'),self.config['FCB_LIMITS'].get(
-								'percentageboost_end'),self.config['FCB_LIMITS'].get('percentageboost_step')]
+						self.percentageboost = [(self.config['FCB_LIMITS'].get('percentageboost_start')),(self.config['FCB_LIMITS'].get(
+								'percentageboost_end')),(self.config['FCB_LIMITS'].get('percentageboost_step'))]
 				except Exception as e:
 						print(e)
 				try:
-						self.multiplyer = [self.config['FCB_LIMITS'].get('multiplyer_start'),self.config['FCB_LIMITS'].get(
-								'multiplyer_end'),self.config['FCB_LIMITS'].get('multiplyer_step')]
+						self.multiplyer = [(self.config['FCB_LIMITS'].get('multiplyer_start')),(self.config['FCB_LIMITS'].get(
+								'multiplyer_end')),(self.config['FCB_LIMITS'].get('multiplyer_step'))]
 				except Exception as e:
 						print(e)
 				try:
-						self.multiplyer_min = [self.config['FCB_LIMITS'].get('multiplyer_min_start'),self.config['FCB_LIMITS'].get(
-								'multiplyer_min_end'),self.config['FCB_LIMITS'].get('multiplyer_min_step')]
+						self.multiplyer_min = [(self.config['FCB_LIMITS'].get('multiplyer_min_start')),(self.config['FCB_LIMITS'].get(
+								'multiplyer_min_end')),(self.config['FCB_LIMITS'].get('multiplyer_min_step'))]
 				except Exception as e:
 						print(e)
 				try:
-						self.multiplyer_max = [self.config['FCB_LIMITS'].get('multiplyer_max_start'),self.config['FCB_LIMITS'].get(
-								'multiplyer_max_end'),self.config['FCB_LIMITS'].get('multiplyer_max_step')]
+						self.multiplyer_max = [(self.config['FCB_LIMITS'].get('multiplyer_max_start')),(self.config['FCB_LIMITS'].get(
+								'multiplyer_max_end')),(self.config['FCB_LIMITS'].get('multiplyer_max_step'))]
 				except Exception as e:
 						print(e)
 		
@@ -86,14 +88,13 @@ class FlashCrashBot(Haas):
 				                                                  # self.bot.priceMarket.contractName)
 				                                                  self.bot.priceMarket.contractName).result.currentBuyValue
 				
-				# print(baseprice.__dict__)
 				pricespread = self.bot.priceSpread
 				priceSpreadType = EnumFlashSpreadOptions(self.bot.priceSpreadType).value
 				buyamount = self.bot.totalBuyAmount
 				sellamount = self.bot.totalSellAmount
 				amountspread = self.bot.amountSpread
-				# refilldelay = self.bot.refillDelay
-				refilldelay = 0
+				refilldelay = self.bot.refillDelay
+				# refilldelay = 0
 				percentageboost = self.bot.percentageBoost
 				minpercentage = self.bot.minPercentage
 				maxpercentage = self.bot.maxPercentage
@@ -153,20 +154,21 @@ class FlashCrashBot(Haas):
 								for p in arange(float(self.pricespread[0]),float(self.pricespread[1]),float(self.pricespread[2])):
 										# print('p',p)
 										fcb_setup = setup_fcb(pricespread=round(p,2))
-										bt_results.append([self.bt().roi,self.bt().totalProfits,len(self.bt(
-												
-												).completedOrders),round(p,
-										                                                                                               2)])
+										bt = self.bt()
+										bt_results.append([bt.roi,bt.totalProfits,len(bt.completedOrders),round(p,2)])
+										print(f'Current configuration: pricespread {p} Total Profits: {bt.totalProfits}'
+										      f'Orders: {len(bt.completedOrders)}')
 						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','Orders','pricespread',])
+				
 				if self.bot.priceSpreadType == 2:
 						for p in arange(float(self.pricespread[0]),float(self.pricespread[1]),float(self.pricespread[2])):
 								for b in arange(float(self.percentageboost[0]),float(self.percentageboost[1]),
 								                float(self.percentageboost[2])):
 										resp = setup_fcb(pricespread=round(p,2),percentageboost=round(b,2))
-										bt_results.append([self.bt().roi,self.bt().totalProfits,len(self.bt(
-												
-												).completedOrders),round(p,
-										                                                                                             2),round(b,2)])
+										bt = self.bt()
+										bt_results.append([bt.roi,bt.totalProfits,len(bt.completedOrders),round(p,2),round(b,2)])
+										print(f'Current configuration: pricespread {p}, percentageboost: {b} Total Profits: {bt.totalProfits}'
+										      f'Orders: {len(bt.completedOrders)}')
 						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','Orders','pricespread','percentageboost'])
 				if self.bot.priceSpreadType == 3:
 						for multiplyer in arange(float(self.multiplyer[0]),float(self.multiplyer[1]),float(self.multiplyer[2])):
@@ -176,11 +178,13 @@ class FlashCrashBot(Haas):
 										                  float(self.multiplyer_max[2])):
 												fcb_setup = setup_fcb(minpercentage=round(min,2),maxpercentage=round(max,2),
 												                      percentageboost=round(multiplyer,2))
-										
-												bt_results.append([self.bt().roi,self.bt().totalProfits,
-												                   len(self.bt().completedOrders),round(
-														multiplyer,2),round(min,2),
+												bt = self.bt()
+												bt_results.append([bt.roi,bt.totalProfits,
+												                   len(bt.completedOrders),round(multiplyer,2),round(min,2),
 												                   round(max,2)])
+												print(f'Current configuration: multiplyer {multiplyer}, min {min}, max {max} Total Profits:'
+												      f' {bt.totalProfits}'
+												      f'Orders: {len(bt.completedOrders)}')
 						df_results = pd.DataFrame(bt_results,columns=['roi','total Profits','Orders','multiplyer','min','max'])
 				
 	
