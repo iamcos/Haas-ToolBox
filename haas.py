@@ -22,6 +22,7 @@ class Haas:
         self.secret = None
         self.check_config()
         self.c = self.client()
+        self.live = False
         
       
 
@@ -43,12 +44,11 @@ class Haas:
             self.ip = ip
             self.secret = secret
             client = self.client()
-            print(f'Connection status: {client.accountDataApi.get_all_wallets().errorCode.value}')
+            # print(f'Connection status: {client.accountDataApi.get_all_wallets().errorCode.value}')
            
             if client.accountDataApi.get_all_wallets().errorCode.value == 100:
                 print('Successfully connected!')
-                print(f'there are {len(client.accountDataApi.get_all_wallets().result)} active wallets, '
-                      f'{len(client.customBotApi.get_all_custom_bots().result)} custom bots system')
+              
             elif client.accountDataApi.get_all_wallets().errorCode.value == 9002:
                 for i in range(10):
                     print(f'Server may be offline...')
@@ -63,7 +63,6 @@ class Haas:
             return client
 
     def client(self):
-        self.init_config()
         config_data = self.config
 
         haasomeclient = HaasomeClient(self.ip, self.secret)
@@ -147,14 +146,6 @@ class Haas:
             print('read ticks', e)
             self.write_date()
 
-        print(
-            "BT date set to: ",
-            date_dict["year"],
-            date_dict["month"],
-            date_dict["day"],
-            date_dict["hour"],
-            date_dict["min"],
-        )
         dt_from = datetime.datetime(
             int(date_dict["year"]),
             int(date_dict["month"]),
@@ -169,7 +160,7 @@ class Haas:
         return int(delta_minutes)
 
     def bot_selector(self, botType, multi=False):
-
+        
         bots = [x for x in self.c.customBotApi.get_all_custom_bots().result if x.botType == botType]
         # print(bots)
         bots.sort(key=lambda x:x.name,reverse=False)
@@ -213,8 +204,7 @@ class Haas:
             except Exception as e:
                 print('Bot Selection error', e)
                 # print('')
-           
-
+       
     def get_csv_files(self, path="./"):
         files = []
         for file in os.listdir(path):

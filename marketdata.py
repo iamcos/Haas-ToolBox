@@ -117,6 +117,8 @@ class MarketData(Haas):
             time.sleep(10)
             return self.get_market_data(priceMarketObject, interval, depth)
 
+
+    
     def save_market_data_to_csv(self, marketData, marketobj):
         """
         Saves provided MarketData dataframe to CSV file in a name format provided below

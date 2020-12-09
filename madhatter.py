@@ -1,55 +1,36 @@
-from numpy import arange
-from haas import Haas
-from ratelimit import limits,sleep_and_retry
+import datetime
+import json
+
 import inquirer
 import pandas as pd
-from haasomeapi.HaasomeClient import HaasomeClient
-import json
-import datetime
-from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
-import time
 from alive_progress import alive_bar
-from itertools import combinations as comb
+from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
+from haasomeapi.HaasomeClient import HaasomeClient
 from inquirer.themes import GreenPassion
-from haasomeapi.enums.EnumMadHatterSafeties import EnumMadHatterSafeties
+from ratelimit import limits,sleep_and_retry
 
-class MadHatterBot(Haas):
+from haas import Haas
+from optimisation import Optimize
+from marketdata import MarketData
+
+class MadHatterBot(Haas,Optimize):
 		def __init__(self):
 				Haas.__init__(self)
-				self.config = Haas().config
 				self.c = HaasomeClient(self.ip,self.secret)
-				self.ticks = Haas().read_ticks()
+				self.ticks = self.read_ticks()
 				self.stoploss_range = None
 				self.num_configs = None
 				self.limit = None
 				self.config_storage = dict()
 				self.configs = None
 				self.current_config = None
-				self.intervals_list = [
-						1,
-						2,
-						3,
-						4,
-						5,
-						6,
-						10,
-						12,
-						15,
-						20,
-						30,
-						45,
-						60,
-						90,
-						120,
-						150,
-						180,
-						240,
-						300,
-						600,
-						1200,
-						2400,
-						]
+				self.extended_range = None
+				self.ranges = self.set_ranges()
+				self.intervals_list = [1,2,3,4,5,6,10,12,15,20,30,45,60,90,120,150,180,240,300,600,1200,2400,]
+				self.columns = ["interval","signalconsensus","fcc","resetmiddle","allowmidsells","matype","rsil","rsib","rsis","bbl","devup","devdn","macdfast","macdslow","macdsign",]
+				self.possible_profit = None
 		
+
 		def create_mh(self,input_bot,name):
 				new_mad_hatter_bot = self.c.customBotApi.new_mad_hatter_bot_custom_bot(
 						input_bot.accountId,
@@ -72,23 +53,6 @@ class MadHatterBot(Haas):
 				# print(botlist)
 				return botlist
 		
-		#
-		# def make_bot_from_bot_config(self, config, name):
-		#     botname = (
-		#             str(config.priceMarket.primaryCurrency)
-		#             + str(" / ")
-		#             + str(config.priceMarket.secondaryCurrency)
-		#             + str(" Roi ")
-		#             + str(config.roi)
-		#     )
-		#     new_bot = self.create_mh(example_bot, botname)
-		#     self.configure_mh_from_another_bot(config, new_bot)
-		#     return new_bot.result
-		
-		def bruteforce_indicators(self,bot):
-				
-				d = self.bruteforce_rsi_corridor(bot)
-		
 		def bot_config(self,bot):
 				botdict = {
 						"roi":float(bot.roi),
@@ -108,7 +72,7 @@ class MadHatterBot(Haas):
 						"macdslow":str(bot.macd["MacdSlow"]),
 						"macdsign":str(bot.macd["MacdSign"]),
 						"trades":int(len(bot.completedOrders)),
-						"obj": bot
+						"obj":bot
 						}
 				# "pricesource": EnumPriceSource(bot.priceMarket.priceSource).name,
 				# "primarycoin": bot.priceMarket.primaryCurrency,
@@ -117,9 +81,16 @@ class MadHatterBot(Haas):
 				
 				return df
 		
-		def mad_hatter_base_parameters(self):
-				ranges = {}
-				ranges["interval"] = [
+		def set_ranges(self):
+				class UtilClass():
+						pass
+				
+				ranges = UtilClass()
+				ranges.bot = UtilClass()
+				ranges.indicators = UtilClass()
+				ranges.safeties = UtilClass()
+				
+				interval = [
 						1,
 						2,
 						3,
@@ -143,42 +114,50 @@ class MadHatterBot(Haas):
 						1200,
 						2400,
 						]
-				ranges["signalconsensus"] = [bool(True),bool(False)]
-				ranges["resetmiddle"] = ranges["signalconsensus"]
-				ranges["allowmidsells"] = ranges["signalconsensus"]
-				ranges["matype"] = list([0,1,2,3,4,5,6,7,8,9])
-				ranges["fcc"] = ranges["signalconsensus"]
 				
-				ranges["rsil"] = list(range(2,21))
-				ranges["rsib"] = list(range(2,49))
-				ranges["rsis"] = list(range(51,99))
-				ranges["bb"] = list(range(7,60))
-				ranges["devup"] = list(arange(0.1,4.0))
-				ranges["devdown"] = list(arange(0.1,4.0))
-				ranges["macdfast"] = list(range(2,59,2))
-				ranges["macdslow"] = list(range(40,80,2))
-				ranges["macdsign"] = list(range(3,21,2))
-				df = pd.DataFrame(botdict,index=range(len(botdict)))
-				return df
+				signalconsensus = allowmidsells = resetmiddle = requirefcc = True,False
 				
-				configure = self.setup(bot,df)
-		
-		
-		
-		
-		
+				stoploss = 0.5,5.0,0.1
+				intervals = UtilClass()
+				intervals.list = interval
+				
+				ranges.bot.intervals = intervals
+				ranges.bot.signalconsensus = signalconsensus
+				
+				bBands = UtilClass()
+				bBands.matype = 0,9,1
+				bBands.length = 7,9,1
+				bBands.devup = 1.0,1.2,0.1
+				bBands.devdown = 1.0,1.2,0.1
+				
+				rsi = UtilClass()
+				rsi.length = 2,21,1
+				rsi.buy = 51,99,1
+				rsi.sell = 2,49,1
+				
+				macd = UtilClass()
+				macd.fast = 2,59,1
+				macd.slow = 40,80,1
+				macd.signal = 3,21,1
+				
+				ranges.indicators.bBands = bBands
+				ranges.indicators.rsi = rsi
+				ranges.indicators.macd = macd
+				ranges.safeties.stoploss = stoploss
+				
+				self.ranges = ranges
+				
+				# ranges = jsonpickle.encode(ranges,unpicklable=False)
+				return ranges
 		
 		def setup_bot_from_csv(self,bot,config,print_errors=False):
-				
-				try:
-						# if params differ - applies new one.
-						# if bot.bBands["Length"] != config["bbl"]:
+		
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(  # this way less api calls is being made
-								bot.guid,EnumMadHatterIndicators.BBANDS,0,config["bbl"]
+								bot.guid,EnumMadHatterIndicators.BBANDS,0,int(config["bbl"])
 								)
 						if print_errors == True:
 								print('bBands',do.errorCode,do.errorMessage)
-						# if bot.bBands["Devup"] != config["devup"]:
+						
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.BBANDS,
@@ -187,7 +166,7 @@ class MadHatterBot(Haas):
 								)
 						if print_errors == True:
 								print('bBands',do.errorCode,do.errorMessage)
-						# if bot.bBands["Devdn"] != config["devdn"]:
+						
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.BBANDS,
@@ -196,7 +175,7 @@ class MadHatterBot(Haas):
 								)
 						if print_errors == True:
 								print('bBands',do.errorCode,do.errorMessage)
-						# if bot.bBands["MaType"] != config["matype"]:
+						
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.BBANDS,
@@ -204,7 +183,6 @@ class MadHatterBot(Haas):
 								config["matype"],
 								)
 						
-						# if bot.bBands["RequireFcc"] != bool(config["fcc"]):
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.BBANDS,
@@ -214,7 +192,6 @@ class MadHatterBot(Haas):
 						if print_errors == True:
 								print('bBands FCC',do.errorCode,do.errorMessage)
 						
-						# if bot.bBands["ResetMid"] != bool(config["resetmiddle"]):
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.BBANDS,
@@ -226,7 +203,6 @@ class MadHatterBot(Haas):
 								#       'bool(config["fcc"]: ',bool(config["resetmiddle"]))
 								print('bBands',do.errorCode,do.errorMessage)
 						
-						# if bot.bBands["AllowMidSell"] != bool(config["allowmidsells"]):
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.BBANDS,
@@ -240,7 +216,6 @@ class MadHatterBot(Haas):
 								# 		                                            "resetmiddle"]))
 								print('bBands',do.errorCode,do.errorMessage)
 						
-						# if bot.rsi["RsiLength"] != bool(config["rsil"]):
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.RSI,
@@ -251,7 +226,6 @@ class MadHatterBot(Haas):
 								print('bool(config["fcc"]: ',bool(config["fcc"]))
 								print('bBands',do.errorCode,do.errorMessage)
 						
-						# if bot.rsi["RsiOverbought"] != config["rsib"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.RSI,
@@ -261,12 +235,10 @@ class MadHatterBot(Haas):
 						if print_errors == True:
 								print('rsi',do.errorCode,do.errorMessage)
 						
-						# if bot.rsi["RsiOversold"] != config["rsis"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,EnumMadHatterIndicators.RSI,2,config["rsis"]
 								)
 						
-						# if bot.macd["MacdFast"] != config["macdfast"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.MACD,
@@ -276,7 +248,6 @@ class MadHatterBot(Haas):
 						if print_errors == True:
 								print('rsi',do.errorCode,do.errorMessage)
 						
-						# if bot.macd["MacdSlow"] != config["macdslow"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.MACD,
@@ -286,7 +257,6 @@ class MadHatterBot(Haas):
 						if print_errors == True:
 								print('rsi',do.errorCode,do.errorMessage)
 						
-						# if bot.macd["MacdSign"] != config["macdsign"]:
 						do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
 								bot.guid,
 								EnumMadHatterIndicators.MACD,
@@ -295,7 +265,7 @@ class MadHatterBot(Haas):
 								)
 						if print_errors == True:
 								print('macd',do.errorCode,do.errorMessage)
-						# if bot.interval != config['interval']:
+						
 						do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
 								botName=bot.name,
 								botGuid=bot.guid,
@@ -318,7 +288,7 @@ class MadHatterBot(Haas):
 								)
 						if print_errors == True:
 								print('macd',do.errorCode,do.errorMessage)
-						# if bot.useTwoSignals != bool(config['signalconsensus']):
+						
 						do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
 								botName=bot.name,
 								botGuid=bot.guid,
@@ -349,8 +319,7 @@ class MadHatterBot(Haas):
 								print(e)
 						
 						return do
-				except Exception as e:
-						print(e)
+
 		
 		# print(bot.name, ' Has been configured')
 		# Indicator parameters have been set
@@ -508,7 +477,6 @@ class MadHatterBot(Haas):
 				if print_errors == True:
 						print(do.errorCode,do.errorMessage)
 		
-		
 		def bt(self):
 				
 				if self.num_configs > len(self.configs.index):
@@ -517,75 +485,34 @@ class MadHatterBot(Haas):
 				print('index',self.configs.index)
 				print('the configs',self.configs)
 				
-				bt_results = self.iterate_csv(self.configs[0:self.num_configs],self.bot,depth=self.ticks)
+				bt_results = self.iterate_csv(self.configs[0:self.num_configs],self.bot)
 				obj_file_name = f'./bt_results/{self.bot.name.replace("/","_")}_{datetime.date.today().month}' \
 				                f'_{datetime.date.today().day}.obj'
 				objects = bt_results.obj
 				objects.to_pickle(obj_file_name)
-				to_file = bt_results.drop("obj",axis=1)
+				to_csv = bt_results.drop("obj",axis=1)
 				
 				filename = (
-							str(self.bot.name.replace("/","_"))
-							+ str("_")
-							+ str(datetime.date.today().month)
-							+ str("-")
-							+ str(datetime.date.today().day)
-							+ str("_")
-							+ str(len(bt_results))
-							+ str(".csv")
+								str(self.bot.name.replace("/","_"))
+								+ str("_")
+								+ str(datetime.date.today().month)
+								+ str("-")
+								+ str(datetime.date.today().day)
+								+ str("_")
+								+ str(len(bt_results))
+								+ str(".csv")
 				)
-				to_file.sort_values(by="roi",ascending=False,inplace=True)
-				to_file.drop_duplicates()
-				to_file.reset_index(inplace=True,drop=True)
-				to_file.to_csv(filename)
+				to_csv.sort_values(by="roi",ascending=False,inplace=True)
+				to_csv.drop_duplicates()
+				to_csv.reset_index(inplace=True,drop=True)
+				to_csv.to_csv(filename)
 				
 				bt_results.sort_values(by="roi",ascending=False,inplace=True)
 				bt_results.drop_duplicates()
 				bt_results.reset_index(inplace=True,drop=True)
-				# bt_result_cols = bt_results.columns.drop('obj','trades').to_list()
 				self.store_results(bt_results)
-				
-				
-		def store_results(self,bt_results):
-				columns = [
-						"interval",
-						"signalconsensus",
-						"fcc",
-						"resetmiddle",
-						"allowmidsells",
-						"matype",
-						"rsil",
-						"rsib",
-						"rsis",
-						"bbl",
-						"devup",
-						"devdn",
-						"macdfast",
-						"macdslow",
-						"macdsign",
-
-
-						]
-				if self.bot.guid in self.config_storage:
-						configs = self.config_storage[self.bot.guid]
 		
-						configs = configs.append(bt_results)
-
-						
-
-						configs.reset_index(inplace=True,drop=True)
-						configs.sort_values(by="roi",ascending=False)
-						configs.drop_duplicates(subset=columns,inplace=True)
-						self.config_storage[self.bot.guid] = configs
-						print('merged',self.config_storage[self.bot.guid])
-						# configs_without_obj = configs[columns]
-						# configs_without_obj.drop_duplicates()
-						# print('nodupes',configs_without_obj)
-						
-				else:
-						self.config_storage[self.bot.guid] = bt_results
-						print(self.config_storage[self.bot.guid])
-				
+		
 		
 		def setup_mh_bot(self):
 				bot = self.bot
@@ -595,38 +522,16 @@ class MadHatterBot(Haas):
 				# print('set configs limit', self.limit)
 				for c in range(self.limit):
 						name = f"{bot.name} {c} {configs.roi.iloc[c]}%"
-						
 						self.setup_bot_from_csv(bot,configs.iloc[c],print_errors=False)
-						
-						self.c.customBotApi.backtest_custom_bot(bot.guid,self.ticks)
+						self.c.customBotApi.backtest_custom_bot(bot.guid,self.read_ticks())
 						self.c.customBotApi.clone_custom_bot_simple(bot.accountId,bot.guid,name)
 		
-		def iterate_csv(self,configs,bot,depth):
-				
+		def iterate_csv(self,configs,bot):
 				try:
 						configs["obj"] = None
 						best_roi = 0
 						configs.roi[0:-1] = 0
-						cols = [
-								"interval",
-								"signalconsensus",
-								"fcc",
-								"resetmiddle",
-								"allowmidsells",
-								"matype",
-								"rsil",
-								"rsib",
-								"rsis",
-								"bbl",
-								"devup",
-								"devdn",
-								"macdfast",
-								"macdslow",
-								"macdsign",
-								"trades",
-								"roi",
-								"obj"
-								]
+						cols = ["interval","signalconsensus","fcc","resetmiddle","allowmidsells","matype","rsil","rsib","rsis","bbl","devup","devdn","macdfast","macdslow","macdsign","trades","roi","obj"]
 						for c in configs.columns:
 								if c not in cols:
 										configs.drop(c,axis=1,inplace=True)
@@ -638,34 +543,26 @@ class MadHatterBot(Haas):
 								
 								for i in configs.index:
 										try:
-												print(
-														"Current Backtest ROI: ",
-														bt.roi,
-														"%",
-														"best ROI:",
-														best_roi,
-														"%",
-														)
+												print(	f'Current Backtest ROI:  {bt.roi} % 	best ROI: {best_roi}%.')
+												self.calculate_possible_roi()
+												print(f'Market growth during BT period: {self.possible_profit}')
+												
+										
 												print("\nTop 10 configs so far:\n")
-												print(configs.sort_values(by="roi",ascending=False)[0:10])
+												print(configs.sort_values(by="roi",ascending=False).drop('obj',axis=1)[0:10])
 										except:
-												pass
+											pass
 										config = configs.iloc[i]
 										s = self.setup_bot_from_csv(bot,config)
-										# try:
-										# 		print("setup bot from CSV",s.errorCode)
-										# except Exception as e:
-										# 		print("Setup exception",e)
-										bt = self.c.customBotApi.backtest_custom_bot(bot.guid,self.ticks)
-										
-										try:
-												print("Backtest Status: ",bt.errorCode)
-												bt = bt.result
-										except Exception as e:
-												print("bt exception",e)
+										bt = self.c.customBotApi.backtest_custom_bot(bot.guid,self.read_ticks())
+										bt = bt.result
 										if bt.roi > best_roi:
 												best_roi = bt.roi
 										configs["roi"].iloc[i] = bt.roi
+										try:
+												configs['trades'].iloc[i] = len(bot.completedOrders)
+										except:
+												configs['trades'].iloc[i] = None
 										configs["obj"].iloc[i] = bt
 										self.bot = bt
 										bar()
@@ -673,49 +570,49 @@ class MadHatterBot(Haas):
 						return configs
 				except (KeyboardInterrupt,SystemExit):
 						filename = (
-									str(b.name.replace("/","_"))
-									+ str("_")
-									+ str(datetime.date.today().month)
-									+ str("-")
-									+ str(datetime.date.today().day)
-									+ str("_")
-									+ str(len(configs.index))
-									+ str(".csv"))
-						print("Iterate CSV exception,saving current progress")
+										str(b.name.replace("/","_"))
+										+ str("_")
+										+ str(datetime.date.today().month)
+										+ str("-")
+										+ str(datetime.date.today().day)
+										+ str("_")
+										+ str(len(configs.index))
+										+ str(".csv"))
+						print("Iterate CSV exception,saving current progress to CSV file")
 						configs.to_csv(filename)
 		
 		def set_configs_limit(self):
-								try:
-										num_configs = [
-												inquirer.Text(
-														"num_configs",
-														message="Type the number of configs you wish to apply from a given file: ",
-														)
-												]
-										self.num_configs = int(inquirer.prompt(num_configs,theme=GreenPassion())["num_configs"])
-								except ValueError:
-										print(
-												"Invalid input value for the number of configs to apply from a given file. Please type a "
-												"digit:"
-												)
-										num_configs = [
-												inquirer.Text(
-														"num_configs",
-														message="Type the number of configs you wish to apply from a given file: ",
-														)
-												]
-
-								try:
-										self.config.add_section("MH_LIMITS")
-								except:
-										pass
-								self.config.set("MH_LIMITS",'number_of_configs_to_apply',str(self.num_configs))
-								self.write_file()
-								self.read_limits()
+				try:
+						num_configs = [
+								inquirer.Text(
+										"num_configs",
+										message="Type the number of configs you wish to apply from a given file: ",
+										)
+								]
+						self.num_configs = int(inquirer.prompt(num_configs,theme=GreenPassion())["num_configs"])
+				except ValueError:
+						print(
+								"Invalid input value for the number of configs to apply from a given file. Please type a "
+								"digit:"
+								)
+						num_configs = [
+								inquirer.Text(
+										"num_configs",
+										message="Type the number of configs you wish to apply from a given file: ",
+										)
+								]
+				
+				try:
+						self.config.add_section("MH_LIMITS")
+				except:
+						pass
+				self.config.set("MH_LIMITS",'number_of_configs_to_apply',str(self.num_configs))
+				self.write_file()
+				self.read_limits()
 		
 		def set_create_limit(self):
 				create_limit = [
-						inquirer.Text("limit",message="Type how many top bots to create ")
+						inquirer.Text("limit",message="Type a number how many top bots to create ")
 						]
 				create_limit_response = inquirer.prompt(create_limit,theme=GreenPassion())["limit"]
 				self.limit = int(create_limit_response)
@@ -743,336 +640,173 @@ class MadHatterBot(Haas):
 						self.selected_intervals = json.loads(self.config['MH_LIMITS'].get('selected_intervals'))
 				except Exception as e:
 						print(e)
-		def set_stoploss_range(self):
-				start = inquirer.text(message="Write stoploss range starting number: ")
-				stop = inquirer.text(message="Write stoploss range ending number: ")
-				step = inquirer.text(message="Write stoploss range stepping number: ")
-				try:
-						self.config.add_section("MH_LIMITS")
-				except:
-						pass
-				self.config.set("MH_LIMITS",'stoploss_range_start',start)
-				self.config.set("MH_LIMITS",'stoploss_range_stop',stop)
-				self.config.set("MH_LIMITS",'stoploss_range_step',step)
-				self.write_file()
-				self.read_limits()
 		
-		def find_stoploss(self):
-				bt_results = []
-				start,stop,step = self.stoploss_range
-				for i in arange(start,stop,step):
-						do = self.c.customBotApi.set_mad_hatter_safety_parameter(self.bot.guid,EnumMadHatterSafeties(0),round(i,3))
-						# print('Stoploss error message',do.errorCode,do.errorMessage)
-						do2 = self.c.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks)
-						bt_results.append([do2.result.roi,i])
-						print(f'Stoploss {i} : ROI {do2.result.roi}%')
-				
-				bt_results = pd.DataFrame(bt_results,columns=['roi','stoploss'])
-				bt_results.sort_values(by="roi",ascending=False,inplace=True)
-				bt_results.drop_duplicates()
-				bt_results.reset_index(inplace=True,drop=True)
-				print('Stoploss results: ',bt_results)
-				print(f'Best result for bot {self.bot.name,0,bt_results.stoploss.iloc[0]} will be applied')
-				do = self.c.customBotApi.set_mad_hatter_safety_parameter(self.bot.guid,0,bt_results.stoploss.iloc[0])
-				do = self.c.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks)
-				
 		def menu(self):
-				self.read_limits()
-				menu = [
-						inquirer.List(
-								"response",
-								message=f"Create: {self.limit}, Configs: {self.num_configs}",
-								choices=[
+				live_menu = [
 										# 'test',
 										"Select Bots",
 										"Select config file",
 										"Set configs limit",
 										"Set create limit",
-										"Set stoploss range",
-										"Find best stoploss",
-										"Bruteforce single parameter",
+										'Stoploss',
+										"Config optimisation",
 										"Change backtesting date",
+										# 'Completed Backtests',
 										"Start Backtesting",
 										"Main Menu",
-										],
+										]
+				dev_menu = [
+										'test',
+										"Select Bots",
+										"Select config file",
+										"Set configs limit",
+										"Set create limit",
+										'Stoploss',
+										"Config optimisation",
+										"Change backtesting date",
+										"Start Backtesting",
+										'Completed Backtests',
+										"Main Menu",
+										]
+				
+				self.read_limits()
+				menu = [
+						inquirer.List(
+								"response",
+								message=f"Create: {self.limit}, Configs: {self.num_configs}",
+								choices= live_menu if self.live else dev_menu
 								)
 						]
 				
 				while True:
-						user_response = inquirer.prompt(menu,theme=GreenPassion())["response"]
-						if user_response == "Select Bots":
+						response = inquirer.prompt(menu,theme=GreenPassion())["response"]
+						if response == "Select Bots":
 								bot = self.bot_selector(15,multi=True)
-						elif user_response == "Select config file":
+						elif response == "Select config file":
 								file = pd.read_csv(self.file_selector())
-						elif user_response == "Set configs limit":
-									self.set_configs_limit()
+						elif response == "Set configs limit":
+								self.set_configs_limit()
 						
-						elif user_response == "Set create limit":
+						elif response == "Set create limit":
 								self.set_create_limit()
 						
-						elif user_response == 'Change backtesting date':
+						elif response == 'Change backtesting date':
 								self.write_date()
 						
-						elif user_response == 'test':
-								bl = self.c.customBotApi.get_all_custom_bots()
-								botlist = [x for x in bl.result if x.botType == 15]
-								self.bots = botlist[0:1]
-								if self.configs is None:
-										self.configs = pd.read_csv('./bots.csv')
-								for b in self.bots:
-										self.num_configs = 2
-	
-										self.configs = self.configs[0:5]
-										self.configs.reset_index(inplace=True,drop=True)
-										self.bot = b
-										self.bt()
-										self.setup_mh_bot()
-								for b in self.bots:
-										self.configs = pd.read_csv('./bots.csv')
-										self.configs = self.configs[10:20]
-										self.configs.reset_index(inplace=True,drop=True)
-										self.num_configs =3
-										self.bot = b
-										self.bt()
-										self.setup_mh_bot()
-						elif user_response == 'Find best stoploss':
-								for b in self.bots:
-										self.bot = b
-										self.find_stoploss()
+						elif response == 'test':
+								self.bbl_menu()
 						
-						elif user_response =="Set stoploss range":
-								self.set_stoploss_range()
-						elif user_response =="Bruteforce single parameter":
-								self.bruteforce_single_parameter()
-						elif user_response == "Start Backtesting":
-								if self.configs is None:
-										self.configs = pd.read_csv('./bots.csv')
-								for b in self.bots:
-										self.bot = b
-										self.bt()
-										self.setup_mh_bot()
-
-						
-						elif user_response == "Main Menu":
-								break
-		
-		def intervals_menu(self):
-				
-				i_menu = [inquirer.List(
-						'response',message=f'Selected intervals: {self.selected_intervals} :',
-						choices=[
-								'test',
-								'Select Bots',
-								'Select Intervals',
-								'Backtest Selected Intervals',
-								'Backtest all Intervals',
-								'Back'
-								]
-						)]
-				self.read_limits()
-				while True:
-						user_defined_action = inquirer.prompt(i_menu)['response']
-						self.parameter[self.user_response] = self.selected_intervals
-						if user_defined_action == "Select Intervals":
-								selected_intervals = self.select_intervals()
-								self.selected_intervals = selected_intervals
-								self.parameter[self.user_response] = selected_intervals
-								
-						
-						elif user_defined_action == "Backtest Selected Intervals":
-								if self.parameter[self.user_response]:
-										for bot in self.bots:
-												self.bot = bot
-												self.bt_interval(bot)
+						elif response == 'Completed Backtests':
+								menu = [inquirer.List('response','Chose',choices=
+								[
+										'Select bot from db',
+										'Print results',
+										'Save results to file',
+										'Back'
+										])]
+								while True:
+										response = inquirer.prompt(menu)['response']
 										
-								else:
-										print('Select Intervals first')
-										
-						elif user_defined_action == 'Backtest all Intervals':
-								self.parameter[self.user_response] = self.intervals_list
-								for bot in self.bots:
-										self.bot = bot
-										self.bt_interval(bot)
-						
-						elif user_defined_action == 'Select Bots':
-								bot = self.bot_selector(15,multi=True)
-						elif user_defined_action == 'Back':
-								break
-						elif user_defined_action == 'test':
-								bl = self.c.customBotApi.get_all_custom_bots()
-								botlist = [x for x in bl.result if x.botType == 15]
-								self.bots = botlist[0:1]
-								for bot in self.bots:
-									self.parameter[self.user_response] = [1]
-									self.bt_interval(bot)
-									self.parameter[self.user_response] = [2]
-									self.bt_interval(bot)
-		
-		def bt_interval(self,bot):
-				
-						bt_results = []
-						print(f'Initiating {bot.name} backtesting process...')
-						for i in self.parameter['Interval']:
-								do = self.c.customBotApi.setup_mad_hatter_bot(  # This code sets time interval as main goalj
-										botName=bot.name,
-										botGuid=bot.guid,
-										accountGuid=bot.accountId,
-										primaryCoin=bot.priceMarket.primaryCurrency,
-										secondaryCoin=bot.priceMarket.secondaryCurrency,
-										contractName=bot.priceMarket.contractName,
-										leverage=bot.leverage,
-										templateGuid=bot.customTemplate,
-										position=bot.coinPosition,
-										fee=bot.currentFeePercentage,
-										tradeAmountType=bot.amountType,
-										tradeAmount=bot.currentTradeAmount,
-										useconsensus=bot.useTwoSignals,
-										disableAfterStopLoss=bot.disableAfterStopLoss,
-										interval=i,
-										includeIncompleteInterval=bot.includeIncompleteInterval,
-										mappedBuySignal=bot.mappedBuySignal,
-										mappedSellSignal=bot.mappedSellSignal,
-										)
-								# print('interval testing',do.errorMessage,do.errorMessage)
-								bt = self.c.customBotApi.backtest_custom_bot(bot.guid,self.ticks)
-								bot_config = self.bot_config(bt.result)
-								print(f'{bt.result.roi}% with interval {i} minutes')
-								bt_results.append(bot_config)
-						bt_results = pd.concat(bt_results)
-						bt_results2 = pd.DataFrame(bt_results)
-						bt_results2.sort_values(by="roi",ascending=False,inplace=True)
-						bt_results2.drop_duplicates()
-						bt_results2.reset_index(inplace=True,drop=True)
-						self.store_results(bt_results2)
-						
-						return bt_results
-		def select_intervals(self):
-				
-				intervals = [inquirer.Checkbox(
-						'intervals',message='Select required intervals using space, confirm with enter: ',
-						choices= self.intervals_list
-						
-						)]
-				selected_intervals = inquirer.prompt(intervals)['intervals']
-				self.selected_intervals = selected_intervals
-				self.config.set("MH_LIMITS",'selected_intervals',str(selected_intervals))
-				self.write_file()
-				
-				
-				return selected_intervals
-		
-		def bruteforce_single_parameter(self):
-				self.parameter = {}
-				bf_menu = [
-						inquirer.List(
-								"response",
-				message = 'Select a parameter to bruteforce:',
-				choices = [
-						'Interval',
-						'bBands length',
-						'Devup',
-						'Devdown',
-						'MA-type',
-						'Rsi length',
-						'Rsi Buy',
-						'Rsi Sell',
-						'MACD Slow',
-						'MACD Fast',
-						'MACD Signal',
-						]
-								)]
-				
-				response = inquirer.prompt(bf_menu)['response']
-						
-				if response == 'Interval':
-						self.user_response = response
-						self.intervals_menu()
-						
-						
-				elif response == 'bBands length':
-						pass
-				elif response == 'Devup':
-						pass
-				elif response == 'Devdown':
-						pass
-				elif response == 'MA-type':
-						pass
-				elif response == 'Rsi length':
-						pass
-				elif response == 'Rsi Buy':
-						pass
-				elif response == 'Rsi Sell':
-						pass
-				elif response == 'MACD Slow':
-						pass
-				elif response == 'MACD Fast':
-						pass
-				elif response == 'MACD Signal':
-						pass
-				
-		def finetune(self):
-				if self.bot is None:
-						bl = self.c.customBotApi.get_all_custom_bots()
-						botlist = [x for x in bl.result if x.botType == 15]
-						bot = botlist[0]
-						print(bot.guid,bot.botType)
-						bot = self.c.customBotApi.backtest_custom_bot_on_market(
-																bot.accountId,
-																bot.guid,
-																1,
-																bot.priceMarket.primaryCurrency,
-																bot.priceMarket.secondaryCurrency,
-																bot.priceMarket.contractName,
+										if response == 'Select bot from db':
+												if self.config_storage:
+														guids = list(self.config_storage.keys())
+														bl = [(x.name,x) for x in self.c.customBotApi.get_all_custom_bots(
+																
 																).result
-						print(bot)
-						self.bot = bot
-				menu = []
-				steps = 4
-				config = self.bot_config(self.bot)
-				print(config)
-				
-				
-				rsil_minus_range = [x for x in range(int(config.rsil.iloc[0]),int(config.rsil.iloc[0])-4, -1) if x >1]
-				rsil_plus_range = [x for x in range(int(config.rsil.iloc[0]),int(config.rsil.iloc[0])+4, 1) if x < 60]
-				
-				rsil_total_range = [x for x in range(2,100,1)]
-				rsil = int(config.rsil.loc[0])
-				if rsil in [0,1,2]:
-					rsil_neighbours_in_total_range = rsil_total_range[rsil-steps:rsil+steps]
-					print(rsil_neighbours_in_total_range)
-				elif rsil-steps <=0:
-						rsil_neighbours_in_total_range = rsil_total_range[rsil:rsil + steps*2]
-						print(rsil_neighbours_in_total_range)
-			
-	
-		def optimize(self):
-				configs = self.config_storage[self.bot.guid]
-				config = configs.iloc[0]
-				cols = [
-						"interval",
-						"signalconsensus",
-						"fcc",
-						"resetmiddle",
-						"allowmidsells",
-						"matype",
-						"rsil",
-						"rsib",
-						"rsis",
-						"bbl",
-						"devup",
-						"devdn",
-						"macdfast",
-						"macdslow",
-						"macdsign",
-						"trades",
-						"roi",
-						]
-				intervals = [1,2,3,4,5,6,10,12,15,20,30,45,60,90,120,150,180,240,360,720,1440,2880]
-				for i in config.columns:
-						if i == 'interval':
-								time_intervals_to_test = arange(i)
+														      if x.botType == 15 if bot.guid in guids]
+														menu = [inquirer.List('response','Select Bot',choices=bl)]
+														while True:
+																bot = inquirer.prompt(menu)['response']
+										
+										if response == 'Print results':
+												self.print_completed_configs()
+										
+										elif response == 'Save results to file':
+												pass
+										elif response == 'Back':
+												break
+						
+						
+						elif response == 'Stoploss':
+								stoploss_menu = [inquirer.List('stoploss','Stoploss menu:',
+								                               choices=
+								                               [
+										                               "Set stoploss range",
+										                               "Find stoploss",
+										                               'Back',
+										                               ])]
+								while True:
+										response = inquirer.prompt(stoploss_menu)['stoploss']
+										if response == 'Find stoploss':
+												if not self.bots:
+														self.get_first_bot()
+												for b in self.bots:
+														self.bot = b
+														self.find_stoploss()
+										
+										elif response == "Set stoploss range":
+												self.set_stoploss_range()
+										
+										elif response == 'Back':
+												break
+						
+						elif response == "Config optimisation":
+								self.bruteforce_menu()
+						elif response == "Start Backtesting":
+								if not self.configs:
+										self.configs = pd.read_csv('./bots.csv')
+								for b in self.bots:
+								
+										self.bot = b
+										
+										self.bt()
+										self.setup_mh_bot()
+						
+						
+						elif response == "Main Menu":
+								break
+		
+		def get_first_bot(self):
+				bl = self.c.customBotApi.get_all_custom_bots()
+				botlist = [x for x in bl.result if x.botType == 15]
+				self.bots = botlist[0:1]
+				for b in self.bots:
+						self.bot = b
+		
+		def set_configs_file(self):
+				if self.configs is None:
+						self.configs = pd.read_csv('./bots.csv')
+						self.num_configs = 2
+		
+		def test_bt_couple_of_bot_ranges(self):
+				self.get_first_bot()
+				self.set_configs_file()
+				self.configs = self.configs[0:5]
+				self.configs.reset_index(inplace=True,drop=True)
+				self.bt()
+				self.setup_mh_bot()
 
 
+		def calculate_possible_roi(self):
+				print('calculating possible profit for current bot...')
+				interval = self.bot.interval
+				marketdata = MarketData().get_market_data(self.bot.priceMarket,interval,int(self.read_ticks() / interval))
+				lowest = marketdata.Close.min()
+				highest  = marketdata.Open.max()
+				idxmi = marketdata.Close.idxmin()
+				
+				idxma = marketdata.Open.idxmax()
+				if idxmi<idxma:
+						first =lowest
+						second = highest
+				else:
+						first = idxmi
+						second = idxma
+
+				print(f'low: {lowest} {idxmi} - index and high: {highest} {idxma} - index')
+				percentage = (float(first) / float(second)) * float(100)
+				print(f'{} is possible profit')
+				self.possible_profit = round(percentage,2)
 if __name__ == "__main__":
 		mh = MadHatterBot()
 		mh.menu()
@@ -1140,4 +874,67 @@ if __name__ == "__main__":
 								#                                                   b.priceMarket.primaryCurrency,
 								#                                                   b.priceMarket.secondaryCurrency,
 								#                                                   b.priceMarket.contractName)
+		
+		
+			def optimize(self):
+				configs = self.config_storage[self.bot.guid]
+				config = configs.iloc[0]
+				cols = [
+						"interval",
+						"signalconsensus",
+						"fcc",
+						"resetmiddle",
+						"allowmidsells",
+						"matype",
+						"rsil",
+						"rsib",
+						"rsis",
+						"bbl",
+						"devup",
+						"devdn",
+						"macdfast",
+						"macdslow",
+						"macdsign",
+						"trades",
+						"roi",
+						]
+				intervals = [1,2,3,4,5,6,10,12,15,20,30,45,60,90,120,150,180,240,360,720,1440,2880]
+				for i in config.columns:
+						if i == 'interval':
+								time_intervals_to_test = arange(i)
+		
+			def finetune(self):
+				if self.bot is None:
+						bl = self.c.customBotApi.get_all_custom_bots()
+						botlist = [x for x in bl.result if x.botType == 15]
+						bot = botlist[0]
+						print(bot.guid,bot.botType)
+						bot = self.c.customBotApi.backtest_custom_bot_on_market(
+																bot.accountId,
+																bot.guid,
+																1,
+																bot.priceMarket.primaryCurrency,
+																bot.priceMarket.secondaryCurrency,
+																bot.priceMarket.contractName,
+																).result
+						print(bot)
+						self.bot = bot
+				menu = []
+				steps = 4
+				config = self.bot_config(self.bot)
+				print(config)
+				
+				rsil_minus_range = [x for x in range(int(config.rsil.iloc[0]),int(config.rsil.iloc[0])-4, -1) if x >1]
+				rsil_plus_range = [x for x in range(int(config.rsil.iloc[0]),int(config.rsil.iloc[0])+4, 1) if x < 60]
+				
+				rsil_total_range = [x for x in range(2,100,1)]
+				rsil = int(config.rsil.loc[0])
+				if rsil in [0,1,2]:
+					rsil_neighbours_in_total_range = rsil_total_range[rsil-steps:rsil+steps]
+					print(rsil_neighbours_in_total_range)
+				elif rsil-steps <=0:
+						rsil_neighbours_in_total_range = rsil_total_range[rsil:rsil + steps*2]
+						print(rsil_neighbours_in_total_range)
+			
+	
 		"""
