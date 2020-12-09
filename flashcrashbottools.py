@@ -27,40 +27,20 @@ class FlashCrashBot(Haas):
 						self
 		def bt(self):
 
-				
-				# bt = self.c.customBotApi.backtest_custom_bot_on_market(
-				# 		self.bot.accountId,
-				# 		self.bot.guid,
-				# 		self.ticks,
-				# 		self.bot.priceMarket.primaryCurrency,
-				# 		self.bot.priceMarket.secondaryCurrency,
-				# 		self.bot.priceMarket.contractName,
-				# 		)
-				
 				bt = self.c.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks)
-				# print('fcb_bt1',bt.errorCode,bt.errorMessage)
-				# print('the_bot', self.bot)
+				
 				orders_df = self.trades_to_df(bt.result)
-				# slots_df = self.slots_to_df(bt.result)
+				
 				if len(orders_df.index) > 0:
 						filled_orders = orders_df[orders_df.orderStatus == 5]
-				# print('filled_orders',filled_orders)
-				# print('bagged_orders',slots_df[slots_df.active==True])
-				# print(bt.result.__dict__)
-				
-				# print('bt',bt.errorCode,bt.errorMessage,bt.result.roi,' % ','Orders: ',
-				#       len(bt.result.completedOrders))
-				print(f'ROI: {bt.result.roi}, Total Gain: {bt.result.totalProfits}, '
-				      f'Completed Orders: {len(bt.result.completedOrders)}, '
-				      )
+						print(f'ROI: {bt.result.roi}, Total Gain: {bt.result.totalProfits}, '
+						      f'Completed Orders: {len(bt.result.completedOrders)}, '
+						      )
 				
 				if bt.errorCode.value == 1021:
 						for i in range(5):
 								time.sleep(5)
 								bt = self.c.customBotApi.backtest_custom_bot(self.bot.guid,int(self.ticks))
-								
-				
-				
 				
 				return bt.result
 		
