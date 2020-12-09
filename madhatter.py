@@ -786,7 +786,7 @@ class MadHatterBot(Haas,Optimize):
 				self.bt()
 				self.setup_mh_bot()
 	
-	def calculate_average_trade(self):
+		def calculate_average_trade(self):
 			# orderbook_storage = []
 			# orderbook_data = self.c.marketDataApi.get_order_book_from_market(self.bot.priceMarket).result
 			last_trades_storage = []

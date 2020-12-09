@@ -239,7 +239,7 @@ class Haas:
                 }
             for x in trades
             ]
-            return df
+        return df
         
     def trades_to_df(self,bot):
         completedOrders = [

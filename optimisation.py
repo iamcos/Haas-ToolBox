@@ -64,9 +64,12 @@ class Optimize():
 						self.find_stoploss()
 		
 		def intervals_menu(self):
-				
+				try:
+						range = self.ranges.bot.intervals.selected
+				except:
+						range = self.ranges.bot.intervals.selected =	self.select_intervals()
 				i_menu = [inquirer.List(
-						'response',message=f'Selected intervals: {self.selected_intervals} :',
+						'response',message=f'Selected intervals: { range} :',
 						choices=[
 								'Select Bots',
 								'Select Intervals',
@@ -75,16 +78,14 @@ class Optimize():
 								'Back'
 								]
 						)]
-				self.read_limits()
+				
 				
 				while True:
 						response = inquirer.prompt(i_menu)['response']
 						
 						if response == "Select Intervals":
 								self.ranges.bot.intervals.selected = self.select_intervals()
-								self.selected_intervals = self.ranges.bot.intervals.selected
-								self.parameter[self.response] = self.ranges.bot.intervals.selected
-						
+
 						
 						elif response == "Backtest Selected Intervals":
 								
@@ -119,7 +120,8 @@ class Optimize():
 								print('Select Intervals first')
 								self.select_intervals()
 								self.bt_intervals()
-				except AttributeError as e:
+				except Exception as e:
+						print('error in bt_intervals',e)
 						self.ranges.bot.intervals.selected =self.select_intervals()
 						self.bt_intervals()
 		def bt_interval(self,bot):
