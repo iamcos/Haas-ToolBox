@@ -1,6 +1,5 @@
 import inquirer
 import pandas as pd
-from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 from haasomeapi.enums.EnumMadHatterSafeties import EnumMadHatterSafeties
 from numpy.ma import arange
 
@@ -122,7 +121,7 @@ class Optimize():
 								self.bt_intervals()
 				except Exception as e:
 						print('error in bt_intervals',e)
-						self.ranges.bot.intervals.selected =self.select_intervals()
+						self.ranges.bot.intervals.selected = self.select_intervals()
 						self.bt_intervals()
 		def bt_interval(self,bot):
 				config = self.bot_config(bot)
