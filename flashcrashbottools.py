@@ -1,10 +1,13 @@
-from numpy import arange
-from haas import Haas
-from haasomeapi.enums.EnumFlashSpreadOptions import EnumFlashSpreadOptions
-import inquirer
-import time
-import pandas as pd
 import datetime
+import time
+
+import inquirer
+import pandas as pd
+from haasomeapi.enums.EnumFlashSpreadOptions import EnumFlashSpreadOptions
+from numpy import arange
+
+from haas import Haas
+
 
 class FlashCrashBot(Haas):
 		def __init__(self):
@@ -38,13 +41,12 @@ class FlashCrashBot(Haas):
 				# print('fcb_bt1',bt.errorCode,bt.errorMessage)
 				# print('the_bot', self.bot)
 				orders_df = self.trades_to_df(bt.result)
-				slots_df = self.slots_to_df(bt.result)
-				if len(orders_df.index)>0:
-					filled_orders = orders_df[orders_df.orderStatus == 5]
-					# print('filled_orders',filled_orders)
-					# print('bagged_orders',slots_df[slots_df.active==True])
-					# print(bt.result.__dict__)
-				
+				# slots_df = self.slots_to_df(bt.result)
+				if len(orders_df.index) > 0:
+						filled_orders = orders_df[orders_df.orderStatus == 5]
+				# print('filled_orders',filled_orders)
+				# print('bagged_orders',slots_df[slots_df.active==True])
+				# print(bt.result.__dict__)
 				
 				# print('bt',bt.errorCode,bt.errorMessage,bt.result.roi,' % ','Orders: ',
 				#       len(bt.result.completedOrders))
