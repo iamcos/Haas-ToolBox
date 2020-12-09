@@ -10,8 +10,9 @@ from inquirer.themes import GreenPassion
 from ratelimit import limits,sleep_and_retry
 
 from haas import Haas
-from optimisation import Optimize
 from marketdata import MarketData
+from optimisation import Optimize
+
 
 class MadHatterBot(Haas,Optimize):
 		def __init__(self):
@@ -753,10 +754,10 @@ class MadHatterBot(Haas,Optimize):
 						elif response == "Config optimisation":
 								self.bruteforce_menu()
 						elif response == "Start Backtesting":
-								if not self.configs:
+								if self.configs is not pd.DataFrame:
 										self.configs = pd.read_csv('./bots.csv')
 								for b in self.bots:
-								
+										
 										self.bot = b
 										
 										self.bt()
