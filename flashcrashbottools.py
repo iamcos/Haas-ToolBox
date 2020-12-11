@@ -25,7 +25,6 @@ class FlashCrashBot(Haas):
 	
 	def bt(self):
 		bt = self.c.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks)
-		print(f'{self.bot.name} bot selected, backtesting procedure initiated')
 		orders_df = self.trades_to_df(bt.result)
 		if bt.errorCode.value == 1021:
 			for i in range(5):
@@ -37,11 +36,14 @@ class FlashCrashBot(Haas):
 				if bt.errorCode.value != 1021:
 					break
 		
-		if len(orders_df.index) > 0:
-			orders_df['filled'] = orders_df[orders_df.orderStatus == 5]
-			orders_df['open'] = orders_df[orders_df.orderStatus == 3]
-			bt.orders = orders_df
-		
+		# if len(orders_df.index) > 0:
+		# 	filled=orders_df[orders_df['orderStatus']== 5]
+		# 	open = orders_df[orders_df['orderStatus'] == 3]
+		#
+		#
+		# 	bt.filled = filled
+		# 	bt.open = open
+		# 	print('filled',filled,'open',open,'other',other)
 		return bt.result
 	
 	def read_range(self,vars=vars):
@@ -166,22 +168,27 @@ class FlashCrashBot(Haas):
 					# print('p',p)
 					fcb_setup = setup_fcb(pricespread=round(p,2))
 					bt = self.bt()
+					orders = bt.completedOrders
+					buy_orders = [x for x in orders if x.orderType == 1]
+					sell_orders = [x for x in orders if x.orderType == 0]
+					
 					bt_results.append(
-						[bt.roi,bt.totalProfits,len(bt.completedOrders),round(p,2)]
+						[bt.roi,bt.totalProfits,len(buy_orders),len(sell_orders),round(p,2)]
 						)
 					print(
-						f"'pricespread' {p} Total Profits: {bt.totalProfits}"
-						f" Orders: {len(bt.completedOrders)}"
+						f" Spread {round(p,2)} Total Profits: {bt.totalProfits}"
+						f" Buys: {len(buy_orders)} Sells: {len(sell_orders)}"
 						)
-			df_results = pd.DataFrame(
-				bt_results,
-				columns=[
-					"roi",
-					"total Profits",
-					"Orders",
-					"pricespread",
-					],
-				)
+		df_results = pd.DataFrame(
+			bt_results,
+			columns=[
+				"roi",
+				"profits",
+				'buys',
+				'sells',
+				"pricespread",
+				],
+			)
 		
 		if self.bot.priceSpreadType == 2:
 			for p in arange(
@@ -216,8 +223,9 @@ class FlashCrashBot(Haas):
 				bt_results,
 				columns=[
 					"roi",
-					"total Profits",
-					"Orders",
+					"profits",
+					'buys',
+					'sells',
 					"pricespread",
 					"percentageboost",
 					],
@@ -262,7 +270,14 @@ class FlashCrashBot(Haas):
 							)
 			df_results = pd.DataFrame(
 				bt_results,
-				columns=["roi","total Profits","Orders","multiplyer","min","max"],
+				columns=[
+					"roi",
+					"profits",
+					'buys',
+					'sells',
+					"multiplyer",
+					"min",
+					"max"],
 				)
 		
 		filename = (
@@ -270,11 +285,11 @@ class FlashCrashBot(Haas):
 			f'{datetime.date.today().day}'
 			f".csv"
 		)
-		df_results.sort_values(by="total Profits",ascending=False,inplace=True)
+		df_results.sort_values(by="profits",ascending=False,inplace=True)
 		df_results.drop_duplicates()
 		df_results.reset_index(inplace=True,drop=True)
 		df_results.to_csv(filename)
-		
+		print(df_results)
 		return df_results
 	
 	def slots_to_df(self,bot):
@@ -457,6 +472,7 @@ class FlashCrashBot(Haas):
 					self.write_date()
 					continue
 				if resp == "Backtest":
+					print(f'{self.bot.name} bot selected, backtesting procedure initiated')
 					self.setup_fcb(self.bot)
 					continue
 				if resp == "Quit":

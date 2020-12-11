@@ -1,22 +1,19 @@
+import time
+
+import pandas as pd
+from haasomeapi.enums.EnumPriceSource import EnumPriceSource
+
+from BaseHaas_orig import BotDB
 from haas import Haas
 
-import time
-import pandas as pd
-
-from haasomeapi.enums.EnumErrorCode import EnumErrorCode
-
-
-from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-from haasomeapi.HaasomeClient import HaasomeClient
 
 class MarketData(Haas):
     def __init__(self):
         Haas.__init__(self)
-        self.config = Haas().config
-        self.c = HaasomeClient(self.ip, self.secret)
-        self.ticks = Haas().read_ticks()
-
-    def to_df_for_ta(self, market_history):
+    
+    
+    
+    def to_df_for_ta(self,market_history):
         """
         Transforms List of Haas MarketData into Dataframe
         """
@@ -142,9 +139,34 @@ class MarketData(Haas):
         def uppercase(x):
             return str(x).capitalize()
 
-        data.rename(uppercase, axis="columns", inplace=True)
+        data.rename(uppercase,axis="columns",inplace=True)
         data["Data"] = pd.to_datetime(data["Data"])
         dti = pd.DatetimeIndex([x for x in data["Date"]])
-        data.set_index(dti, inplace=True)
+        data.set_index(dti,inplace=True)
         # print(data)
         return data
+    
+    def markets_dropdown(self):
+        markets = self.get_all_markets()
+        markets_dropdown = [{
+                                'label':str(EnumPriceSource(x).name),'value':str(
+                x)
+                                } for x in markets.pricesource.unique()]
+        return markets_dropdown
+    
+    def primarycoin_dropdown(self,pricesource):
+        df = self.get_all_markets()
+        pairs = df[df["pricesource"] == pricesource]
+        
+        return pairs.primarycurrency.unique()
+    
+    def secondary_coin_dropdown(self,pricesource,primarycurrency):
+        
+        df = self.get_all_markets()
+        pairs = df[df["pricesource"] ==
+                   pricesource][df['primarycurrency'] == primarycurrency]
+        return pairs.secondarycurrency.unique()
+
+
+if __name__ == "__main__":
+    pass
