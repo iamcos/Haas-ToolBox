@@ -67,7 +67,7 @@ class StreamlitHaasTool(Haas):
         </style>
         """,
 			unsafe_allow_html=True,
-					)
+			)
 	
 	def set_interval(self):
 		interval = st.sidebar.selectbox(
@@ -115,14 +115,14 @@ class StreamlitHaasTool(Haas):
 		# self.bot_objects = {}
 		objects = pd.read_pickle(f"./bt_results/{file}")
 		n = [[f"{x.name}| ROI: {x.roi}"][0] for x in objects]
-			b = [x for x in objects]  # creates list of names
-			dic = dict(zip(b,n))  # creates zipped obj/names list
-			botobj = st.sidebar.selectbox(
-				"MH Bots: ",b,format_func=lambda x:dic[x]
-				)  # where b bot object returned from dic[x] name list
-			st.write(botobj.name)
-			self.bots = objects
-			self.bot = botobj
+		b = [x for x in objects]  # creates list of names
+		dic = dict(zip(b,n))  # creates zipped obj/names list
+		botobj = st.sidebar.selectbox(
+			"MH Bots: ",b,format_func=lambda x:dic[x]
+			)  # where b bot object returned from dic[x] name list
+		st.write(botobj.name)
+		self.bots = objects
+		self.bot = botobj
 	
 	def get_market_data_for_bot(self):
 		market_obj = self.bot.priceMarket
@@ -326,7 +326,6 @@ class StreamlitHaasTool(Haas):
 			self.calculate_ticks(datetime.datetime.combine(starting_date,starting_time))
 			self.get_marketdata()
 			st.plotly_chart(self.plot,use_container_width=True)
-
 
 def plot_bot_trades_from_csv():
 	str = StreamlitHaasTool()

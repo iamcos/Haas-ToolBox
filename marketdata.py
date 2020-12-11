@@ -10,20 +10,20 @@ from haas import Haas
 class MarketData(Haas):
     def __init__(self):
         Haas.__init__(self)
-    
-    
-    
+
+
+
     def to_df_for_ta(self,market_history):
         """
         Transforms List of Haas MarketData into Dataframe
         """
         market_data = [
             {
-                "Date": x.unixTimeStamp,
-                "Open": x.open,
-                "High": x.highValue,
-                "Low": x.lowValue,
-                "Close": x.close,
+                "Date":x.unixTimeStamp,
+                "Open":x.open,
+                "High":x.highValue,
+                "Low":x.lowValue,
+                "Close":x.close,
                 "Buy": x.currentBuyValue,
                 "Sell": x.currentSellValue,
                 "Volume": x.volume,
@@ -145,7 +145,7 @@ class MarketData(Haas):
         data.set_index(dti,inplace=True)
         # print(data)
         return data
-    
+
     def markets_dropdown(self):
         markets = self.get_all_markets()
         markets_dropdown = [{
@@ -153,15 +153,15 @@ class MarketData(Haas):
                 x)
                                 } for x in markets.pricesource.unique()]
         return markets_dropdown
-    
+
     def primarycoin_dropdown(self,pricesource):
         df = self.get_all_markets()
         pairs = df[df["pricesource"] == pricesource]
-        
+
         return pairs.primarycurrency.unique()
-    
+
     def secondary_coin_dropdown(self,pricesource,primarycurrency):
-        
+    
         df = self.get_all_markets()
         pairs = df[df["pricesource"] ==
                    pricesource][df['primarycurrency'] == primarycurrency]
