@@ -5,11 +5,13 @@ from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 
 from BaseHaas_orig import BotDB
 from haas import Haas
-
+from ratelimit import limits
 
 class MarketData(Haas):
     def __init__(self):
         Haas.__init__(self)
+        self.tries = 10
+        self.current_try = 0
 
 
 
@@ -30,12 +32,12 @@ class MarketData(Haas):
             }
             for x in market_history
         ]
-        # print(market_data)
         df = pd.DataFrame(market_data)
-
+        
         try:
             df["Date"] = pd.to_datetime(df["Date"], unit="s")
-
+            dti = pd.DatetimeIndex([x for x in df["Date"]])
+            df.set_index(dti,inplace=True)
         except:
             print("Whops")
             # print(df)
@@ -87,14 +89,14 @@ class MarketData(Haas):
             return marketobj
 
     # @sleep_and_retry
-    # @limits(calls=5, period=15)
+    @limits(calls=5, period=15)
     def get_market_data(self, priceMarketObject, interval, depth):
         """
         Returns dataframe full of candlestick data including volume in any interval and depth supported by Haasonline.
 
         """
         marketdata = self.c.marketDataApi.get_history_from_market(
-            priceMarketObject, interval, depth
+            priceMarketObject, int(interval), int(depth)
         )
         # print('get_market_data', 'errorcode', marketdata.errorCode,
         #       'errormessage', marketdata.errorMessage)
@@ -106,12 +108,21 @@ class MarketData(Haas):
                     return df
                 else:
                     time.sleep(5)
+                    print('marketdata length is zero')
+                    print(marketdata.errorMessage,marketdata.errorMessage)
+                    print(marketdata.result)
+                    self.current_try =+1
+                    if self.tries == self.current_try:
+                        self.current_try = 0
+                        return None
                     return self.get_market_data(priceMarketObject, interval, depth)
             else:
                 time.sleep(10)
+                print('marketdata is not list')
                 return self.get_market_data(priceMarketObject, interval, depth)
         else:
             time.sleep(10)
+            print('marketdata is syncing')
             return self.get_market_data(priceMarketObject, interval, depth)
 
 
@@ -146,27 +157,7 @@ class MarketData(Haas):
         # print(data)
         return data
 
-    def markets_dropdown(self):
-        markets = self.get_all_markets()
-        markets_dropdown = [{
-                                'label':str(EnumPriceSource(x).name),'value':str(
-                x)
-                                } for x in markets.pricesource.unique()]
-        return markets_dropdown
-
-    def primarycoin_dropdown(self,pricesource):
-        df = self.get_all_markets()
-        pairs = df[df["pricesource"] == pricesource]
-
-        return pairs.primarycurrency.unique()
-
-    def secondary_coin_dropdown(self,pricesource,primarycurrency):
     
-        df = self.get_all_markets()
-        pairs = df[df["pricesource"] ==
-                   pricesource][df['primarycurrency'] == primarycurrency]
-        return pairs.secondarycurrency.unique()
-
 
 if __name__ == "__main__":
     pass

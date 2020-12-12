@@ -355,10 +355,11 @@ class MadHatterBot(Haas,Optimize):
             )
         if print_errors == True:
             print("macd",do.errorCode,do.errorMessage)
-        print("MH FROM CSV",do.errorCode,do.errorMessage)
+        # print("MH FROM CSV",do.errorCode,do.errorMessage)
         updated_bot = do
         try:
-            print("updated_bot",updated_bot.errorCode,updated_bot.errorMessage)
+            # print("updated_bot",updated_bot.errorCode,updated_bot.errorMessage)
+            pass
         except Exception as e:
             print(e)
         

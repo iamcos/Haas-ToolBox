@@ -5,6 +5,7 @@ import time
 
 import inquirer
 import pandas as pd
+from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.HaasomeClient import HaasomeClient
 from inquirer.themes import GreenPassion
 
@@ -24,7 +25,7 @@ class Haas:
         self.secret = None
         self.check_config()
         self.c = self.client()
-        self.live = False
+        self.live = True
 
     def return_config(self):
         # print('CONFIG 1',self.config)
@@ -113,7 +114,32 @@ class Haas:
         # self.config = cp.ConfigParser().read('config.ini')
         # return .read('config.ini')‹#3  £
         pass
+
+    def bot_config(self,bot):
+        botdict = {
+            "roi":float(bot.roi),
+            "interval":int(bot.interval),
+            "signalconsensus":bool(bot.useTwoSignals),
+            "resetmiddle":bool(bot.bBands["ResetMid"]),
+            "allowmidsells":bool(bot.bBands["AllowMidSell"]),
+            "matype":bot.bBands["MaType"],
+            "fcc":bool(bot.bBands["RequireFcc"]),
+            "rsil":str(bot.rsi["RsiLength"]),
+            "rsib":str(bot.rsi["RsiOversold"]),
+            "rsis":str(bot.rsi["RsiOverbought"]),
+            "bbl":str(bot.bBands["Length"]),
+            "devup":str(bot.bBands["Devup"]),
+            "devdn":str(bot.bBands["Devdn"]),
+            "macdfast":str(bot.macd["MacdFast"]),
+            "macdslow":str(bot.macd["MacdSlow"]),
+            "macdsign":str(bot.macd["MacdSign"]),
+            "trades":int(len(bot.completedOrders)),
+            "obj":bot,
+            }
+
+        df = pd.DataFrame.from_dict([botdict])
     
+        return df
     def get_server_data(self):
 
         server_api_data = [
@@ -301,8 +327,13 @@ class Haas:
 
 def test():
     h = Haas()
-    # print(h.__dict__)
-
+    h.bot_selector(15)
+    returned_bot = h.c.customBotApi.get_custom_bot(h.bot.guid,EnumCustomBotType(15).name).result
+    
+    
+    
+    
+    
 
 if __name__ == "__main__":
     test()

@@ -258,7 +258,7 @@ class Optimize():
 								stop = int(inquirer.text('Define bBands Length range stop: '))
 								step = int(inquirer.text('Define bBands Length range step: '))
 								self.ranges.indicators.bBands.length = start,stop,step
-								print(f'bBands Length range now set to {start}{stop} with step {step}')
+								# print(f'bBands Length range now set to {start}{stop} with step {step}')
 								try:
 										self.config.add_section('MH_INDICATOR_RANGES')
 								except:
@@ -297,10 +297,10 @@ class Optimize():
 						# 		)
 						print(f'{bot.name} bBands Length set to {int(configs.bbl.iloc[i])}')
 						
-						print('bBands L',do.errorCode,do.errorMessage)
+						# print('bBands L',do.errorCode,do.errorMessage)
 						print('Now backtesting...')
 						bt = self.c.customBotApi.backtest_custom_bot(bot.guid,self.read_ticks())
-						print(bt.errorCode,bt.errorMessage)
+						# print(bt.errorCode,bt.errorMessage)
 						print(f'{int(configs.bbl.iloc[i])} length ROI: {bt.result.roi} %')
 						configs.loc[i,'roi'] = bt.result.roi
 						configs.loc[i,'obj'] = bt.result
@@ -336,8 +336,8 @@ class Optimize():
 												new_configs.drop(i,axis=1,inplace=True)
 										except:
 												pass
-						print('configs',configs)
-						print('new configs',new_configs)
+						# print('configs',configs)
+						# print('new configs',new_configs)
 						
 						unique_configs = new_configs.merge(configs,how='outer',indicator=True).loc[lambda x:x['_merge'] == 'left_only']
 						for i in columns:

@@ -1,3 +1,4 @@
+from marketdata import MarketData
 class HaasDash(MarketData):
     def __init__(self):
         MarketData.__init__(self)
