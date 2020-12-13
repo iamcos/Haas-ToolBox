@@ -2,19 +2,19 @@ import datetime
 import os
 
 import altair as alt
-import pandas as pd
-import pandas_ta as ta
+
+
 import plotly.graph_objects as go
 import streamlit as st
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-from numpy.ma import arange
 
+from numpy.ma import arange
 from haas import Haas
 from marketdata import MarketData as md
-
+import pandas as pd
+import pandas_ta as ta
 import talib
 from talib import MA_Type
-
 
 # from elasticsearch import Elasticsearch as es
 

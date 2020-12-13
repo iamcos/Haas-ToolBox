@@ -370,17 +370,18 @@ class Optimize():
 				dev_menu = [
 										'test',
 										'Interval',
-										'Signal Consensus',
-										'bBands length',
-										'bBands Devup',
-										'bBands Devdown',
-										'MA Type',
-										'Rsi Length',
-										'Rsi Buy',
-										'Rsi Sell',
-										'MACD Slow',
-										'MACD Fast',
-										'MACD Signal',
+										# 'Signal Consensus',
+										# 'bBands length',
+										# 'bBands Devup',
+										# 'bBands Devdown',
+										# 'MA Type',
+										# 'Rsi Length',
+										# 'Rsi Buy',
+										# 'Rsi Sell',
+										# 'MACD Slow',
+										# 'MACD Fast',
+										# 'MACD Signal',
+										'New configs'
 										]
 				
 				self.parameter = {}
@@ -419,3 +420,7 @@ class Optimize():
 						pass
 				elif response == 'MACD Signal':
 						pass
+				elif response == 'New configs':
+						ranges = self.create_configs_from_top_results()
+						
+						

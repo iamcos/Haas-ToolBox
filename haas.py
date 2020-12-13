@@ -25,7 +25,7 @@ class Haas:
         self.secret = None
         self.check_config()
         self.c = self.client()
-        self.live = True
+        self.live = False
 
     def return_config(self):
         # print('CONFIG 1',self.config)
