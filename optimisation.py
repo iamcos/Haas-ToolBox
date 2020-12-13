@@ -320,8 +320,14 @@ class Optimize():
 				
 				else:
 						self.config_storage[self.bot.guid] = bt_results
-						print(self.config_storage[self.bot.guid].drop('obj',axis=1))
-						print(f'Backtesting storage pool has been created and updated with current backtesting session results.')
+						
+						try:
+							print(self.config_storage[self.bot.guid].drop('obj',axis=1))
+						except:
+							print(self.config_storage[self.bot.guid])
+						print(
+							f'Backtesting storage pool has been created and updated with current '
+							f'backtesting session results.')
 		
 		def remove_already_backtested(self,new_configs):
 				columns = self.columns
@@ -332,26 +338,23 @@ class Optimize():
 						for i in configs.columns:
 								if i not in columns:
 										try:
-												configs.drop(i,axis=1,inplace=True)
-												new_configs.drop(i,axis=1,inplace=True)
+											configs.drop(i,axis=1,inplace=True)
+											new_configs.drop(i,axis=1,inplace=True)
 										except:
-												pass
-						# print('configs',configs)
-						# print('new configs',new_configs)
+											pass
 						
-						unique_configs = new_configs.merge(configs,how='outer',indicator=True).loc[lambda x:x['_merge'] == 'left_only']
+						unique_configs = new_configs.merge(configs,how='outer',indicator=True).loc[
+							lambda x:x['_merge'] == 'left_only']
 						for i in columns:
-								if i not in columns:
-										unique_configs.drop(i,axis=1,inplace=True)
+							if i not in columns:
+								unique_configs.drop(i,axis=1,inplace=True)
 						print('unique configs',unique_configs)
-						print(f'Duplicate configs removed, {len(unique_configs.index)} will be backtested.')
+						print(f'Duplicate configs removed, {len(unique_configs.index)} new')
 						return unique_configs
 				
 				else:
 						return new_configs
 		
-		def print_completed_configs(self):
-				print(self.config_storage(self.bot.guid))
 		def bruteforce_menu(self):
 				live_menu = [
 										'Interval',

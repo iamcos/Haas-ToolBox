@@ -25,6 +25,8 @@ class Haas:
         self.secret = None
         self.check_config()
         self.c = self.client()
+        self.c = HaasomeClient(self.ip,self.secret)
+        self.ticks = self.read_ticks()
         self.live = False
 
     def return_config(self):
@@ -115,31 +117,7 @@ class Haas:
         # return .read('config.ini')‹#3  £
         pass
 
-    def bot_config(self,bot):
-        botdict = {
-            "roi":float(bot.roi),
-            "interval":int(bot.interval),
-            "signalconsensus":bool(bot.useTwoSignals),
-            "resetmiddle":bool(bot.bBands["ResetMid"]),
-            "allowmidsells":bool(bot.bBands["AllowMidSell"]),
-            "matype":bot.bBands["MaType"],
-            "fcc":bool(bot.bBands["RequireFcc"]),
-            "rsil":str(bot.rsi["RsiLength"]),
-            "rsib":str(bot.rsi["RsiOversold"]),
-            "rsis":str(bot.rsi["RsiOverbought"]),
-            "bbl":str(bot.bBands["Length"]),
-            "devup":str(bot.bBands["Devup"]),
-            "devdn":str(bot.bBands["Devdn"]),
-            "macdfast":str(bot.macd["MacdFast"]),
-            "macdslow":str(bot.macd["MacdSlow"]),
-            "macdsign":str(bot.macd["MacdSign"]),
-            "trades":int(len(bot.completedOrders)),
-            "obj":bot,
-            }
 
-        df = pd.DataFrame.from_dict([botdict])
-    
-        return df
     def get_server_data(self):
 
         server_api_data = [
@@ -222,19 +200,15 @@ class Haas:
         delta_minutes = delta.total_seconds() / 60
 
         return int(delta_minutes)
-    
+
     def bot_selector(self,botType,multi=False):
-        try:
-            bots = [
-                x
-                for x in self.c.customBotApi.get_all_custom_bots().result
-                if x.botType == botType
-                ]
-        except Exception as e:
-            print('Bot_selector exception',e)
-            print(f'There are zero bots of selected type.\n'
-                  f'Create at least one manally and re-run the app')
-        
+    
+        bots = [
+            x
+            for x in self.c.customBotApi.get_all_custom_bots().result
+            if x.botType == botType
+            ]
+    
         bots.sort(key=lambda x:x.name,reverse=False)
         b2 = [(f"{i.name} {i.priceMarket.primaryCurrency}-"
                f"{i.priceMarket.secondaryCurrency}, {i.roi}",i) for i in bots]

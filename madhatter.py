@@ -1,24 +1,23 @@
 import datetime
 import json
-from technical_analysis_for_haas import TA
+
 import inquirer
 import pandas as pd
 from alive_progress import alive_bar
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
-from haasomeapi.HaasomeClient import HaasomeClient
 from inquirer.themes import GreenPassion
 from ratelimit import limits,sleep_and_retry
 
+from finetune import FineTune
 from haas import Haas
 from marketdata import MarketData
 from optimisation import Optimize
-from finetune import FineTune
+from technical_analysis_for_haas import TA
 
-class MadHatterBot(Haas,Optimize, FineTune, TA):
+
+class MadHatterBot(Haas,Optimize,FineTune,TA):
     def __init__(self):
         Haas.__init__(self)
-        self.c = HaasomeClient(self.ip,self.secret)
-        self.ticks = self.read_ticks()
         self.stoploss_range = None
         self.num_configs = None
         self.limit = None
@@ -111,13 +110,10 @@ class MadHatterBot(Haas,Optimize, FineTune, TA):
             "macdslow":str(bot.macd["MacdSlow"]),
             "macdsign":str(bot.macd["MacdSign"]),
             "trades":int(len(bot.completedOrders)),
-            "obj":bot,
+            "obj":bot
             }
-        # "pricesource": EnumPriceSource(bot.priceMarket.priceSource).name,
-        # "primarycoin": bot.priceMarket.primaryCurrency,
-        # "secondarycoin": bot.priceMarket.secondaryCurrency,
-        df = pd.DataFrame.from_dict([botdict])
-        
+        df = pd.DataFrame(botdict,index=[0])
+
         return df
     
     def set_ranges(self):
@@ -365,10 +361,6 @@ class MadHatterBot(Haas,Optimize, FineTune, TA):
         
         return do
     
-    # print(bot.name, ' Has been configured')
-    # Indicator parameters have been set
-    # calling it setup_bot_from_obj. It checks each parameter against new config.
-    # updated_bot = self.c.customBotApi.get_custom_bot(self.bot.guid,self.bot.botType)
     
     def setup_bot_from_obj(self,bot,config,print_errors=False):
         
@@ -524,7 +516,7 @@ class MadHatterBot(Haas,Optimize, FineTune, TA):
             print(do.errorCode,do.errorMessage)
     
     def bt(self):
-        
+    
         if self.num_configs > len(self.configs.index):
             self.num_configs == len(self.configs.index)
             print(
@@ -533,40 +525,47 @@ class MadHatterBot(Haas,Optimize, FineTune, TA):
                 )
         print("index",self.configs.index)
         print("the configs",self.configs)
-        
-        bt_results = self.iterate_csv(self.configs[0: self.num_configs],self.bot)
-        obj_file_name = (
-            f'./bt_results/{self.bot.name.replace("/","_")}_'
-            f'{datetime.date.today().month}'
-            f"_{datetime.date.today().day}.obj"
-        )
-        objects = bt_results.obj
-        objects.to_pickle(obj_file_name)
-        to_csv = bt_results.drop("obj",axis=1)
-        
-        filename = (
-            str(self.bot.name.replace("/","_"))
-            + str("_")
-            + str(datetime.date.today().month)
-            + str("-")
-            + str(datetime.date.today().day)
-            + str("_")
-            + str(len(bt_results))
-            + str(".csv")
-        )
-        to_csv.sort_values(by="roi",ascending=False,inplace=True)
-        to_csv.drop_duplicates()
-        to_csv.reset_index(inplace=True,drop=True)
-        to_csv.to_csv(filename)
+    
+        unsorted_results = self.iterate_csv(self.configs[0: self.num_configs],self.bot)
+        bt_results = self.save_and_sort_results(unsorted_results)
+        self.store_results(bt_results)
+        return bt_results
+    
+    def save_and_sort_results(self,bt_results,obj=True,csv=True):
+        if obj:
+            obj_file_name = (
+                f'./bt_results/{self.bot.name.replace("/","_")}_'
+                f'{datetime.date.today().month}'
+                f"_{datetime.date.today().day}.obj"
+            )
+            objects = bt_results.obj
+            objects.to_pickle(obj_file_name)
+            to_csv = bt_results.drop("obj",axis=1)
+        if csv:
+            filename = (
+                str(self.bot.name.replace("/","_"))
+                + str("_")
+                + str(datetime.date.today().month)
+                + str("-")
+                + str(datetime.date.today().day)
+                + str("_")
+                + str(len(bt_results))
+                + str(".csv")
+            )
+            to_csv.sort_values(by="roi",ascending=False,inplace=True)
+            to_csv.drop_duplicates()
+            to_csv.reset_index(inplace=True,drop=True)
+            to_csv.to_csv(filename)
         
         bt_results.sort_values(by="roi",ascending=False,inplace=True)
         bt_results.drop_duplicates()
         bt_results.reset_index(inplace=True,drop=True)
-        self.store_results(bt_results)
+        return bt_results
     
     def setup_mh_bot(self):
         bot = self.bot
         configs = self.config_storage[bot.guid]
+        print('configs',configs)
         if self.limit > len(configs.index):
             self.limit = len(configs.index)
         # print('set configs limit', self.limit)
@@ -738,12 +737,13 @@ class MadHatterBot(Haas,Optimize, FineTune, TA):
     
     def menu(self):
         live_menu = [
-            # 'test',
+    
             "Select Bots",
             "Select config file",
             "Set configs limit",
             "Set create limit",
-            "Stoploss",
+            "Find Stoploss",
+    
             "Config optimisation",
             "Change backtesting date",
             # 'Completed Backtests',
@@ -756,7 +756,8 @@ class MadHatterBot(Haas,Optimize, FineTune, TA):
             "Select config file",
             "Set configs limit",
             "Set create limit",
-            "Stoploss",
+            "Find Stoploss",
+            # 'AssistedBT',
             "Config optimisation",
             "Change backtesting date",
             "Start Backtesting",
@@ -781,16 +782,18 @@ class MadHatterBot(Haas,Optimize, FineTune, TA):
                 file = pd.read_csv(self.file_selector())
             elif response == "Set configs limit":
                 self.set_configs_limit()
-            
+
             elif response == "Set create limit":
                 self.set_create_limit()
-            
+            elif response == "AssistedBT":
+                pass
+
             elif response == "Change backtesting date":
                 self.write_date()
-            
+
             elif response == "test":
                 self.bbl_menu()
-            
+
             elif response == "Completed Backtests":
                 menu = [
                     inquirer.List(
@@ -828,8 +831,8 @@ class MadHatterBot(Haas,Optimize, FineTune, TA):
                         pass
                     elif response == "Back":
                         break
-            
-            elif response == "Stoploss":
+
+            elif response == "Find Stoploss":
                 stoploss_menu = [
                     inquirer.List(
                         "stoploss",

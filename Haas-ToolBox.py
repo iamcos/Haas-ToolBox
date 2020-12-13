@@ -9,6 +9,7 @@ from inquirer.themes import GreenPassion
 from botdb import BotDB
 from flashcrashbottools import FlashCrashBot
 from haas import Haas
+from interactivebt import InteractiveBT as AssistedBT
 from madhatter import MadHatterBot
 from marketdata import MarketData
 # from ratelimit import limits, sleep_and_retry
@@ -22,12 +23,13 @@ class MainMenu(Haas):
     def main_screen(self):
 
         choices = [
-            "Scalper Bots",
             "Mad-Hatter Bots",
             'Flash-Crash Bots',
+            'AssistedBT',
+            "Scalper Bots",
             'Create bots from CSV',
             "Quit",
-        ]
+            ]
         loop_count = 10
 
         # os.system('clear')
@@ -55,16 +57,19 @@ class MainMenu(Haas):
         if answers['resp'] == "Flash-Crash Bots":
             fcb = FlashCrashBot()
             d = fcb.menu()
-            
+        if answers['resp'] == "AssistedBT":
+            abt = AssistedBT()
+            m = abt.menu()
 
         if answers['resp'] == "Create bots from CSV":
             multicreate_choices = ['Scalper',
                                    # 'PingPong',
                                    # 'FlashCrash'
-                                   #'Mad-Hatter',
+                                   # 'Mad-Hatter',
                                    ]
-            
-            questions2 = [inquirer.List('resp','Select below: ', choices = multicreate_choices)]
+    
+            questions2 = [
+                inquirer.List('resp','Select below: ',choices=multicreate_choices)]
             
             multicreate_answer = inquirer.prompt(questions2)['resp']
             
