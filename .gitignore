@@ -14,4 +14,4 @@ output/Haas-ToolBox.exe
 *.sublime-workspace
 config.ini
 *.obj
-*.obj
+*.exe
