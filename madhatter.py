@@ -100,7 +100,7 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
         return botlist
     
     def bot_config(self,bot):
-        """[Generates dataframe witb bot configuration of every configurable parameter
+        """[Generates dataframe with bot configuration of every configurable parameter
         together with a bot object]
 
         Args:

@@ -10,7 +10,7 @@ class FineTune:
 	def clean_df(self,df):
 		cols = [
 			"interval",
-			"signalconsensus",
+			"signalconsensus"
 			"fcc",
 			"resetmiddle",
 			"allowmidsells",

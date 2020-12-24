@@ -15,3 +15,6 @@ output/Haas-ToolBox.exe
 config.ini
 *.obj
 *.exe
+scratchpad.py
+haas-toolbox.code-workspace
+config.ini

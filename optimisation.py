@@ -512,10 +512,5 @@ class Optimize:
             print(self.self.configs)
             print(f'2 maybe its not enough?')
 
-   
-   
-    def find_the_effective_parameter(self,config):
-        ∏
 
-        
             
