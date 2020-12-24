@@ -1,15 +1,15 @@
 from time import sleep
-
+import datetime
 import inquirer
 import pandas as pd
 from ratelimit import limits,sleep_and_retry
 
-from haas import Haas
+# from haas import Haas
 
 
-# from madhatter import MadHatterBot
+from madhatter import MadHatterBot
 
-class InteractiveBT(Haas):
+class InteractiveBT(MadHatterBot):
 	"""
 		TODO:
 			* IDEA: combine backtests of a single parameter into a list.
@@ -18,11 +18,7 @@ class InteractiveBT(Haas):
 		"""
 	
 	def __init__(self):
-		Haas.__init__(self)
-		self.limit = 2
-	
-	
-	
+		MadHatterBot.__init__(self)
 	
 	
 	@sleep_and_retry
@@ -36,7 +32,7 @@ class InteractiveBT(Haas):
 		
 		print(f'  1. Have Bot Remote (keypress 1) Visible')
 		print(f'  2. Have selected bot open in Haas Browser interface.')
-		print(f'  3. Open the bot in Full Scren view by')
+		print(f'  3. Open the bot in Full Screen view by')
 		print(f'        clicking the "Full screen" button')
 		print(f'   4. Navigate to indicator parameters tab.')
 		print(f'         i. Click on any integer parameter.')
@@ -53,7 +49,8 @@ class InteractiveBT(Haas):
 		print(f'\n           Rerun Clear bot command, check for empty log .')
 		
 		while self.bot.botLogBook:
-			sleep(0.2)
+			# print(self.bot.botLogBook)
+			sleep(1.5)
 			self.bot = self.c.customBotApi.get_custom_bot(self.bot.guid,15).result
 			
 			config_now = self.bot_config(self.bot)
@@ -62,6 +59,7 @@ class InteractiveBT(Haas):
 				bot_config.drop(["obj",'roi','trades'],axis=1))
 			
 			if not configs_are_the_same:
+				# print(self.bot.botLogBook)
 				bt = self.c.customBotApi.backtest_custom_bot(
 					self.bot.guid,self.ticks
 					).result
@@ -72,17 +70,27 @@ class InteractiveBT(Haas):
 				print(bot_config.drop(["obj"],axis=1))
 		
 		bot = self.bot
-		configs = pd.concat(bt_results)
-		self.store_results(configs)
+		bt_results = pd.concat(bt_results)
+		bt_results = self.save_and_sort_results(bt_results)
+		self.store_results(bt_results)
+		configs = self.config_storage[bot.guid]
+		print(configs)
+		if self.limit >= len(configs.index):
+			self.limit = len(configs.index)
 		for c in range(self.limit):
-			name = f"{bot.name} {c} {configs.roi.iloc[c]}%"
+			
+			
 			self.setup_bot_from_df(bot,configs.iloc[c],print_errors=False)
-			self.c.customBotApi.backtest_custom_bot(bot.guid,self.read_ticks())
+			bot = self.c.customBotApi.backtest_custom_bot(bot.guid,self.read_ticks()).result
+			name = f"{c},{datetime.datetime.today().month}-{datetime.datetime.today().day}," \
+			       f"{configs.roi.iloc[c]}"
 			self.c.customBotApi.clone_custom_bot_simple(bot.accountId,bot.guid,name)
+			print(f'{name} bot has been created')
 		return bt_results
 	
 	
 	def menu(self):
+		self.read_limits()
 		while True:
 			resp = inquirer.list_input(f'{self.bot_print()}',choices=[
 				'Select Bot',
@@ -95,8 +103,9 @@ class InteractiveBT(Haas):
 			if resp == 'Select Bot':
 				self.bot_selector(15)
 			if resp == 'Set Create Limit':
-				self.limit = str(
+				self.limit = int(
 					inquirer.text('Type number top of configs to create as bots at the end?'))
+				self.write_file()
 			if resp == 'Change BT Data':
 				self.write_date()
 			if resp == 'Start AssistedBT':
@@ -110,7 +119,7 @@ class InteractiveBT(Haas):
 		else:
 			return 'No Bot selected'
 
-
+	
 def main():
 	ib = InteractiveBT()
 	ib.menu()

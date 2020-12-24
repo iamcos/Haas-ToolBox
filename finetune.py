@@ -30,7 +30,7 @@ class FineTune:
 			]
 		
 		for c in df.columns:
-			if c not in self.columns:
+			if c not in cols:
 				df.drop(c,axis=1,inplace=True)
 		return df
 	
@@ -95,7 +95,7 @@ class FineTune:
 		for column in self.bool_cols:
 				ranges[column] = [True,False]
 		# ranges['interval'] = self.intervals_list
-		ranges['matype'] = range(0,7)
+		ranges['matype'] = range(0,8)
 		# print(ranges)
 		
 		df = pd.concat([pd.DataFrame(ranges[x],columns=[x]).reset_index() for x in list(ranges.keys())],ignore_index=False,axis=1)

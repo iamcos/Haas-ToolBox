@@ -43,7 +43,7 @@ class MainMenu(Haas):
             answers = inquirer.prompt(questions)
 
             if answers['resp'] == 'AssistedBT':
-                BT = InteractiveBT().backtest(loop_count)
+     
             if answers['resp'] == "Mad-Hatter Bots":
                 bt = self.multiple_bot_auto_bt_menu()
 

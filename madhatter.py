@@ -13,7 +13,7 @@ from haas import Haas
 from marketdata import MarketData
 from optimisation import Optimize
 from technical_analysis_for_haas import TA
-
+from numpy import NaN
 
 class MadHatterBot(Haas,Optimize,FineTune,TA):
     def __init__(self):
@@ -69,21 +69,29 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
             ]
         self.possible_profit = None
     
-    def create_mh(self,input_bot,name):
+    def create_mh(self,example_bot,name):
+        """[summary]
+
+        Args:
+            example_bot : [One bot that will be used as a template for newly created bot. New bot will have the same account id,
+            bot type, primary/secondary currency, contract]
+            name : [newly created bot's name]
+
+        Returns:
+            [type]: [description]
+        """        
         new_mad_hatter_bot = self.c.customBotApi.new_mad_hatter_bot_custom_bot(
-            input_bot.accountId,
-            input_bot.botType,
+            example_bot.accountId,
+            example_bot.botType,
             name,
-            input_bot.priceMarket.primaryCurrency,
-            input_bot.priceMarket.secondaryCurrency,
-            input_bot.priceMarket.contractName,
+            example_bot.priceMarket.primaryCurrency,
+            example_bot.priceMarket.secondaryCurrency,
+            example_bot.priceMarket.contractName,
             )
-        # print(new_mad_hatter_bot.errorCode, new_mad_hatter_bot.errorMessage)
-        # print(new_mad_hatter_bot.result)
         return new_mad_hatter_bot.result
     
     @sleep_and_retry
-    @limits(calls=3,period=2)
+    @limits(calls=5,period=1)
     def return_botlist(self):
         bl = self.c.customBotApi.get_all_custom_bots()
         # print(bl.errorMessage)
@@ -92,6 +100,15 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
         return botlist
     
     def bot_config(self,bot):
+        """[Generates dataframe witb bot configuration of every configurable parameter
+        together with a bot object]
+
+        Args:
+            bot ([type]): [Bot to generate config from]
+
+        Returns:
+            [Dataframe]
+        """        
         botdict = {
             "roi":float(bot.roi),
             "interval":int(bot.interval),
@@ -182,7 +199,6 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
         
         self.ranges = ranges
         
-        # ranges = jsonpickle.encode(ranges,unpicklable=False)
         return ranges
     
     def setup_bot_from_df(self,bot,config,print_errors=False):
@@ -305,7 +321,7 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
             print("macd",do.errorCode,do.errorMessage)
         
         do = self.c.customBotApi.setup_mad_hatter_bot(
-            # This code sets time interval as main goalj
+            # This code sets time interval
             botName=bot.name,
             botGuid=bot.guid,
             accountGuid=bot.accountId,
@@ -329,7 +345,7 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
             print("macd",do.errorCode,do.errorMessage)
         
         do = self.c.customBotApi.setup_mad_hatter_bot(
-            # This code sets time interval as main goalj
+            # This code sets time interval
             botName=bot.name,
             botGuid=bot.guid,
             accountGuid=bot.accountId,
@@ -540,7 +556,7 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
             )
             objects = bt_results.obj
             objects.to_pickle(obj_file_name)
-            to_csv = bt_results.drop("obj",axis=1)
+            
         if csv:
             filename = (
                 str(self.bot.name.replace("/","_"))
@@ -552,6 +568,7 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
                 + str(len(bt_results))
                 + str(".csv")
             )
+            to_csv = bt_results.drop("obj",axis=1)
             to_csv.sort_values(by="roi",ascending=False,inplace=True)
             to_csv.drop_duplicates()
             to_csv.reset_index(inplace=True,drop=True)
@@ -562,13 +579,12 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
         bt_results.reset_index(inplace=True,drop=True)
         return bt_results
     
-    def setup_mh_bot(self):
+    def create_top_bots(self):
         bot = self.bot
         configs = self.config_storage[bot.guid]
         print('configs',configs)
         if self.limit > len(configs.index):
             self.limit = len(configs.index)
-        # print('set configs limit', self.limit)
         for c in range(self.limit):
             name = f"{bot.name} {c} {configs.roi.iloc[c]}%"
             self.setup_bot_from_df(bot,configs.iloc[c],print_errors=False)
@@ -617,7 +633,6 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
                             f"Current Backtest ROI:  {bt.roi} % 	best ROI: "
                             f"{best_roi}%."
                             )
-                        self.calculate_possible_roi()
                         print(f"Market growth during BT period: {self.possible_profit}")
                         
                         print("\nTop 10 configs so far:\n")
@@ -648,7 +663,7 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
             return configs
         except (KeyboardInterrupt,SystemExit):
             filename = (
-                str(b.name.replace("/","_"))
+                str(bot.name.replace("/","_"))
                 + str("_")
                 + str(datetime.date.today().month)
                 + str("-")
@@ -780,6 +795,7 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
                 bot = self.bot_selector(15,multi=True)
             elif response == "Select config file":
                 file = pd.read_csv(self.file_selector())
+                self.configs.roi = NaN
             elif response == "Set configs limit":
                 self.set_configs_limit()
 
@@ -864,12 +880,13 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
             elif response == "Start Backtesting":
                 if self.configs is not pd.DataFrame:
                     self.configs = pd.read_csv("./bots.csv")
+                    self.configs.roi = NaN
                 for b in self.bots:
                     
                     self.bot = b
                     
                     self.bt()
-                    self.setup_mh_bot()
+                    self.create_top_bots()
             
             elif response == "Main Menu":
                 break
@@ -892,7 +909,7 @@ class MadHatterBot(Haas,Optimize,FineTune,TA):
         self.configs = self.configs[0:5]
         self.configs.reset_index(inplace=True,drop=True)
         self.bt()
-        self.setup_mh_bot()
+        self.create_top_bots()
     
     def calculate_average_trade(self):
 

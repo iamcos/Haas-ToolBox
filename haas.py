@@ -8,7 +8,7 @@ import pandas as pd
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.HaasomeClient import HaasomeClient
 from inquirer.themes import GreenPassion
-
+from numpy import NaN
 
 class Haas:
     """
@@ -254,6 +254,15 @@ class Haas:
         return files
     
     def file_selector(self,path="."):
+        """[Displays multiple files and allows for t heir selection
+        Selection then sets self.file path for reference and 
+        reads confis into a database self.configs]
+
+        Args:
+            path (str, optional): [description]. Defaults to ".".
+
+        tsm
+        """        
         files = self.get_csv_files(path)
         # print(files[0:5])
         question = [
@@ -263,8 +272,8 @@ class Haas:
         selection = inquirer.prompt(question,theme=GreenPassion())
         self.file = selection["file"]
         self.configs = pd.read_csv(self.file)
+        
 
-        return self.file
     
     def last_trades_to_df(self,trades):
         df = [
