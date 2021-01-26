@@ -4,7 +4,7 @@
 .DS_Store
 __pycache__
 Misc
-
+/haasomeapi_2/
 /env/
 .idea/
 
@@ -18,3 +18,4 @@ config.ini
 scratchpad.py
 haas-toolbox.code-workspace
 config.ini
+pandas_dataframe_notes.py

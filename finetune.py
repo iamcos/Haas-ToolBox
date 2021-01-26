@@ -37,7 +37,7 @@ class FineTune:
 	
 	def create_configs_from_top_results(self):
 
-		self.columns = [
+		columns = [
 			"interval",
 			"signalconsensus",
 			"fcc",
@@ -57,7 +57,7 @@ class FineTune:
 			"roi",
 			"obj",
 			]
-		self.int_cols = [
+		int_cols = [
 			'rsil',
 			"rsib",
 			"rsis",
@@ -66,21 +66,21 @@ class FineTune:
 			"macdslow",
 			"macdsign",
 			]
-		self.float_cols = [
+		float_cols = [
 			"devup",
 			"devdn",
 			]
-		self.bool_cols = [
+		bool_cols = [
 			"signalconsensus",
 			"fcc",
 			"resetmiddle",
 			"allowmidsells",
 			]
-		self.range_cols = [
+		range_cols = [
 			"matype",
 			"interval",
 			]
-		top_configs = pd.read_csv('BTC_USDT 9 0.0%_12-12_40.csv')[:3]
+		top_configs = pd.read_csv('bots.csv')[:3]
 		# top_configs = self.config_storage(self.bot.guid)[0:5]
 		top_configs = self.clean_df(top_configs)
 		# print(top_configs)
@@ -88,15 +88,15 @@ class FineTune:
 		columns = top_configs.columns
 		ranges = {}
 		
-		for column in self.float_cols:
+		for column in float_cols:
 				ranges[column] = arange(top_configs[column].min(), top_configs[column].max(), 0.2)
-		for column in self.int_cols:
+		for column in int_cols:
 				ranges[column] = range(int(top_configs[column].min()), int(top_configs[column].max()), 2)
-		for column in self.bool_cols:
+		for column in bool_cols:
 				ranges[column] = [True,False]
-		# ranges['interval'] = self.intervals_list
+		# ranges['interval'] = intervals_list
 		ranges['matype'] = range(0,8)
-		# print(ranges)
+	
 		
 		df = pd.concat([pd.DataFrame(ranges[x],columns=[x]).reset_index() for x in list(ranges.keys())],ignore_index=False,axis=1)
 

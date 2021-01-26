@@ -2,7 +2,7 @@ import time
 
 import pandas as pd
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-
+import matplotlib.pyplot as plt
 from BaseHaas_orig import BotDB
 from haas import Haas
 from ratelimit import limits
@@ -151,7 +151,7 @@ class MarketData(Haas):
             return str(x).capitalize()
 
         data.rename(uppercase,axis="columns",inplace=True)
-        data["Data"] = pd.to_datetime(data["Data"])
+        data["Date"] = pd.to_datetime(data["Date"])
         dti = pd.DatetimeIndex([x for x in data["Date"]])
         data.set_index(dti,inplace=True)
         # print(data)

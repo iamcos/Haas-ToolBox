@@ -2,9 +2,12 @@ import inquirer
 import pandas as pd
 from haasomeapi.enums.EnumMadHatterSafeties import EnumMadHatterSafeties
 from numpy.ma import arange
-from numpy import NaN
+
 
 class Optimize:
+
+
+
     """Stoploss/parameter bruteforcers and useful tools are located here
     """    
     def set_stoploss_range(self):
@@ -94,45 +97,6 @@ class Optimize:
             print(f"Stoploss search has been expanded by 5 more steps")
             self.find_stoploss()
 
-    def intervals_menu(self):
-        try:
-            range = self.ranges.bot.intervals.selected
-        except:
-            range = self.ranges.bot.intervals.selected = self.select_intervals()
-        i_menu = [
-            inquirer.List(
-                "response",
-                message=f"Selected intervals: { range} :",
-                choices=[
-                    "Select Bots",
-                    "Select Intervals",
-                    "Backtest Selected Intervals",
-                    "Backtest all Intervals",
-                    "Back",
-                ],
-            )
-        ]
-
-        while True:
-            response = inquirer.prompt(i_menu)["response"]
-
-            if response == "Select Intervals":
-                self.ranges.bot.intervals.selected = self.select_intervals()
-
-            elif response == "Backtest Selected Intervals":
-
-                self.bt_intervals()
-
-            elif response == "Backtest all Intervals":
-                self.ranges.bot.intervals.selected = self.ranges.bot.intervals.list
-                self.bt_intervals()
-
-            elif response == "Select Bots":
-                bot = self.bot_selector(15)
-            elif response == "Back":
-                break
-            elif response == "test":
-                pass
 
     def bt_intervals(self):
         try:
@@ -150,7 +114,6 @@ class Optimize:
                     self.bots = [self.bot]
             else:
                 print("Select Intervals first")
-                self.select_intervals()
                 self.bt_intervals()
         except Exception as e:
             print("error in bt_intervals", e)
@@ -248,79 +211,8 @@ class Optimize:
         self.store_results(bt_results2)
         return bt_results
 
-    def select_intervals(self):
 
-        intervals = [
-            inquirer.Checkbox(
-                "intervals",
-                message="Select required intervals using space, confirm with enter: ",
-                choices=self.ranges.bot.intervals.list,
-            )
-        ]
-        selected_intervals = inquirer.prompt(intervals)["intervals"]
-        self.config.set("MH_LIMITS", "selected_intervals", str(selected_intervals))
-        self.write_file()
 
-        return selected_intervals
-
-    def bbl_menu(self):
-
-        live_menu = [
-            # 'test',
-            "Select Bot",
-            "Change length range",
-            "Change BT date",
-            "Backtest range",
-            # 'Discover profit',
-            "Back",
-        ]
-        dev_menu = [
-            "test",
-            "Select Bot",
-            "Change length range",
-            "Change BT date",
-            "Backtest range",
-            "Discover profit",
-            "Back",
-        ]
-
-        bbl_menu = [
-            inquirer.List(
-                "response",
-                message=f"BB Length range: {self.ranges.indicators.bBands.length}",
-                choices=live_menu if self.live else dev_menu,
-            )
-        ]
-        while True:
-            response = inquirer.prompt(bbl_menu)["response"]
-            if response == "Select Bot":
-                bot = self.bot_selector(15)
-            elif response == "Change length range":
-                start = int(inquirer.text("Define bBands Length range start: "))
-                stop = int(inquirer.text("Define bBands Length range stop: "))
-                step = int(inquirer.text("Define bBands Length range step: "))
-                self.ranges.indicators.bBands.length = start, stop, step
-                # print(f'bBands Length range now set to {start}{stop} with step {step}')
-                try:
-                    self.config.add_section("MH_INDICATOR_RANGES")
-                except:
-                    pass
-                self.config.set(
-                    "MH_INDICATOR_RANGES",
-                    "length_range",
-                    str(self.ranges.indicators.bBands.length),
-                )
-                self.write_file()
-            elif response == "Backtest range":
-                self.backtest_bbands_length()
-            elif response == "test":
-                self.get_first_bot()
-                self.ranges.indicators.bBands.length = 2, 5, 1
-                self.backtest_bbands_length()
-                self.ranges.indicators.bBands.length = 3, 7, 1
-                self.backtest_bbands_length()
-            elif response == "Back":
-                break
 
     def backtest_bbands_length(self):
         bot = self.bot
@@ -337,7 +229,7 @@ class Optimize:
 
         for i in range(len(configs.index)):
 
-            do = self.setup_bot_from_csv(bot=self.bot, config=configs.iloc[i])
+            do = self.setup_bot_from_df(bot=self.bot, config=configs.iloc[i])
             # do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
             # 		bot.guid,EnumMadHatterIndicators.BBANDS,0,int(configs.bbl.iloc[i])
             # 		)
@@ -352,165 +244,4 @@ class Optimize:
             configs.loc[i, "obj"] = bt.result
         self.store_results(configs)
 
-    def store_results(self, bt_results):
 
-        if self.bot.guid in self.config_storage:
-            configs = self.config_storage[self.bot.guid]
-
-            configs = configs.append(bt_results)
-            configs.reset_index(inplace=True, drop=True)
-            configs.sort_values(by="roi", ascending=False)
-            configs.drop_duplicates(subset=self.columns, inplace=True)
-            self.config_storage[self.bot.guid] = configs
-            print(
-                f"backtesting results have been added to current backtesting session storage pool."
-            )
-
-        else:
-            self.config_storage[self.bot.guid] = bt_results
-
-            try:
-                print(self.config_storage[self.bot.guid].drop("obj", axis=1))
-            except:
-                print(self.config_storage[self.bot.guid])
-            print(
-                f"Backtesting storage pool has been created and updated with current "
-                f"backtesting session results."
-            )
-
-    def remove_already_backtested(self, new_configs):
-        columns = self.columns
-        if self.bot.guid in self.config_storage:
-
-            stored_configs = self.config_storage[self.bot.guid].drop(
-                ["obj"], axis=1
-            )
-            new_configs = new_configs.drop(["obj"], axis=1)
-            for i in stored_configs.columns:
-                if i not in columns:
-                    try:
-                        stored_configs.drop(i, axis=1, inplace=True)
-                        new_configs.drop(i, axis=1, inplace=True)
-                    except Exception as e:
-                        print(e)
-
-            unique_configs = new_configs.merge(
-                stored_configs, how="outer", indicator=True
-            ).loc[lambda x: x["_merge"] == "left_only"]
-            for i in columns:
-                if i not in columns:
-                    unique_configs.drop(i, axis=1, inplace=True)
-            print("unique configs", unique_configs)
-            print(f"Duplicate configs removed, {len(unique_configs.index)} new")
-            return unique_configs
-
-        else:
-            return new_configs
-
-    def bruteforce_menu(self):
-        live_menu = [
-            "Interval",
-            # 'Signal Consensus',
-            "bBands length",
-            # 'bBands Devup',
-            # 'bBands Devdown',
-            # 'MA Type',
-            # 'Rsi Length',
-            # 'Rsi Buy',
-            # 'Rsi Sell',
-            # 'MACD Slow',
-            # 'MACD Fast',
-            # 'MACD Signal',
-        ]
-        dev_menu = [
-            "test",
-            "Interval",
-            # 'Signal Consensus',
-            # 'bBands length',
-            # 'bBands Devup',
-            # 'bBands Devdown',
-            # 'MA Type',
-            # 'Rsi Length',
-            # 'Rsi Buy',
-            # 'Rsi Sell',
-            # 'MACD Slow',
-            # 'MACD Fast',
-            # 'MACD Signal',
-            "New configs",
-        ]
-
-        self.parameter = {}
-        bf_menu = [
-            inquirer.List(
-                "response",
-                message="Select a parameter to bruteforce:",
-                choices=live_menu if self.live else dev_menu,
-            )
-        ]
-
-        response = inquirer.prompt(bf_menu)["response"]
-
-        if response == "Interval":
-            self.response = response
-            self.intervals_menu()
-        elif response == "Signal Consensus":
-            self.response = response
-            self.bt_consensus()
-        elif response == "bBands length":
-            self.bbl_menu()
-        elif response == "bBands Devup":
-            pass
-        elif response == "bBands Devdown":
-            pass
-        elif response == "MA Type":
-            pass
-        elif response == "Rsi Length":
-            pass
-        elif response == "Rsi Buy":
-            pass
-        elif response == "Rsi Sell":
-            pass
-        elif response == "MACD Slow":
-            pass
-        elif response == "MACD Fast":
-            pass
-        elif response == "MACD Signal":
-            pass
-        elif response == "New configs":
-            ranges = self.create_configs_from_top_results()
-
-    def find_difference_between_two_configs_by_id(self, first_config, second_config):
-        """Returns the difference in configuration parameters between two configs.
-        It subtracts one config from another, creating new row with difference in it.
-
-        Args:
-            first_config [integer] : index of required config
-            second_config [integer] : index of required config
-
-        Returns:
-            [dataframe]: containing first config, second config and difference in configuration parameters in 3 rows.
-
-        """        
-        if self.configs.roi.iloc[second_config] is not NaN:
-        
-          
-            first_config = self.configs.iloc[first_config]
-            second_config = self.configs.iloc[second_config]
-            changes  = pd.merge(first_config,second_config,how='outer', on=self.configs.columns).set_index(['key_0'],drop=True)
-            changes.replace(True,1,inplace=True)
-            changes.replace(False,0,inplace=True)
-            changes = self.clean_df(changes.T)
-            changes = changes.append(changes.diff(axis=0).iloc[1])
-            changes.reset_index(inplace=True, drop=True)
-            # changes.rename_axis('DA',inplace=True)
-            print(changes)
-            return changes
-          
-         
-                    
-        else:
-            print(self.self.configs)
-            print(f'2 maybe its not enough?')
-
-
-            
