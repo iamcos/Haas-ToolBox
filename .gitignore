@@ -19,3 +19,6 @@ scratchpad.py
 haas-toolbox.code-workspace
 config.ini
 pandas_dataframe_notes.py
+sigparse/
+haasnlp.py
+tradingviewta.py

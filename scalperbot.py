@@ -1,11 +1,13 @@
-import pandas as pd
-import inquirer
-from haas import Haas
 import datetime
-from alive_progress import alive_bar
-from tqdm import tqdm
+
+import inquirer
 import numpy as np
+import pandas as pd
+from alive_progress import alive_bar
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
+from tqdm import tqdm
+
+from haas import Haas
 
 
 class ScalperBot(Haas):
@@ -23,12 +25,15 @@ class ScalperBot(Haas):
 	
 	
 	def markets_selector(self):
-		
-		markets = self.c.marketDataApi.get_all_price_markets().result
+		for i in self.accounts:
+			print(i,self.accounts)
+			for k in list(i.keys()):
+				print('i',i,'k',k)
+		markets = self.c.marketDataApi.get_price_markets(self.accounts).result
 		m2 = [
 			(
-				f"{EnumPriceSource(i.priceSource).name},{i.primaryCurrency}-"
-        f"{i.secondaryCurrency}",
+				f"{EnumPriceSource(i.priceSource).name},{i.primaryCurrency}/"
+				f"{i.secondaryCurrency}",
 				i,
 				)
 			for i in markets
@@ -53,7 +58,7 @@ class ScalperBot(Haas):
 			contractname=bot.priceMarket.contractName,
 			leverage=bot.leverage,
 			amountType=bot.amountType,
-			tradeamount=bot.tradeamount,
+			tradeamount=bot.currentTradeAmount,
 			position=bot.coinPosition,
 			fee=bot.currentFeePercentage,
 			targetpercentage=targetpercentage,
@@ -209,6 +214,7 @@ class ScalperBot(Haas):
 					"Backtest",
 					"backtest every bot",
 					"Change backtesting date",
+					'Populate with bots',
 					"Main menu",
 					],
 				)
@@ -224,7 +230,9 @@ class ScalperBot(Haas):
 				self.set_targetpercentage_range()
 			elif user_response == "Change backtesting date":
 				self.write_date()
-			
+			elif user_response == 'Populate with bots':
+				self.populate_virtual_wallet()
+				
 			elif user_response == "Backtest":
 				self.backtest()
 			elif user_response == "backtest every bot":
@@ -234,14 +242,45 @@ class ScalperBot(Haas):
 				sb.backtest()
 			elif user_response == "Main menu":
 				break
+	
+	
+	def populate_virtual_wallet(self):
+		accounts = self.c.accountDataApi.get_all_account_details().result
+		# for i in list(accounts.keys()):
+		# 	# print(i,accounts[i].__dict__)
+		a = [
+			(
+				f"{accounts[i].name},{accounts[i].isSimulatedAccount}-",
+				accounts[i],
+				)
+			for i in accounts
+			]
+		question = [inquirer.Checkbox("accounts",message="Select markets",choices=a)]
+		
+		selection = inquirer.prompt(question)
+		self.accounts = selection["accounts"]
+		self.markets_selector()
+		print(self.accounts)
+		for i in self.accounts:
+			for m in self.markets:
+				try:
+					self.c.customBotApi.new_custom_bot(
+						accountguid=i,
+						bottype=3,
+						botname=f'{m.primaryCurrency} {m.secondaryCurrency}',
+						primarycoin=m.primaryCurrency,
+						secondarycoin=m.secondaryCurrency,
+						contractname=m.contractName)
 
-
-
+				except Exception as e:
+					print(e,i)
 def main():
 	sb = ScalperBot()
 	sb.scalper_bot_menu()
-	# sb.bot = sb.return_scalper_bots()[0:2]
-	# print(sb.bot)
+
+
+# sb.bot = sb.return_scalper_bots()[0:2]
+# print(sb.bot)
 
 
 if __name__ == "__main__":
