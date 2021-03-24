@@ -24,3 +24,5 @@ haasnlp.py
 tradingviewta.py
 haasnlp.py
 haasnlp2.py
+*.gz
+*.pydevinfo
