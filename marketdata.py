@@ -2,7 +2,7 @@ import time
 
 import pandas as pd
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-from BaseHaas_orig import BotDB
+from botdb import BotDB
 from haas import Haas
 from ratelimit import limits
 

@@ -3,10 +3,10 @@ import datetime
 import os
 import time
 
-import inquirer
+from InquirerPy import inquirer
 import pandas as pd
 from haasomeapi.HaasomeClient import HaasomeClient
-from inquirer.themes import GreenPassion
+
 
 
 
@@ -27,7 +27,7 @@ class Haas:
 
 			self.c = HaasomeClient(self.ip,self.secret)
 			self.ticks = self.read_ticks()
-			self.live = True
+
 
 
 		def read_range(self,vars=vars):
@@ -120,26 +120,16 @@ class Haas:
 
 		def get_server_data(self):
 
-			server_api_data = [
-				inquirer.Text(
-					"ip","Type Haas Local api IP like so: 127.0.0.1",default="127.0.0.1"
-					),
-				inquirer.Text(
-					"port","Type Haas Local api PORT like so: 8095",default="8095"
-					),
-				inquirer.Text(
-					"secret",
-					"Type Haas Local Key (Secret) like so: 123",
-					),
-				]
-			connection_data = inquirer.prompt(server_api_data,theme=GreenPassion())
+
+			ip = inquirer.text(message="Type Haas Local api IP like so: 127.0.0.1",default="127.0.0.1").execute()
+			port = inquirer.text(message="Type Haas Local api PORT like so: 8095",default="8095").execute()
+			secret = inquirer.text(message="Type Haas Local Key (Secret) like so: 123",).execute()
+
+		
 
 			self.config["SERVER DATA"] = {
-				"server_address":"http://"
-								+ connection_data["ip"]
-								+ ":"
-								+ connection_data["port"],
-				"secret":connection_data["secret"],
+				"server_address":f"http://{ip}:{port}",
+				"secret":secret
 				}
 			self.ip = self.config["SERVER DATA"].get("server_address")
 			self.secret = self.config["SERVER DATA"].get("secret")
@@ -155,23 +145,23 @@ class Haas:
 				f"Write min (now {str(datetime.datetime.today().minute)}): ",
 			]
 
-			date_q = [
-				inquirer.Text("y", message=choices[0]),
-				inquirer.Text("m", message=choices[1]),
-				inquirer.Text("d", message=choices[2]),
-				inquirer.Text("h", message=choices[3]),
-				inquirer.Text("min", message=choices[4]),
-			]
+			
+			y= inquirer.text(message=choices[0]).execute()
+			m= inquirer.text(message=choices[1]).execute()
+			d= inquirer.text(message=choices[2]).execute()
+			h= inquirer.text(message=choices[3]).execute()
+			min= inquirer.text(message=choices[4]).execute()
+			
 
 
-			answers = inquirer.prompt(date_q,theme=GreenPassion())
+			
 
 			self.config["BT DATE"] = {
-				"year": answers["y"],
-				"month": answers["m"],
-				"day": answers["d"],
-				"hour": answers["h"],
-				"min": answers["min"],
+				"year": y,
+				"month": m,
+				"day": d,
+				"hour": h,
+				"min": min,
 			}
 
 			self.write_file()
@@ -218,50 +208,49 @@ class Haas:
 		
   
 			bots.sort(key=lambda x:x.name,reverse=False)
-			b2 = [(f"{i.name} {i.priceMarket.primaryCurrency}-"
-				f"{i.priceMarket.secondaryCurrency}, {i.roi}",i) for i in bots]
+			b2 = [{'name':f"{i.name} {i.priceMarket.primaryCurrency}-"
+				f"{i.priceMarket.secondaryCurrency}, {i.roi}",'value':i} for i in bots]
 
 			if multi != True:
-				question = [
-					inquirer.List(
-						"bot",
+				bots = inquirer.select(
+	
 						message="Select SINGLE BOT using arrow and ENTER keys",
 						choices=b2,
-						)
-					]
+						).execute()
+					
 				try:
-					self.bot = inquirer.prompt(question,theme=GreenPassion())['bot']
+					self.bot = bots
 					self.bots = [self.bot]
 				except Exception as e:
 					print("Bot Selection error",e)
 
 
 			else:
-				question = [
-					inquirer.Checkbox(
-						"bots",
+				bots = inquirer.select(
+						
 						message="Select MULTIPLE BOTS (or just one) using SPACEBAR.\n"
 								"   Confirm selection using ENTER.",
 						choices=b2,
-						)
-					]
+						multiselect=True
+						).execute()
+					
 
 				try:
-					self.bots = inquirer.prompt(question,theme=GreenPassion())['bots']
+					self.bots = bots
 
 				except Exception as e:
 					print("Bot Selection error",e)
 
 
-		def get_csv_files(self,path="./"):
+		def get_csv_files(self):
 			files = []
-			for file in os.listdir(path):
+			for file in os.listdir('.'):
 				# if file.endswith(".csv") or file.endswith('.json'):
 				if file.endswith(".csv"):
-					files.append(os.path.join(path,file))
+					files.append(file)
 			return files
 
-		def file_selector(self,path="."):
+		def file_selector(self):
 			"""[Displays multiple files and allows for t heir selection
 			Selection then sets self.file path for reference and
 			reads confis into a database self.configs]
@@ -271,15 +260,11 @@ class Haas:
 
 			tsm
 			"""
-			files = self.get_csv_files(path)
+			files = self.get_csv_files()
 			# print(files[0:5])
-			question = [
-				inquirer.List("file", "Please Select file from list: ", [i for i in files])
-			]
+			file = inquirer.select(message="Please Select file from list: ", choices=[i for i in files]).execute()
 
-			selection = inquirer.prompt(question,theme=GreenPassion())
-			self.file = selection["file"]
-			self.configs = pd.read_csv(self.file)
+			self.configs = pd.read_csv(file)
 
 		def return_bot_objects(self):
 			files = []
@@ -287,14 +272,14 @@ class Haas:
 				# if file.endswith(".obj") or file.endswith('.json'):
 				if file.endswith(".obj"):
 					files.append(file)
-			file = inquirer.list_input(message="MH Bots: ",choices=files,
-				)  # where b bot object returned from dic[x] name list
+			file = inquirer.select(message="MH Bots: ",choices=files,
+				).execute()  # where b bot object returned from dic[x] name list
 			objects = pd.read_pickle(f"./bt_results/{file}")
 			n = [[f"{x.name}| ROI: {x.roi}"][0] for x in objects]
 			b = [x for x in objects]  # creates list of names
 			dic = dict(zip(b,n))  # creates zipped obj/names list
-			botobj = inquirer.list_input(message="MH Bots: ",choices=dic,
-				)  # where b bot object returned from dic[x] name list
+			botobj = inquirer.select(message="MH Bots: ",choices=dic,
+				).execute()  # where b bot object returned from dic[x] name list
 			return botobj
 
 		def last_trades_to_df(self,trades):

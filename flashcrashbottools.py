@@ -1,7 +1,7 @@
 import datetime
 import time
 
-import inquirer
+from InquirerPy import inquirer
 import pandas as pd
 from haasomeapi.enums.EnumFlashSpreadOptions import EnumFlashSpreadOptions
 from numpy import arange
@@ -50,12 +50,12 @@ class FlashCrashBot(Haas):
 		return [x for x in [self.config["FCB_LIMITS"].get(p) for p in vars]]
 	
 	def set_total_buy(self):
-		response = inquirer.text('Type Buy amount: ')
+		response = inquirer.text('Type Buy amount: ').execute()
 		self.config.set('FCB_LIMITS','Total_buy',response)
 		self.write_file()
 	
 	def set_total_sell(self):
-		response = inquirer.text('Type Sell amount: ')
+		response = inquirer.text('Type Sell amount: ').execute()
 		self.config.set('FCB_LIMITS','Total_sell',response)
 		self.write_file()
 	
@@ -310,14 +310,12 @@ class FlashCrashBot(Haas):
 	
 	def set_price_spread_range(self):
 		
-		choices = [
-			inquirer.Text("start","Enter Spread Start range: "),
-			inquirer.Text("end","Enter Spread End range:"),
-			inquirer.Text("step","Enter Step: "),
-			]
 		
-		answers = inquirer.prompt(choices)
-		self.pricespread = [answers["start"],answers["end"],answers["step"]]
+		end = inquirer.text(message= "Enter Spread End range:").execute()
+		start = inquirer.text(message= "Enter Spread Start range: ").execute()
+		step = inquirer.text(message= "Enter Step: ").execute()
+	
+		self.pricespread = [start,end,step]
 		try:
 			self.config.add_section("FCB_LIMITS")
 		except Exception as e:
@@ -329,14 +327,14 @@ class FlashCrashBot(Haas):
 	
 	def set_percentage_range(self):
 		
-		choices = [
-			inquirer.Text("start","Enter percentage Start range: "),
-			inquirer.Text("end","Enter percentage End range:"),
-			inquirer.Text("step","Enter Step: "),
-			]
 		
-		answers = inquirer.prompt(choices)
-		self.percentageboost = [answers["start"],answers["end"],answers["step"]]
+		start = inquirer.text(message="Enter percentage Start range: ").execute(),
+		end = inquirer.text(message="Enter percentage End range:").execute(),
+		step = inquirer.text(message="Enter Step: ").execute(),
+
+		
+	
+		self.percentageboost = [start,end,step]
 		print(self.percentageboost,self.bot)
 		
 		try:
@@ -350,14 +348,12 @@ class FlashCrashBot(Haas):
 	
 	def set_multiplier_range(self):
 		
-		choices = [
-			inquirer.Text("start","Enter multiplyer Start range: "),
-			inquirer.Text("end","Enter multiplyer End range:"),
-			inquirer.Text("step","Enter Step: "),
-			]
 		
-		answers = inquirer.prompt(choices)
-		self.multiplyer = [answers["start"],answers["end"],answers["step"]]
+		start = inquirer.text(message="Enter multiplyer Start range: ").execute(),
+		end = inquirer.text(message="Enter multiplyer End range:").execute(),
+		step = inquirer.text(message="Enter Step: ").execute()
+		
+		self.multiplyer = [start,end,step]
 		print(self.multiplyer,self.bot)
 		
 		try:
@@ -371,14 +367,12 @@ class FlashCrashBot(Haas):
 	
 	def set_min_range(self):
 		
-		choices = [
-			inquirer.Text("start","Enter min % Start range: "),
-			inquirer.Text("end","Enter min % End range:"),
-			inquirer.Text("step","Enter Step: "),
-			]
 		
-		answers = inquirer.prompt(choices)
-		self.multiplyer_min = [answers["start"],answers["end"],answers["step"]]
+		start = inquirer.text(message="Enter min % Start range: ").execute(),
+		end = inquirer.text(message="Enter min % End range:").execute(),
+		step = inquirer.text(message="Enter Step: ").execute()
+		
+		self.multiplyer_min = [start,end,step]
 		print(self.multiplyer_min,self.bot)
 		
 		try:
@@ -392,14 +386,12 @@ class FlashCrashBot(Haas):
 	
 	def set_max_range(self):
 		
-		choices = [
-			inquirer.Text("start","Enter max % Start range: "),
-			inquirer.Text("end","Enter max % End range:"),
-			inquirer.Text("step","Enter Step: "),
-			]
 		
-		answers = inquirer.prompt(choices)
-		self.multiplyer_max = [answers["start"],answers["end"],answers["step"]]
+		start = inquirer.text(message="Enter max % Start range: ").execute(),
+		end = inquirer.text(message="Enter max % End range:").execute(),
+		step = inquirer.text(message="Enter Step: ").execute()
+		
+		self.multiplyer_max = [start,end,step]
 		print(self.multiplyer_max,self.bot)
 		
 		try:
@@ -418,7 +410,7 @@ class FlashCrashBot(Haas):
 			
 			if self.bot is None:
 				menu_items = ['Select bot','Quit']
-				resp = inquirer.list_input('select action',choices=menu_items)
+				resp = inquirer.select(message = 'Menu:',choices=menu_items).execute()
 				if resp == 'Select bot':
 					self.bot_selector(6)
 				elif resp == 'Quit':
@@ -443,44 +435,44 @@ class FlashCrashBot(Haas):
 				menu_items.append("Backtest")
 				menu_items.append("Quit")
 				
-				resp = inquirer.list_input('select action',choices=menu_items)
+				resp = inquirer.select(message = 'Menu:',choices=menu_items).execute()
 				
 				if resp == "Set price spread range":
 					self.set_price_spread_range()
-					continue
+	
 				if resp == "Set Buy Amount":
 					self.set_total_buy()
-					continue
+	
 				
 				if resp == "Set Sell Amount":
 					self.set_total_sell()
-					continue
+	
 				if resp == "Set percentage range":
 					self.set_percentage_range()
-					continue
+	
 				if resp == "Set multiplyer range":
 					self.set_multiplier_range()
-					continue
+	
 				if resp == "Set mib %":
 					self.set_min_range()
-					continue
+	
 				if resp == "Set max %":
 					self.set_max_range()
-					continue
+	
 				
 				if resp == "Set BT date":
 					self.write_date()
-					continue
+	
 				if resp == "Backtest":
 					print(f'{self.bot.name} bot selected, backtesting procedure initiated')
-					self.setup_fcb(self.bot)
-					continue
+					self.setup_fcb(self.bots[0])
+	
 				if resp == "Quit":
 					break
 				
 				if resp == "Select Bot" or "Select another bot":
 					self.bot_selector(6)
-					continue
+	
 
 
 

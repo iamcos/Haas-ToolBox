@@ -2,13 +2,13 @@ from scalperbot import ScalperBot
 from marketdata import MarketData
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 import pandas as pd
-from haas import Haas
+
 from InquirerPy import inquirer
 
 from haasomeapi.enums.EnumPlatform import EnumPlatform
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
-
+from haas import Haas
 
 class TradingView(Haas):
     def __init__(self):
@@ -157,13 +157,13 @@ class TradingView(Haas):
         sb.backtest()
 
 
-def main():
-    tw = TradingView()
-    tw.select_exchange()
-    tw.select_bottype_to_create()
-    tw.process_csv()
-    tw.create_bots_for_selected_markets()
+    def main(self):
+        
+        self.select_exchange()
+        self.select_bottype_to_create()
+        self.process_csv()
+        self.create_bots_for_selected_markets()
 
 
 if __name__ == "__main__":
-    main()
+    TradingView().main()

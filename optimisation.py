@@ -215,7 +215,7 @@ class Optimize:
 
 
     def backtest_bbands_length(self):
-        bot = self.bot
+        bot = self.bots[0]
         configs = self.bot_config(bot)
         start, stop, step = self.ranges.indicators.bBands.length
         bbl_range = range(start, stop + step, step)
