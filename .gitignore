@@ -26,3 +26,4 @@ haasnlp.py
 haasnlp2.py
 *.gz
 *.pydevinfo
+output/tradingviewtoolbox
