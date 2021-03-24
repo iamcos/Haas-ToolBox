@@ -71,42 +71,42 @@ class Haas:
 			haasomeclient = HaasomeClient(self.ip,self.secret)
 			return haasomeclient
 
-		def read_limits(self):
-			try:
-				vars = ['pricespread_start','pricespread_end','pricespread_step']
-				self.pricespread = self.read_range(vars)
+		# def read_fcb_limits(self):
+		# 	try:
+		# 		vars = ['pricespread_start','pricespread_end','pricespread_step']
+		# 		self.pricespread = self.read_range(vars)
 
-			except Exception as e:
-				print(e)
+		# 	except Exception as e:
+		# 		print(e)
 
-			try:
-				vars = ["percentageboost_start","percentageboost_end",
-						"percentageboost_step"]
-				self.percentageboost = self.read_range(vars)
+		# 	try:
+		# 		vars = ["percentageboost_start","percentageboost_end",
+		# 				"percentageboost_step"]
+		# 		self.percentageboost = self.read_range(vars)
 
-			except Exception as e:
-				print(e)
-			try:
-				vars = ["percentageboost_start","percentageboost_end",
-						"percentageboost_step"]
-				self.multiplyer = self.read_range(vars)
-			except Exception as e:
-				print(e)
-			try:
-				vars = ['multiplyer_min_end','multiplyer_min_start','multiplyer_min_step']
-				self.multiplyer_min = self.read_range(vars)
-			except Exception as e:
-				print(e)
-			try:
-				vars = ['multiplyer_max_start','multiplyer_max_stop','multiplyer_max_step']
-				self.multiplyer_max = self.read_range(vars)
-			except Exception as e:
-				print(e)
-			try:
-				vars = ['Total_buy','Total_sell']
-				self.totalbuy,self.totalsell = self.read_range(vars)
-			except Exception as e:
-				print(e)
+		# 	except Exception as e:
+		# 		print(e)
+		# 	try:
+		# 		vars = ["percentageboost_start","percentageboost_end",
+		# 				"percentageboost_step"]
+		# 		self.multiplyer = self.read_range(vars)
+		# 	except Exception as e:
+		# 		print(e)
+		# 	try:
+		# 		vars = ['multiplyer_min_end','multiplyer_min_start','multiplyer_min_step']
+		# 		self.multiplyer_min = self.read_range(vars)
+		# 	except Exception as e:
+		# 		print(e)
+		# 	try:
+		# 		vars = ['multiplyer_max_start','multiplyer_max_stop','multiplyer_max_step']
+		# 		self.multiplyer_max = self.read_range(vars)
+		# 	except Exception as e:
+		# 		print(e)
+		# 	try:
+		# 		vars = ['Total_buy','Total_sell']
+		# 		self.totalbuy,self.totalsell = self.read_range(vars)
+		# 	except Exception as e:
+		# 		print(e)
 
 		def write_file(self):
 			self.config.write(open("config.ini","w"))
