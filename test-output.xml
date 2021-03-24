@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="13.687" timestamp="2021-03-24T07:00:57.752286" hostname="MacBook-Pro-Georgui.local"><testcase classname="" name="test_madhatter" time="0.000"><error message="collection failure">env/lib/python3.8/site-packages/_pytest/python.py:571: in _importtestmodule
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="13.250" timestamp="2021-03-24T07:55:25.405441" hostname="MacBook-Pro-Georgui.local"><testcase classname="" name="test_madhatter" time="0.000"><error message="collection failure">env/lib/python3.8/site-packages/_pytest/python.py:571: in _importtestmodule
     mod = import_path(self.fspath, mode=importmode)
 env/lib/python3.8/site-packages/_pytest/pathlib.py:517: in import_path
     importlib.import_module(module_name)
