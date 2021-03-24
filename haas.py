@@ -215,7 +215,8 @@ class Haas:
 				for x in self.c.customBotApi.get_all_custom_bots().result
 				if x.botType == botType
 				]
-
+		
+  
 			bots.sort(key=lambda x:x.name,reverse=False)
 			b2 = [(f"{i.name} {i.priceMarket.primaryCurrency}-"
 				f"{i.priceMarket.secondaryCurrency}, {i.roi}",i) for i in bots]

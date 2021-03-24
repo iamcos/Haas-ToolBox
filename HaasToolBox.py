@@ -73,8 +73,7 @@ class HaasToolBox(Haas,TradingView):
             if multicreate_answer == 'Mad-Hatter':
                 pass
             elif multicreate_answer == 'Scalper':
-                # new_bots = self.tw_to_bots(3)
-                new_bots = self.tw_to_scalpers()
+                self.tw_to_s_calpers()
             elif multicreate_answer == 'PingPong':
                 pass
             elif multicreate_answer == 'FlashCrash':
@@ -90,12 +89,11 @@ class HaasToolBox(Haas,TradingView):
         #     BT = InteractiveBT().backtest(loop_count)
         if answers['resp'] == "Select and apply config to bot":
             self.apply_configs_menu()
-        if answers['resp'] == "Development Features":
-            file = self.dev_features()
+        # 
 
         if answers['resp'] == 'Loops':
             loop_count = input("Type New Loop Count: ")
-            print(f"Auto BT lool count has been set to: {loop_count}")
+            print(f"Auto BT tool count has been set to: {loop_count}")
         if answers['resp'] == 'Set BT date':
             Haas().write_date()
 
@@ -104,7 +102,7 @@ class HaasToolBox(Haas,TradingView):
             inquirer.List(
                 "resp",
                 "Select Something",
-                ["Create Scalper bots from Tradingview CSV file", 'Flash Crash Bot', "Main Menu"],
+                ["Set Exchange","Set Signals","Create Scalper bots", 'Flash Crash Bot', "Main Menu"],
             )
         ]
         # 'Create Scalper bots from Tradingview CSV file', 'Create Mad-Hatter bots from Tradingview CSV file',

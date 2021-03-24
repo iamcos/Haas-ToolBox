@@ -3,105 +3,120 @@ from marketdata import MarketData
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 import pandas as pd
 from haas import Haas
+from InquirerPy import inquirer
 
-class TradingView:
+from haasomeapi.enums.EnumPlatform import EnumPlatform
+from haasomeapi.enums.EnumPriceSource import EnumPriceSource
+from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
+
+
+class TradingView(Haas):
     def __init__(self):
         Haas.__init__(self)
-        
-        
-    def tw_to_haas_market_translator(self):
-        accounts = self.c.accountDataApi.get_all_account_details().result
-        accounts_guid = list(accounts.keys())
+        self.exchange = None
+        self.signals = None
+        self.accounts = None
+        self.markets_to_create = None
+        self.bot_type_to_create = None
 
-        accounts_with_details = []
-        for a in accounts_guid:
-            acc = self.c.accountDataApi.get_account_details(a).result
-            # if acc.isSimulatedAccount:
-            # 	if len(accounts_with_details) == 0:
-            # 	print("Create Simulated acoounts for markets you desire bots to be created")
-            # time.sleep(10)
-            accounts_with_details.append(acc)
-        
+    def get_accounts_with_details(self):
+        accounts = self.c.accountDataApi.get_all_account_details().result
+        accounts_with_details = list(accounts.values())
+        print(accounts_with_details)
         return accounts_with_details
 
-    def create_bots_from_tradingview_screener(self, enumbot, market_object, account):
-        newbot = self.c.customBotApi.new_custom_bot(
-            account.guid,
-            enumbot,
-            f"TW {market_object.primaryCurrency}/{market_object.secondaryCurrency}",
-            market_object.primaryCurrency,
-            market_object.secondaryCurrency,
-            market_object.contractName,
-        )
-        print(newbot.errorCode, newbot.errorMessage, "in creation of new bot")
-        print(
-            f"TW {market_object.primaryCurrency}/{market_object.secondaryCurrency} "
-            f"has been created"
-            f"ed"
-        )
-        return newbot.result
+        self.accounts = accounts_with_details
 
-    def csv_to_marketobjects(self):
-        tw_df = self.format_tw_csv()
-        markets = MarketData().get_all_markets()
-        """
-		Merging databases into one that contains data from both
-		"""
-        print(tw_df, markets)
-        
-        combined_df = pd.merge(tw_df, markets, how="outer", indicator="Exist", on='Ticker')
-        print('Before',combined_df[:5])
-        combined_df = combined_df.loc[combined_df["Exist"] == "both"]
-        combined_df = combined_df[['Ticker','primarycurrency','secondarycurrency','pricesource_y','marketobj']]
-        combined_df = combined_df.rename(columns ={'pricesource_y':'pricesource'})
-        print('after',combined_df[:5],f'totalling {len(combined_df.index)} pairs')
-       
-
-        return combined_df
-
-    def format_tw_csv(self):
-        csv_columns = [
-            "Ticker",
-            "Coin",
-            "primarycoin",
-            "secondarycoin",
-            "Exchange",
-            "Market",
-            "primarycurrency",
-            "secondarycurrency",
+    def select_exchange(self):
+        accounts = self.get_accounts_with_details()
+        accounts_inquirer_format = [
+            {
+                "name": f"{EnumPriceSource(i.connectedPriceSource).name} {i.name} {EnumPlatform(i.platformType).name} "
+                f"",
+                "value": i,
+            }
+            for i in accounts
         ]
+        exchange = [
+            inquirer.select(
+                message="Select exchange account by pressing Return or Enter ",
+                choices=accounts_inquirer_format,
+            ).execute()
+        ]
+        self.exchange = exchange[0]
+        return exchange
 
-        tw2 = pd.DataFrame()
-        tw = pd.read_csv(self.file_selector("./autocreate"))
+    def select_bottype_to_create(self):
+        bot_types = [e.name for e in EnumCustomBotType]
+        selected_type = inquirer.select(
+            message=' Select bot type to create',
+            choices=bot_types
+        ).execute()
+        self.bot_type_to_create = selected_type
+
+    def process_csv(self):
+        csvs = self.get_csv_files()
+        # print(csvs)
+        selected_csv = inquirer.select(
+            message='Select csv file with markets to create:',
+            choices = csvs
+        ).execute()
+        csv = pd.read_csv(selected_csv)
+        columns = csv.columns
+        ticker = inquirer.select(
+            message='Please select column with ticker or coin pair data: ',
+            choices=columns
+        ).execute()
+        signal = inquirer.select(
+            message='Please select column with Buy/Sell data: ',
+            choices = columns
+        ).execute()
+        
+        signals_to_use = inquirer.select(
+            message='Select Signal values to create pairs for',
+            choices=csv[signal].unique(),
+            multiselect=True
+        ).execute()
+        markets_sorted = csv[[ticker, signal]]
+        markets_sorted.drop_duplicates( subset=ticker,inplace=True)
+        markets_to_create = markets_sorted[markets_sorted[signal].isin(signals_to_use)]
+        markets_to_create.reset_index(drop=True, inplace=True)
+        print(markets_to_create)
+
+        all_markets = MarketData().get_all_markets()
+        all_markets_on_selected_exchange = all_markets[all_markets.pricesource == self.exchange.connectedPriceSource]
+        markets_on_exchange = pd.merge(markets_to_create, all_markets_on_selected_exchange, how="outer", indicator="Exist", on="Ticker")
+        markets_on_exchange = markets_on_exchange.loc[markets_on_exchange["Exist"] == "both"]
+        markets_on_exchange.reset_index(drop=True, inplace=True)
+        print(markets_on_exchange)
+        self.markets_to_create = markets_on_exchange
+
+    def create_bots_for_selected_markets(self):
+        print(self.markets_to_create)
+        for i in range(len(self.markets_to_create.index)):
+            try:
+                newbot = self.c.customBotApi.new_custom_bot(
+                    self.exchange.guid,
+                    EnumCustomBotType[self.bot_type_to_create].value,
+                    f"{self.markets_to_create['marketobj'][i].primaryCurrency}/{self.markets_to_create['marketobj'][i].secondaryCurrency} TradingView",
+                    self.markets_to_create['marketobj'][i].primaryCurrency,
+                    self.markets_to_create['marketobj'][i].secondaryCurrency,
+                    self.markets_to_create['marketobj'][i].contractName,
+                )
+                print(newbot.errorCode, newbot.errorMessage, "in creation of new bot")
+                print(
+                    # f"TW {market_object.primaryCurrency}/{market_object.secondaryCurrency} "
+                    f"has been created"
+                )
+            except Exception as e:
+                print(e)
         
 
-        priceSources = []
-
-        for i in ["Ticker", "ticker"]:
-            if i in tw.columns:
-                tw2["Ticker"] = tw[i]
-                try:
-                    if "Exchange".lower() or "Exchange" in tw.columns:
-                        Exchange = tw["Exchange"].values
-                    
-                except Exception as e:
-                    print(e, f"No Exchange in file.It will be selected at a later step.")
-                    tw2["Exchange"] = None
-                    for i in tw2["Exchange"]:
-                        try:
-                            priceSources.append(EnumPriceSource[i].value)
-                        except Exception as e:
-                            print(e, "format_tw_csv")
-                            priceSources.append(None)
-            
-            tw2["pricesource"] = priceSources
-
-            return tw2
 
     def tw_to_scalpers(self, file=None):
-
+  
         markets_df = self.csv_to_marketobjects()
-        accounts_with_details = self.tw_to_haas_market_translator()
+        accounts_with_details = self.get_accounts_with_details()
         print("Accounts with details:", accounts_with_details)
         botlist = [
             bot
@@ -124,7 +139,7 @@ class TradingView:
                 if m.priceSource == a.connectedPriceSource:
 
                     try:
-                        bot = self.create_bots_from_tradingview_screener(3, m, a)
+                        bot = self.create_bots_for_selected_markets(3, m, a)
 
                     except Exception as e:
                         print(e)
@@ -140,3 +155,15 @@ class TradingView:
         sb.bot = newbots
         self.read_limits()
         sb.backtest()
+
+
+def main():
+    tw = TradingView()
+    tw.select_exchange()
+    tw.select_bottype_to_create()
+    tw.process_csv()
+    tw.create_bots_for_selected_markets()
+
+
+if __name__ == "__main__":
+    main()

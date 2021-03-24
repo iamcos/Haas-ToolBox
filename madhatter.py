@@ -654,7 +654,7 @@ class MadHatterBot(Haas,Optimize,FineTune,TA, Menus,ConfigsManagment):
                 bot.guid,self.ticks
                 )
             bt = bt.result
-        
+            
             if bt.roi > best_roi:
                 best_roi = bt.roi
             configs.loc[i,'roi'] = bt.roi

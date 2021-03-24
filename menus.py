@@ -10,7 +10,7 @@ class Menus:
             
             "Select Bots",
         "Select config file",
-            "Set configs limicet",
+            "Set configs limit",
             "Set create limit",
             "Find Stoploss",
             
@@ -24,7 +24,7 @@ class Menus:
             "test",
             "Select Bots",
             "Select config file",
-            "Set configs limit",
+            "Set configs limit",0
             "Set create limit",
             "Find Stoploss",
             # 'AssistedBT',
