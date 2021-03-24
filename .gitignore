@@ -27,3 +27,11 @@ haasnlp2.py
 *.gz
 *.pydevinfo
 output/tradingviewtoolbox
+ARCHIVE_ITEM_PYMODULE
+ARCHIVE_ITEM_PYPACKAGE
+ARCHIVE_ITEM_PYSOURCE
+Extractor.spec
+output/Haas-ToolBox1.1.exe
+pyex.py
+version
+*.exe
