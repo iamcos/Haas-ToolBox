@@ -1,108 +1,103 @@
 from haasomeapi.enums.EnumIndicator import EnumIndicator
+from haas import Haas
+from InquirerPy import inquirer
+from InquirerPy.utils import patched_print as print
+from haasomeapi.apis.TradeBotApi import TradeBotApi
 
-class TradeBot(Haas):
+from scripts.tradebottools import TradeBotConfigManager
+from scripts.tradebotselectors import (
+    TradeBotSellectors,
+)  # previous version of selectors and new one for parameters selector is in parametersselector
+
+
+def handle_exceptions(f):
+    def wrapper(*args, **kw):
+        try:
+            return f(*args, **kw)
+        except Exception as e:
+            self = args[0]
+            print(e)
+            return f(*args, **kw)
+
+    return wrapper
+
+
+class Trade_Bot(Haas, TradeBotSellectors):
     def __init__(self):
         Haas.__init__(self)
-        self.config = Haas().config
-        self.c = HaasomeClient(self.ip, self.secret)
-        self.ticks = Haas().read_ticks()
+        self.tradebot = None
+        self.tradebotapi = TradeBotApi(self.ip, self.secret)
+        self.selected_parameter = None
+        self.step = None
+        self.value = None
+        self.pattern = None
+        self.indicator = None
+        self.safety = None
+        self.insurance = None
+        self.next_action = None
+        self.tradebot_configs = []
 
-    def return_bot(self, guid):
-        bot = self.c.tradeBotApi.get_trade_bot(guid).result
-        return bot
+    def menu(self):
+        while True:
+            if not self.tradebot:
+                self.select_tradebot()
 
-    def get_indicators(self, bot):
-        """
-        returns all tradebot indicators as a list
-        """
+            else:
+                choices = [
+                    "Select indicator",
+                    "Select safety",
+                    # "Select insurance",
+                    "Select another Trade Bot",
+                    "Quit",
+                ]
+                user_selection = inquirer.select(
+                    message="Select action:", choices=choices
+                ).execute()
 
-        idd = list([bot.indicators[x] for x in bot.indicators])
-        return idd
+                self.tradebot_configs.append(
+                    TradeBotConfigManager().create_bot_config(tradebot=self.tradebot)
+                )
+                if user_selection == "Select another Trade Bot":
+                    self.select_tradebot()
 
-    def select_indicator(self, indicators):
+                if user_selection == "Select indicator":
+                    self.indicator_selector()
+                if user_selection == "Select safety":
+                    self.safety_selector()
+                if user_selection == "Select insurance":
+                    self.insurance_selector()
 
-        for i, b in enumerate(indicators):
-            print(i, indicators[i].indicatorTypeFullName)
-        uip = input("Select indicator")
+                if user_selection == "Quit":
+                    break
 
-        indicator = indicators[int(uip)]
-        print("select indicator", indicator)
-        return indicator
-
-    def setup_indicator(self, bot, indicator):
-        setup = self.c.TradeBotApi.setup_indicator(
-            bot.guid,
-            indicator.guid,
-            bot.priceMarket,
-            bot.priceMarket.primaryCurrency,
-            bot.priceMarket.secondaryCurrency,
-            bot.priceMarket.contractName,
-            indicator.timer,
-            indicator.chartType,
-            indicator.deviation,
+    def setup_indicator(self):
+        setup = self.tradebotapi.setup_indicator(
+            self.tradebot.guid,
+            self.indicator.guid,
+            self.tradebot.priceMarket,
+            self.tradebot.priceMarket.primaryCurrency,
+            self.tradebot.priceMarket.secondaryCurrency,
+            self.tradebot.priceMarket.contractName,
+            self.indicator.timer,
+            self.indicator.chartType,
+            self.indicator.deviation,
         )
         print(
             f"Indicator setup was a {setup.errorCode.value}, {setup.errorMessage.value}"
         )
 
-    def get_interfaces(self, bot, indicator):
+    def add_indicator(self):
 
-        interfaces = []
-        for interface in bot.indicators[indicator.guid].indicatorInterface:
-            interfaces.append(
-                {
-                    "title": interface.title,
-                    "value": interface.value,
-                    "options": interface.options,
-                    "step": interface.step,
-                }
+        add = self.tradebotapi.add_indicator(self.tradebot.guid, self.indicator)
+        if add.result:
+            print(
+                "Indicator",
+                EnumIndicator(self.indicator).name,
+                " added to ",
+                self.tradebot.name,
             )
-
-        return interfaces
-
-    def get_full_interfaces(self, bot, indicator):
-        interfaces = {}
-        for interface in bot.indicators[indicator.guid].indicatorInterface:
-            interfaces[
-                EnumIndicator(bot.indicators[indicator.guid].indicatorType).name
-            ] = self.dict_from_class(interface)
-
-        return interfaces
-
-    def get_enums_for_indicators(self, bot):
-        icc = ic()
-        indicators_enums = {}
-        for indicator in bot.indicators:
-            indicator_enum = icc().get_indicator_enum_data(
-                bot.indicators[indicator].indicatorInterface.indicatorType
-            )
-            indicators.append(indicator_enum)
-        return indicators_enums
-
-        return indicators
-
-    def add_indicator(self, bot, indicator):
-        failed = []
-        try:
-            add = self.c.tradeBotApi.add_indicator(bot.guid, indicator)
-            if add.result:
-                print(
-                    "Indicator", EnumIndicator(indicator).name, " added to ", bot.name
-                )
-            else:
-                print("Adding indicator didn't work out")
-
-        except:
-            failed.append(indicator)
-        return failed
-
-    def edit_indicator(self, bot, indicator, field, value):
-        print(indicator)
-        indicator_config = self.c.tradeBotApi.edit_bot_indicator_settings(
-            bot.guid, indicator.guid, field, value
-        )
-        interfaces = self.get_interfaces(bot, indicator)
-        return indicator_config
+        else:
+            print("Adding indicator didn't work out")
 
     def remove_indicator(self, bot, indicator):
         failed = []
@@ -144,3 +139,6 @@ class TradeBot(Haas):
         return indicator
 
 
+if __name__ == "__main__":
+    tb = Trade_Bot()
+    tb.menu()
