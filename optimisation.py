@@ -1,4 +1,4 @@
-import inquirer
+from InquirerPy import inquirer
 import pandas as pd
 from haasomeapi.enums.EnumMadHatterSafeties import EnumMadHatterSafeties
 from numpy.ma import arange
@@ -6,17 +6,16 @@ from numpy.ma import arange
 
 class Optimize:
 
+    """Stoploss/parameter bruteforcers and useful tools are located here"""
 
-
-    """Stoploss/parameter bruteforcers and useful tools are located here
-    """    
     def set_stoploss_range(self):
 
-        """User defined range for stoploss bruteforcer.
-        """        
-        start = inquirer.text(message="Write stoploss range starting number: ")
-        stop = inquirer.text(message="Write stoploss range ending number: ")
-        step = inquirer.text(message="Write stoploss range stepping number: ")
+        """User defined range for stoploss bruteforcer."""
+        start = inquirer.text(
+            message="Write stoploss range starting number: "
+        ).execute()
+        stop = inquirer.text(message="Write stoploss range ending number: ").execute()
+        step = inquirer.text(message="Write stoploss range stepping number: ").execute()
         try:
             self.config.add_section("MH_LIMITS")
         except:
@@ -28,15 +27,15 @@ class Optimize:
         self.read_limits()
 
     def find_stoploss(self):
-        """Finds stoploss within a given range unless not: 
+        """Finds stoploss within a given range unless not:
         then it keeps going untill backtesting results are as good as without it.
 
-        How it works: 
+        How it works:
         1) Backtest bot before it with stoploss set to 0. This ROI is used as target for stoploss_range
         bruteforcer to reach.
-        
+
         User sets backtesting range before hand via the menu or by editing config.ini file directly.
-        """        
+        """
         print(
             f"{self.bot.name} selected. Market data is being fetched, backtesting initiated..."
         )
@@ -96,7 +95,6 @@ class Optimize:
             self.extended_range = [start, stop, step]
             print(f"Stoploss search has been expanded by 5 more steps")
             self.find_stoploss()
-
 
     def bt_intervals(self):
         try:
@@ -211,9 +209,6 @@ class Optimize:
         self.store_results(bt_results2)
         return bt_results
 
-
-
-
     def backtest_bbands_length(self):
         bot = self.bots[0]
         configs = self.bot_config(bot)
@@ -243,5 +238,3 @@ class Optimize:
             configs.loc[i, "roi"] = bt.result.roi
             configs.loc[i, "obj"] = bt.result
         self.store_results(configs)
-
-

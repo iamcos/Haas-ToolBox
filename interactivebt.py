@@ -1,6 +1,6 @@
 from time import sleep
 import datetime
-import inquirer
+from InquirerPy import inquirer
 import pandas as pd
 from ratelimit import limits,sleep_and_retry
 
@@ -92,19 +92,18 @@ class InteractiveBT(MadHatterBot):
 	def menu(self):
 		self.read_limits()
 		while True:
-			resp = inquirer.list_input(f'{self.bot_print()}',choices=[
+			resp = inquirer.select(message=f'{self.bot_print()}',choices=[
 				'Select Bot',
 				'Set Create Limit',
 				'Change BT Data',
 				'Start AssistedBT',
 				'Back',
 				]
-			                           )
+			                           ).execute()
 			if resp == 'Select Bot':
 				self.bot_selector(15)
 			if resp == 'Set Create Limit':
-				self.limit = int(
-					inquirer.text('Type number top of configs to create as bots at the end?'))
+				self.limit = 	inquirer.text('Type number top of configs to create as bots at the end?').execute()
 				self.write_file()
 			if resp == 'Change BT Data':
 				self.write_date()

@@ -207,14 +207,20 @@ class MadHatterBot(Haas, Optimize, FineTune, TA, Menus, ConfigsManagment):
 
         return ranges
 
-    def setup_bot_from_df(self, bot, config, print_errors=True):
-        do = self.c.customBotApi.set_mad_hatter_safety_parameter(bot.guid,EnumMadHatterSafeties(0),0)
+    def setup_bot_from_df(self, bot, config, print_errors=False):
+        do = self.c.customBotApi.set_mad_hatter_safety_parameter(
+            bot.guid, EnumMadHatterSafeties(0), 0
+        )
         if print_errors == True:
             print("bBands", do.errorCode, do.errorMessage)
-        do = self.c.customBotApi.set_mad_hatter_safety_parameter(bot.guid,EnumMadHatterSafeties(1),0)
+        do = self.c.customBotApi.set_mad_hatter_safety_parameter(
+            bot.guid, EnumMadHatterSafeties(1), 0
+        )
         if print_errors == True:
             print("bBands", do.errorCode, do.errorMessage)
-        do = self.c.customBotApi.set_mad_hatter_safety_parameter(bot.guid,EnumMadHatterSafeties(2),0)
+        do = self.c.customBotApi.set_mad_hatter_safety_parameter(
+            bot.guid, EnumMadHatterSafeties(2), 0
+        )
         if print_errors == True:
             print("bBands", do.errorCode, do.errorMessage)
         do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
@@ -391,8 +397,7 @@ class MadHatterBot(Haas, Optimize, FineTune, TA, Menus, ConfigsManagment):
             pass
         except Exception as e:
             print(e)
-       
-                
+
         return do
 
     def setup_bot_from_obj(self, bot, config, print_errors=False):
@@ -613,7 +618,7 @@ class MadHatterBot(Haas, Optimize, FineTune, TA, Menus, ConfigsManagment):
             self.c.customBotApi.clone_custom_bot_simple(bot.accountId, bot.guid, name)
 
     def iterate_csv(self, configs, bot):
-        best_roi =   0
+        best_roi = 0
 
         configs.loc[0:-1, "obj"] = None
         configs.loc[0:-1, "roi"] = 0
@@ -641,7 +646,16 @@ class MadHatterBot(Haas, Optimize, FineTune, TA, Menus, ConfigsManagment):
             if c not in cols:
                 configs.drop(c, axis=1, inplace=True)
 
-        bot.currentTradeAmount = 10000
+        bt = self.c.customBotApi.backtest_custom_bot(bot.guid, self.ticks)
+        bt = bt.result
+        for x in bt.botLogBook:
+            if  "Minimum trade amount: " in x:
+                print('TRADE AMMOUNT SHIT', x)
+                a = x.partition('Minimum trade amount: ')
+                print(a)
+                b = a[2].partition(". Amount decimals")
+                min_trade_ammount = float(print(b[0]))
+                bot.currentTradeAmount = min_trade_ammount
 
         pbar = enlighten.Counter(total=self.num_configs, desc="Basic", unit="configs")
 

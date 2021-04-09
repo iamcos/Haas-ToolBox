@@ -1,9 +1,6 @@
 from InquirerPy import inquirer
 import pandas as pd
 
-from inquirer.themes import GreenPassion
-
-from botdb import BotDB
 from flashcrashbottools import FlashCrashBot
 from haas import Haas
 from interactivebt import InteractiveBT as AssistedBT
@@ -13,6 +10,7 @@ from scalperbot import ScalperBot
 from tradingviewtoolbox import TradingView
 import datetime
 
+# https://github.com/tmbo/questionary - inquirer analog
 
 class HaasToolBox(Haas):
     def __init__(self):

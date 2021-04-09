@@ -1,6 +1,6 @@
 import datetime
 
-import inquirer
+from InquirerPy import inquirer
 import numpy as np
 import pandas as pd
 from alive_progress import alive_bar
@@ -31,20 +31,12 @@ class ScalperBot(Haas):
 				print('i',i,'k',k)
 		markets = self.c.marketDataApi.get_price_markets(self.accounts).result
 		m2 = [
-			(
-				f"{EnumPriceSource(i.priceSource).name},{i.primaryCurrency}/"
-				f"{i.secondaryCurrency}",
-				i,
-				)
-			for i in markets
+			{ 'name':f"{EnumPriceSource(i.priceSource).name},{i.primaryCurrency}/"
+				f"{i.secondaryCurrency}", "value" : i} for i in markets
 			]
 		
-		question = [inquirer.Checkbox("markets",message="Select markets",choices=m2)]
+		self.markets = inquirer.select(message="Select markets",choices=m2).execute()
 		
-		selection = inquirer.prompt(question)
-		self.markets = selection["markets"]
-		# print(selection)
-		return selection
 	
 	def setup_scalper_bot(self,bot,targetpercentage,safetythreshold):
 		
@@ -68,51 +60,28 @@ class ScalperBot(Haas):
 		return do.result
 	
 	def set_targetpercentage_range(self):
-		start_input = [
-			inquirer.Text(
-				"start",
+		start = inquirer.text(
 				message="Define start of the target percentage range",
 				
-				)
-			]
-		end_input = [
-			inquirer.Text(
-				"end",message="Define end of the target percentage range",
-				)
-			]
-		step_input = [
-			inquirer.Text(
-				"step",
+				).execute()
+		end = inquirer.text(message="Define end of the target percentage range",
+				).execute()
+		step = inquirer.text(
 				message="Define number of steps between start and end",
-				
-				)
-			]
+				).execute()
 		
-		start = inquirer.prompt(start_input)["start"]
-		end = inquirer.prompt(end_input)["end"]
-		step = inquirer.prompt(step_input)["step"]
+		
+		
+		
 		self.targetpercentage = [start,end,step]
 	
 	def set_safetythreshold_range(self):
-		start_input = [
-			inquirer.Text(
-				"start",message="Define start of the safety threshold range",)
-			]
-		end_input = [
-			inquirer.Text(
-				"end",message="Define end of the safety threshold range",)
-			]
-		step_input = [
-			inquirer.Text(
-				"step",
+		start = inquirer.text(message="Define start of the safety threshold range",).execute()
+		end = inquirer.text(message="Define end of the safety threshold range",).execute()
+		step = inquirer.text(
 				message="Define number of steps between start and end",
-				
-				)
-			]
-		
-		start = inquirer.prompt(start_input)["start"]
-		end = inquirer.prompt(end_input)["end"]
-		step = inquirer.prompt(step_input)["step"]
+				).execute()
+
 		self.safetythreshold = [start,end,step]
 	
 	def bt_date_to_unix(self):
@@ -202,10 +171,8 @@ class ScalperBot(Haas):
 			self.bot_selector(3,multi=True)
 	
 	def scalper_bot_menu(self):
-		# choices =
-		menu = [
-			inquirer.List(
-				"response",
+		while True:
+			user_response = inquirer.select(
 				message="Please chose an action:",
 				choices=[
 					"Select bots",
@@ -217,11 +184,7 @@ class ScalperBot(Haas):
 					'Populate with bots',
 					"Main menu",
 					],
-				)
-			]
-		
-		while True:
-			user_response = inquirer.prompt(menu)["response"]
+				).execute()
 			if user_response == "Select bots":
 				self.bot_selector(3,multi=True)
 			elif user_response == "Set range for safety threshold":
@@ -255,10 +218,10 @@ class ScalperBot(Haas):
 				)
 			for i in accounts
 			]
-		question = [inquirer.Checkbox("accounts",message="Select markets",choices=a)]
 		
-		selection = inquirer.prompt(question)
-		self.accounts = selection["accounts"]
+		
+		self.accounts = inquirer.select(message="Select markets",choices=a).execute()
+		
 		self.markets_selector()
 		print(self.accounts)
 		for i in self.accounts:

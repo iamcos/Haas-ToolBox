@@ -16,7 +16,7 @@ class MarketData(Haas):
 
     def to_df_for_ta(self,market_history):
         """
-        Transforms List of Haas MarketData into Dataframe
+        Transforms List of Haas MarketData tick objects into Dataframe and returns it.
         """
         market_data = [
             {
@@ -44,8 +44,9 @@ class MarketData(Haas):
 
     def get_all_markets(self):
         """
+        Gets all supported by Haas market objects.
         Returns dataframe with "primarycurrency", "secondarycurrency",'pricesource','marketobj','Ticker'
-        Ticker is primarycurrency, secondarycurrency in one word
+        Ticker is primarycurrency, secondarycurrency joined.
         """
         markets = [
             (i.primaryCurrency, i.secondaryCurrency, i.priceSource, i)
