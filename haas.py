@@ -205,8 +205,7 @@ class Haas:
 				for x in self.c.customBotApi.get_all_custom_bots().result
 				if x.botType == botType
 				]
-		
-  
+				
 			bots.sort(key=lambda x:x.name,reverse=False)
 			b2 = [{'name':f"{i.name} {i.priceMarket.primaryCurrency}-"
 				f"{i.priceMarket.secondaryCurrency}, {i.roi}",'value':i} for i in bots]
@@ -218,11 +217,9 @@ class Haas:
 						choices=b2,
 						).execute()
 					
-				try:
-					self.bot = bots
-					self.bots = [self.bot]
-				except Exception as e:
-					print("Bot Selection error",e)
+				self.bot = bots
+				self.bots = [self.bot]
+			
 
 
 			else:
@@ -233,15 +230,8 @@ class Haas:
 						choices=b2,
 						multiselect=True
 						).execute()
-					
-
-				try:
-					self.bots = bots
-
-				except Exception as e:
-					print("Bot Selection error",e)
-
-
+				self.bots = bots
+				
 		def get_csv_files(self):
 			files = []
 			for file in os.listdir('.'):

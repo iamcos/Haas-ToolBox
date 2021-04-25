@@ -76,16 +76,8 @@ class FineTune:
 			"resetmiddle",
 			"allowmidsells",
 			]
-		range_cols = [
-			"matype",
-			"interval",
-			]
 		top_configs = pd.read_csv('bots.csv')[:3]
-		# top_configs = self.config_storage(self.bot.guid)[0:5]
 		top_configs = self.clean_df(top_configs)
-		# print(top_configs)
-		# top_configs= top_configs.drop(['roi','obj','trades'],axis=0)
-		columns = top_configs.columns
 		ranges = {}
 		
 		for column in float_cols:
@@ -94,29 +86,21 @@ class FineTune:
 				ranges[column] = range(int(top_configs[column].min()), int(top_configs[column].max()), 2)
 		for column in bool_cols:
 				ranges[column] = [True,False]
-		# ranges['interval'] = intervals_list
 		ranges['matype'] = range(0,8)
 	
-		
 		df = pd.concat([pd.DataFrame(ranges[x],columns=[x]).reset_index() for x in list(ranges.keys())],ignore_index=False,axis=1)
 
-		# print(df)
-	
 		dfs = []
 		for i in range(len(df.index)):
-			# print(i)
 			config = self.augment_config_with_missing_columns(df.iloc[i],top_configs.iloc[0])
 			dfs.append(config)
 		df = pd.concat(dfs)
-		# print(df)
 		return df
 		
 	def augment_config_with_missing_columns(self,config,bot):
 			bot_configuration = bot
-			# bot_configuration = self.bot_config(bot.guid)
 			
 			for col in config.index:
 					
 					bot_configuration[col] = config[col]
-			# print(bot_configuration)
 			return bot_configuration

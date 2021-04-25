@@ -1,1 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="0" time="13.889" timestamp="2021-03-24T11:34:29.766953" hostname="MacBook-Pro-Georgui.local" /></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="51.952" timestamp="2021-04-25T23:57:52.630900" hostname="MacBook-Pro-Georgui.local"><testcase classname="" name="test_madhatter" time="0.000"><error message="collection failure">test_madhatter.py:11: in &lt;module&gt;
+    bot = botlist[0]
+E   IndexError: list index out of range</error></testcase></testsuite></testsuites>

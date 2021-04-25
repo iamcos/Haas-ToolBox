@@ -11,6 +11,7 @@ from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haas import Haas
 
 
+
 class TradingView(Haas):
     def __init__(self):
         Haas.__init__(self)
@@ -66,6 +67,7 @@ class TradingView(Haas):
             message="Please select column with ticker or coin pair data: ",
             choices=columns,
         ).execute()
+        
         signal = inquirer.select(
             message="Please select column with Buy/Sell data: ", choices=columns
         ).execute()
@@ -80,14 +82,29 @@ class TradingView(Haas):
         markets_sorted.rename(columns={ticker:'Ticker'},inplace=True)
         ticker = "Ticker"
         markets_sorted.drop_duplicates(subset=ticker, inplace=True)
+       
+        for i in range(len(markets_sorted.index)):
+            try:
+                markets_sorted.Ticker.iloc[i] = markets_sorted.Ticker.iloc[i].replace('PERP',"")   
+                print(f"'{markets_sorted.Ticker.iloc[i]}',prep")
+            except Exception as e:
+                print('market sorted error at lines 97 in tradingviewtoolbox',e)
+            try:
+                markets_sorted.Ticker.iloc[i] = markets_sorted.Ticker.iloc[i].replace('2021',"")   
+                print(f"'{markets_sorted.Ticker.iloc[i]}',20201")
+            except Exception as e:
+                print('market sorted error at lines 97 in tradingviewtoolbox',e)
         markets_to_create = markets_sorted[markets_sorted[signal].isin(signals_to_use)]
         markets_to_create.reset_index(drop=True, inplace=True)
         print(markets_to_create)
-
+        print(markets_sorted.Ticker[0:5])
         all_markets = MarketData().get_all_markets()
         all_markets_on_selected_exchange = all_markets[
             all_markets.pricesource == self.exchange.connectedPriceSource
         ]
+        
+        # print('all markets on selected exchange', all_markets_on_selected_exchange)
+        print([x.contractName for x in all_markets.marketobj.to_list()][-1:-5])
         markets_on_exchange = pd.merge(
             markets_to_create,
             all_markets_on_selected_exchange,
@@ -95,6 +112,7 @@ class TradingView(Haas):
             indicator="Exist",
             on="Ticker",
         )
+        print(markets_on_exchange)
         markets_on_exchange = markets_on_exchange.loc[
             markets_on_exchange["Exist"] == "both"
         ]

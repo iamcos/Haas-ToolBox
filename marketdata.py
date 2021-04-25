@@ -49,13 +49,13 @@ class MarketData(Haas):
         Ticker is primarycurrency, secondarycurrency joined.
         """
         markets = [
-            (i.primaryCurrency, i.secondaryCurrency, i.priceSource, i)
+            (i.primaryCurrency, i.secondaryCurrency,i.contractName, int(i.priceSource), i)
             for i in self.c.marketDataApi.get_all_price_markets().result
         ]
         df = pd.DataFrame(
             markets,
             columns=(
-                ["primarycurrency", "secondarycurrency", "pricesource", "marketobj"]
+                ["primarycurrency", "secondarycurrency","contract", "pricesource", "marketobj"]
             ),
         )
         df.drop_duplicates(inplace=True, ignore_index=True)

@@ -1,10 +1,8 @@
 import datetime
 import json
-import time
 import enlighten
 from InquirerPy import inquirer
 import pandas as pd
-from alive_progress import alive_bar
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 from haasomeapi.enums.EnumMadHatterSafeties import EnumMadHatterSafeties
 from ratelimit import limits, sleep_and_retry
@@ -14,7 +12,6 @@ from haas import Haas
 from marketdata import MarketData
 from optimisation import Optimize
 from technical_analysis_for_haas import TA
-from numpy import NaN
 from menus import Menus
 from configsstorage import ConfigsManagment
 
@@ -212,17 +209,17 @@ class MadHatterBot(Haas, Optimize, FineTune, TA, Menus, ConfigsManagment):
             bot.guid, EnumMadHatterSafeties(0), 0
         )
         if print_errors == True:
-            print("bBands", do.errorCode, do.errorMessage)
+            print("Safety", do.errorCode, do.errorMessage)
         do = self.c.customBotApi.set_mad_hatter_safety_parameter(
             bot.guid, EnumMadHatterSafeties(1), 0
         )
         if print_errors == True:
-            print("bBands", do.errorCode, do.errorMessage)
+            print("Safety", do.errorCode, do.errorMessage)
         do = self.c.customBotApi.set_mad_hatter_safety_parameter(
             bot.guid, EnumMadHatterSafeties(2), 0
         )
         if print_errors == True:
-            print("bBands", do.errorCode, do.errorMessage)
+            print("Safety", do.errorCode, do.errorMessage)
         do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
             # this way less api calls is being made
             bot.guid,
@@ -650,7 +647,6 @@ class MadHatterBot(Haas, Optimize, FineTune, TA, Menus, ConfigsManagment):
         bt = bt.result
         for x in bt.botLogBook:
             if  "Minimum trade amount: " in x:
-                print('TRADE AMMOUNT SHIT', x)
                 a = x.partition('Minimum trade amount: ')
                 print(a)
                 b = a[2].partition(". Amount decimals")
@@ -681,6 +677,7 @@ class MadHatterBot(Haas, Optimize, FineTune, TA, Menus, ConfigsManagment):
             configs.loc[i, "roi"] = bt.roi
             configs.loc[i, "obj"] = bt
             self.bot = bt
+            # print(bt.__dict__['priceMarket'].__dict__)
 
             pbar.update()
         print(config)
@@ -791,6 +788,6 @@ class MadHatterBot(Haas, Optimize, FineTune, TA, Menus, ConfigsManagment):
 
 
 if __name__ == "__main__":
-    mh = MadHatterBot()
-    mh.create_configs_from_top_results()
-    mh.mh_menu()
+    mh = MadHatterBot().mh_menu()
+    # mh.create_configs_from_top_results()
+    # mh.mh_menu()
