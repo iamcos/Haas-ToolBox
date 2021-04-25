@@ -29,18 +29,14 @@ class TradingViewParser:
 			
 	def init_session(self):
 		session = HTMLSession() 
-		if self.asset != None:
-			if self.current_page == 1:
-				page = session.get(f"https://www.tradingview.com/ideas/{self.asset}/?sort=recent"	)
-				return page
-			else:
-				page = session.get(f"https://www.tradingview.com/ideas/{self.asset}/page-{self.current_page}/?sort=recent"	)
-				return page
+
+		if self.current_page == 1:
+			page = session.get(f"https://www.tradingview.com/ideas/{self.asset}/?sort=recent"	)
+			return page
 		else:
-			if self.current_page == 1 :
-				self.general_crypto_url1 = "https://www.tradingview.com/markets/cryptocurrencies/ideas/?sort=recent"
-			elif self.current_page >1:
-				self.general_crypto_url2 = f"https://www.tradingview.com/markets/cryptocurrencies/ideas/page-{self.current_page}/?sort=recent"					
+			page = session.get(f"https://www.tradingview.com/ideas/{self.asset}/page-{self.current_page}/?sort=recent"	)
+			return page
+				
 	def return_cards(self, page):
 		# print('page',page.html.find('.tv-feed__item '))
 		cards = [card for card in page.html.find('.tv-feed__item') if card.attrs['data-widget-type'] == 'idea']
