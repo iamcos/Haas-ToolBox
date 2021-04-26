@@ -5,7 +5,7 @@ from flashcrashbottools import FlashCrashBot
 from haas import Haas
 from interactivebt import InteractiveBT as AssistedBT
 from madhatter import MadHatterBot
-
+from tradebot import Trade_Bot
 from scalperbot import ScalperBot
 from tradingviewtoolbox import TradingView
 import datetime
@@ -20,6 +20,7 @@ class HaasToolBox(Haas):
 
         choices = [
             "Mad-Hatter Bots",
+            'Trade Bots',
             "Flash-Crash Bots",
             "AssistedBT",
             "Scalper Bots",
@@ -37,6 +38,9 @@ class HaasToolBox(Haas):
         if resp == "Mad-Hatter Bots":
             mh = MadHatterBot()
             mh.mh_menu()
+        if resp == "Trade Bots":
+            tb = Trade_Bot()
+            tb.menu()
 
         if resp == "Scalper Bots":
             sb = ScalperBot()

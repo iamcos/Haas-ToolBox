@@ -3,12 +3,20 @@ from haas import Haas
 from InquirerPy import inquirer
 from InquirerPy.utils import patched_print as print
 from haasomeapi.apis.TradeBotApi import TradeBotApi
-
+from InquirerPy import inquirer
+from InquirerPy.separator import Separator
+from InquirerPy import get_style
+import time
+from haasomeapi.enums.EnumIndicator import EnumIndicator
+from haasomeapi.enums.EnumInsurance import EnumInsurance
+from haasomeapi.enums.EnumPriceSource import EnumPriceSource
+from haasomeapi.enums.EnumPlatform import EnumPlatform
+from haasomeapi.enums.EnumSafety import EnumSafety
 from scripts.tradebottools import TradeBotConfigManager
-from scripts.tradebotselectors import (
-    TradeBotSellectors,
-)  # previous version of selectors and new one for parameters selector is in parametersselector
-
+# from scripts.tradebotselectors import (
+    # TradeBotSellectors,
+# )  # previous version of selectors and new one for parameters selector is in parametersselector
+from scripts.parameterselector import TradeBotEditor
 
 def handle_exceptions(f):
     def wrapper(*args, **kw):
@@ -22,7 +30,7 @@ def handle_exceptions(f):
     return wrapper
 
 
-class Trade_Bot(Haas, TradeBotSellectors):
+class Trade_Bot(Haas,TradeBotEditor):
     def __init__(self):
         Haas.__init__(self)
         self.tradebot = None
@@ -40,35 +48,42 @@ class Trade_Bot(Haas, TradeBotSellectors):
     def menu(self):
         while True:
             if not self.tradebot:
-                self.select_tradebot()
+                self.tradebot = self.select_tradebot()
 
             else:
                 choices = [
-                    "Select indicator",
-                    "Select safety",
-                    # "Select insurance",
+                    "Select interface",
+
                     "Select another Trade Bot",
                     "Quit",
                 ]
                 user_selection = inquirer.select(
                     message="Select action:", choices=choices
                 ).execute()
-
-                self.tradebot_configs.append(
-                    TradeBotConfigManager().create_bot_config(tradebot=self.tradebot)
-                )
+            
+                # self.tradebot_configs.append(
+                #     TradeBotConfigManager().create_bot_config(tradebot=self.tradebot)
+                # )
                 if user_selection == "Select another Trade Bot":
-                    self.select_tradebot()
 
-                if user_selection == "Select indicator":
-                    self.indicator_selector()
-                if user_selection == "Select safety":
-                    self.safety_selector()
-                if user_selection == "Select insurance":
-                    self.insurance_selector()
+                    self.tradebot = None 
+                    self.tradebot = self.select_tradebot()
 
+                if user_selection == "Select interface":
+                        self.select_interface()
                 if user_selection == "Quit":
                     break
+    def select_interface(self):
+        interface =  self.interface_selector()
+        param_interfaces = self.read_interface(interface)
+        param_num = []
+        if param_interfaces:
+            selectedInterface = self.parameter_selector(param_interfaces)
+            for i, x in enumerate(param_interfaces):
+                if x.title == selectedInterface.title:
+                    param_num = i
+            
+            self.tradebot = self.iterate_parameter(interface, selectedInterface,param_num)
 
     def setup_indicator(self):
         setup = self.tradebotapi.setup_indicator(

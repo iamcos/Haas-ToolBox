@@ -3,7 +3,7 @@ import time
 import pandas as pd
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from haas import Haas
-from ratelimit import limits
+from ratelimit import limits , sleep_and_retry
 
 class MarketData(Haas):
     def __init__(self):
@@ -87,8 +87,8 @@ class MarketData(Haas):
                 ][df["secondarycurrency"] == secondarycoin].marketobj.values[0]
             return marketobj
 
-    # @sleep_and_retry
-    @limits(calls=5, period=15)
+    @sleep_and_retry
+    @limits(calls=3, period=30)
     def get_market_data(self, priceMarketObject, interval, depth):
         """
         Returns dataframe full of candlestick data including volume in any interval and depth supported by Haasonline.

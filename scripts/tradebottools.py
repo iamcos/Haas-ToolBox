@@ -72,6 +72,5 @@ class TradeBotConfigManager:
             interface = v.indicatorInterface
         elif type(v) == Safety:
             interface = v.safetyInterface
-
         elif type(v) == Insurance:
             interface = v.insuranceInterface

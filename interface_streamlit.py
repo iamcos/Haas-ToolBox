@@ -348,8 +348,8 @@ if __name__ == "__main__":
 	str = StreamlitHaasTool()
 	resp = st.sidebar.selectbox('Select',
 	                            [
-	                              'Ta-Lib',
 	                              'Plot Market Data',
+	                              'Ta-Lib',
 	                              'Plot Bot Trades',
 																'Twitter Data'
 		                            ]

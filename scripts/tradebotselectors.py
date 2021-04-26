@@ -2,46 +2,20 @@ from InquirerPy import inquirer
 from InquirerPy.separator import Separator
 from InquirerPy import get_style
 import time
-
-
+from haasomeapi.enums.EnumIndicator import EnumIndicator
+from haasomeapi.enums.EnumInsurance import EnumInsurance
+from haasomeapi.enums.EnumPriceSource import EnumPriceSource
+from haasomeapi.enums.EnumPlatform import EnumPlatform
+from haasomeapi.enums.EnumSafety import EnumSafety
 class TradeBotSellectors:
-    def select_tradebot(self):
-        self.tradebots = self.tradebotapi.get_all_trade_bots().result
-        self.tradebot = inquirer.select(
-            message="Select Trade Bot",
-            choices=[Separator(" ")]
-            + [{"name": x.name, "value": x} for x in self.tradebots],
-        ).execute()
 
-    def indicator_selector(self):
-        while True:
-            if len(self.tradebot.indicators) > 0:
-                action = inquirer.select(
-                    message="Select Indicator",
-                    choices=[Separator(" ")]
-                    + [
-                        {"name": y.indicatorName, "value": y}
-                        if y.enabled == True
-                        else Separator(f"{y.indicatorName} ")
-                        for x, y in self.tradebot.indicators.items()
-                    ]
-                    + ["Back"],
-                    style=get_style({"seprator": "#658bbf bg:#ffffff"}),
-                )
+                # if len(self.indicator.indicatorInterface) > 0:
+                #     self.indicator_parameter_selector()
 
-                kb_activate = True
-                result = action.execute()
-                if result == "Back":
-                    break
-                else:
-                    self.indicator = result
-                if len(self.indicator.indicatorInterface) > 0:
-                    self.indicator_parameter_selector()
-
-                else:
-                    print(
-                        f"\nNo selectable parameters were detected in {self.indicator.indicatorInterface.indicatorName}\n"
-                    )
+                # else:
+                #     print(
+                #         f"\nNo selectable parameters were detected in {self.indicator.indicatorInterface.indicatorName}\n"
+                #     )
                     time.sleep(2)
                     self.indicator_selector()
 
@@ -262,46 +236,57 @@ class TradeBotSellectors:
 
     def safety_selector(self):
         if len(self.tradebot.safeties) > 0:
-            self.safety = inquirer.select(
+            result= inquirer.select(
                 message="Select Safety",
                 choices=[Separator(" ")]
                 + [
                     {"name": y.safetyName, "value": y}
                     for x, y in self.tradebot.safeties.items()
-                ],
+                ]+["Back"],
             ).execute()
-            if len(self.safety.safetyInterface) > 0:
-                self.safety_parameter_selector()
+            if result == "Back":
+                    self.menu
             else:
-                print(
-                    f"\nNo selectable parameters were detected in {self.safety.safetyInterface.safetyName}\n"
-                )
-                time.sleep(2)
-        else:
-            self.safety_parameter_selector()
+                  
+                    return result
+            # if len(self.safety.safetyInterface) > 0:
+            #     self.safety_parameter_selector()
+            # else:
+            #     print(
+            #         f"\nNo selectable parameters were detected in {self.safety.safetyInterface.safetyName}\n"
+            #     )
+            #     time.sleep(2)
+        
+            # self.safety_parameter_selector()
 
             time.sleep(2)
 
     def insurance_selector(self):
         if len(self.tradebot.insurances) > 0:
-            self.insurance = inquirer.select(
+            result = inquirer.select(
                 message="Select Insurance",
                 choices=[Separator(" ")]
                 + [
                     {"name": y.insuranceTypeFullName, "value": y}
                     for x, y in self.tradebot.insurances.items()
-                ],
+                ]+["Back"],
             ).execute()
-            if len(self.insurance.insuranceInterface) > 0:
-                self.insurance_parameter_selector()
+            if result == "Back":
+                self.menu
             else:
-                print(
-                    f"\nNo selectable parameters were detected in {self.insurance.insuranceTypeFullName}\n"
-                )
-                time.sleep(2)
-        else:
-            self.insurance_parameter_selector()
-            time.sleep(2)
+                  
+                return result
+            # if len(self.insurance.insuranceInterface) > 0:
+            #     self.insurance_parameter_selector()
+            # else:
+            #     print(
+            #         f"\nNo selectable parameters were detected in {self.insurance.insuranceTypeFullName}\n"
+            #     )
+            #     time.sleep(2)
+            
+        # else:
+        #     self.insurance_parameter_selector()
+        #     time.sleep(2)
 
     def edit_indicator(self, direction=None):
 
