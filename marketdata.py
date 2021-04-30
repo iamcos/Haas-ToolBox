@@ -11,8 +11,6 @@ class MarketData(Haas):
         self.tries = 10
         self.current_try = 0
 
-
-
     def to_df_for_ta(self,market_history):
         """
         Transforms List of Haas MarketData tick objects into Dataframe and returns it.
@@ -75,16 +73,16 @@ class MarketData(Haas):
         """
 
         df = self.get_all_markets()
-
+   
         if ticker != None:
             marketobj = df[df["Ticker"] == ticker][
                 df["pricesource"] == pricesource
-                ].marketobj.values[0]
+                ].marketobj.to_list()
             return marketobj
         else:
             marketobj = df[df["pricesource"] == pricesource][
                 df["primarycurrency"] == primarycoin
-                ][df["secondarycurrency"] == secondarycoin].marketobj.values[0]
+                ][df["secondarycurrency"] == secondarycoin].marketobj.to_list()[0]
             return marketobj
 
     @sleep_and_retry
