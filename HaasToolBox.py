@@ -8,13 +8,12 @@ from madhatter import MadHatterBot
 from tradebot import Trade_Bot
 from scalperbot import ScalperBot
 from tradingviewtoolbox import TradingView
-import datetime
 
 # https://github.com/tmbo/questionary - inquirer analog
 
 class HaasToolBox(Haas):
     def __init__(self):
-        Haas.__init__(self)
+         Haas.__init__(self)
 
     def main_screen(self):
 
@@ -41,7 +40,6 @@ class HaasToolBox(Haas):
         if resp == "Trade Bots":
             tb = Trade_Bot()
             tb.menu()
-
         if resp == "Scalper Bots":
             sb = ScalperBot()
             sb.scalper_bot_menu()
@@ -181,48 +179,22 @@ class HaasToolBox(Haas):
             elif response == "Main Menu":
                 break
 
-    def bt(self, b):
-        if self.num_configs > len(self.configs.index):
-            self.num_configs == len(self.configs.index)
-            print(
-                f"config limit bigger than configs in config file, setting it to {self.num_configs}"
-            )
-        print("index", self.configs.index)
-        print("the configs", self.configs)
-        bt_results = self.iterate_csv(
-            self.configs[0 : self.num_configs], b, depth=Haas().read_ticks()
-        )
-        filename = (
-            str(b.name.replace("/", "_"))
-            + str("_")
-            + str(datetime.date.today().month)
-            + str("-")
-            + str(datetime.date.today().day)
-            + str("_")
-            + str(len(bt_results))
-            + str("multi.csv")
-        )
-        bt_results.sort_values(by="roi", ascending=False, inplace=True)
-        bt_results.drop_duplicates()
-        bt_results.reset_index(inplace=True, drop=True)
-        bt_results.to_csv(filename)
-        self.configs = bt_results
 
     def create_mh_bots(self, b):
         if self.limit > len(self.configs.index):
             self.limit == len(self.configs.index)
             print(f"create limit bigger than bots, setting it to {self.limit}")
         for c in range(self.limit):
-            print(self.client)
+            print(self.c)
             bl = [
                 x.guid
-                for x in self.client.customBotApi.get_all_custom_bots().result
+                for x in self.c.customBotApi.get_all_custom_bots().result
                 if x.botType == 15
             ]
 
             print(bl)
             name = f"{b.name} #{c}: {b.roi}%"
-            new_bot = self.client.customBotApi.clone_custom_bot_simple(
+            new_bot = self.c.customBotApi.clone_custom_bot_simple(
                 b.accountId, b.guid, name
             )
 
@@ -230,7 +202,7 @@ class HaasToolBox(Haas):
             print(new_bot.errorCode, new_bot.errorMessage)
             bl2 = [
                 x.guid
-                for x in self.client.customBotApi.get_all_custom_bots().result
+                for x in self.c.customBotApi.get_all_custom_bots().result
                 if x.botType == 15
             ]
             print(bl2)
@@ -244,7 +216,7 @@ class HaasToolBox(Haas):
                     self.bt(i2)
             name = f"{b.name} #{c}: {b.roi}%"
 
-            new_bot = self.client.customBotApi.new_custom_bot(
+            new_bot = self.c.customBotApi.new_custom_bot(
                 b.accountId,
                 b.botType,
                 name,
@@ -255,7 +227,7 @@ class HaasToolBox(Haas):
             print(new_bot.errorCode, new_bot.errorMessage)
             bl2 = [
                 x.guid
-                for x in self.client.customBotApi.get_all_custom_bots().result
+                for x in self.c.customBotApi.get_all_custom_bots().result
                 if x.botType == 15
             ]
             print(bl2)
