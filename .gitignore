@@ -40,3 +40,7 @@ version
 *.exe
 config.ini
 build/HaasToolBox/Analysis-00.toc
+new_sentiment.py
+test-output.xml
+twitter_parser.py
+bitpeaks_twitter_parser.py
