@@ -17,7 +17,7 @@ class BotSellector:
 			guid, EnumCustomBotType.MAD_HATTER_BOT)
 
 		return bot.result
-	def get_all_trade_bots(self):
+	def get_trade_bots(self):
 		#Returns all Trade Bots as a list
 		allbots = self.c().tradeBotApi.get_all_trade_bots().result
 		return allbots
@@ -53,7 +53,7 @@ class BotSellector:
 
 	def get_trade_bot(self):
 		#Returns a specific trade bot from trade_bot list as in a single step
-		all_trade_bots = self.get_all_trade_bots()
+		all_trade_bots = self.get_trade_bots()
 		bot = self.get_specific_bot(all_trade_bots)
 		return bot
 	def get_mad_hatter_bot(self):
