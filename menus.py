@@ -7,13 +7,15 @@ class Menus:
     def mh_menu(self):
         live_menu = [
             "Select Bots",
-            "Select config file",
-            "Set configs limit",
+            "Start Backtesting",
+            "Set ROI treshold limit",
             "Set create limit",
+            "Set configs limit",
+            "Select config file",
+            "Set BT mode",
+            "Change backtesting date",
             "Find Stoploss",
             # "Config optimisation",
-            "Change backtesting date",
-            "Start Backtesting",
             "Main Menu",
         ]
 
@@ -32,6 +34,10 @@ class Menus:
                 self.configs.roi = NaN
             elif response == "Set configs limit":
                 self.set_configs_limit()
+            elif response == "Set ROI treshold limit":
+                self.set_acceptable_roi_threshold()
+            elif response == "Set BT mode":
+                self.set_backtesting_mode()
 
             elif response == "Set create limit":
                 self.set_create_limit()

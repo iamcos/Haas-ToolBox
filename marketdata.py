@@ -107,7 +107,7 @@ class MarketData(Haas):
                     time.sleep(5)
                     print('marketdata length is zero')
                     print(marketdata.errorMessage,marketdata.errorMessage)
-                    print(marketdata.result)
+                    # print(marketdata.result)
                     self.current_try =+1
                     if self.tries == self.current_try:
                         self.current_try = 0

@@ -3,15 +3,17 @@
 .vscode
 .DS_Store
 __pycache__
+HaasToolBox.spec
 Misc
 /haasomeapi_2/
 /env/
 .idea/
-/output/
 
+dist/**
+build/**
 *.csv
 debug.log
-output/Haas-ToolBox.exe
+output/**
 *.sublime-workspace
 config.ini
 *.obj
@@ -37,3 +39,4 @@ pyex.py
 version
 *.exe
 config.ini
+build/HaasToolBox/Analysis-00.toc

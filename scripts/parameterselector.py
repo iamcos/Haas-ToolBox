@@ -68,10 +68,8 @@ class TradeBotEditor:
                 interface, selectedInterface, param_num
             )
     
-    def interface_selector(self):
-        while True:
-            
-            if self.tradebot:
+    def return_interfaces_menu_options(self):
+         if self.tradebot:
                 if len(self.tradebot.indicators) > 0:
                     indicators_menu_top = [Separator(""), Separator("Indicators:")]
                     indicators_menu = [
@@ -123,23 +121,28 @@ class TradeBotEditor:
                         Separator("No Safeties to select"),
                         Separator(""),
                     ]
-                action = inquirer.select(
-                    message="Select Interface:",
-                    choices=indicator_choices
-                    + insurance_choices
-                    + safety_choices
-                    + [Separator(""), "Back"],
-                    style=get_style({"seprator": "#658bbf bg:#ffffff"}),
-                )
+                    
+                choices = indicator_choices + insurance_choices + safety_choices + [Separator(""), "Back"]
+                    
+                return choices
+    
 
-                kb_activate = True
-                interface = action.execute()
-                if interface == "Back":
-                    interface = None
-                    self.select_interface()
-                else:
                 
-                    return interface
+    def interface_selector(self):
+    
+            choices = self.return_interfaces_menu_options()
+            
+            action = inquirer.select(
+                message="Select Interface:",
+                choices = choices,
+                style=get_style({"seprator": "#658bbf bg:#ffffff"}),
+            )
+
+            kb_activate = True
+            interface = action.execute()
+            
+            
+            return interface
 
     def read_interface(self, source):
         if type(source) == Safety:
@@ -163,8 +166,7 @@ class TradeBotEditor:
 
         interfaceParameters = inquirer.select(
             message="Select Parameter",
-            choices=[{"name": f"{i.title} : {i.value}", "value": i} for i in interface]
-            + ["Go back"],
+            choices=[{"name": f"{i.title} : {i.value}", "value": i} for i in interface],
         ).execute()
         print("selected_parameter number", interfaceParameters.__dict__)
         return interfaceParameters
@@ -234,7 +236,9 @@ class TradeBotEditor:
                 Separator(f"Press left to backtest down"),
                 Separator(f"Press '.' to backtest 10 steps down"),
                 Separator(f"Press '.' to backtest 10 steps up"),
-            "Select another parameter", "Set best value by ROI"
+                Separator(f"Press '=' - backtesting length X 2"),
+                Separator(f"Press '-' - backtesting length \/ 2"),
+            "Select another parameter",
             ],
         )
 
@@ -252,7 +256,8 @@ class TradeBotEditor:
             print(
                 f"{selectedInterfaceParmeter.title} : {self.value} ROI:{tradebot.roi}%                  "
             )
-            value_roi.append([float(tradebot.roi),self.value])
+            if float(tradebot.roi) != 0.0:
+                value_roi.append([float(tradebot.roi),self.value,self.ticks])
             used_values.append(self.value)
 
         @action.register_kb("left")
@@ -274,6 +279,14 @@ class TradeBotEditor:
         @action.register_kb("escape")
         def _(_):
             pass
+        @action.register_kb("=")
+        def _(_):
+            self.ticks = int(self.ticks * 2)
+            print(self.ticks,'                           ')
+        @action.register_kb("-")
+        def _(_):
+            self.ticks = int(self.ticks/2)
+            print(self.ticks,'\n')
 
         @action.register_kb(",")
         def _(_):
@@ -314,21 +327,21 @@ class TradeBotEditor:
         action = action.execute()
         if action == "Select another parameter":
             if len(value_roi)>0:
-                value = sorted(value_roi, key=lambda x: x[0])[0][1]
+                value = sorted(value_roi, key=lambda x: x[0], reverse=True)
+                print(value)
                 api = self.edit_interface(interface)
-                self.edit_param_value(
-                        api, interface, self.tradebot, param_num, value
+                self.tradebot = self.edit_param_value(
+                        api, interface, self.tradebot, param_num, value[0][1]
                     )
-                self.value = value
+                # self.value = value
                 self.select_interface()
-            
         elif action == "Set best value by ROI":
             if len(value_roi)>0:
-                value = sorted(value_roi, key=lambda x: x[0])[0][1]
+                value = sorted(value_roi, key=lambda x: x[0], reverse=True)
                 api = self.edit_interface(interface)
-                self.edit_param_value(
-                        api, interface, self.tradebot, param_num, value
+                self.tradebot = self.edit_param_value(
+                        api, interface, self.tradebot, param_num, value[0][1]
                     )
-                print(value_roi)
-                print('value',value)
-                self.value = value
+                # self.value = value
+                print(value)
+                self.select_interface()
