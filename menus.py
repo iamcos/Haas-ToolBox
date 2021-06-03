@@ -19,6 +19,7 @@ class Menus:
             "Find Stoploss",
             "Create bots from CSV",
             "Create bots from OBJ",
+            "Save bots to OBJ file",
             "Main Menu",
         ]
 
@@ -35,6 +36,8 @@ class Menus:
             elif response == "Select config file":
                 file = self.csv_file_selector()
                 # self.configs.roi = NaN
+            elif response == "Save bots to OBJ file":
+                self.save_bots_to_file(self.bots)
             elif response == "Set configs limit":
                 self.set_configs_limit()
             elif response == "Set ROI treshold limit":
@@ -93,6 +96,7 @@ class Menus:
 
             elif response == "Main Menu":
                 break
+            
 
 
     def intervals_menu(self):

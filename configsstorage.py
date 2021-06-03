@@ -346,6 +346,7 @@ class ConfigsManagment:
         file = inquirer.select(message="MH Bots: ",choices=files,
             ).execute()  # where b bot object returned from dic[x] name list
         objects = pd.read_pickle(f"./botstorage/{file}")
+        print(objects,'objects')
         n = [[f"{x.name}| ROI: {x.roi}"][0] for x in objects]
         b = [x for x in objects]  # creates list of names
         dic = dict(zip(b,n))  # creates zipped obj/names list
@@ -372,3 +373,8 @@ class ConfigsManagment:
 
         configs =self.configs = pd.read_csv(file)
         return configs
+   
+    def save_bots_to_file(self,botlist):
+        df = pd.DataFrame(botlist,columns=['bots'])
+        filename = f"{datetime.date.today().month}-{datetime.date.today().day}-{len(botlist)}_bots_save.obj"
+        df.bots.to_pickle(filename)
