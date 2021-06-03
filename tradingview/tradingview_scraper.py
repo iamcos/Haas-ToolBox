@@ -11,11 +11,12 @@ import datetime
 class TradingViewParser:
 
 	def __init__(self):
-		self.asset = None # can be exchange or ticker i.e. binance | btcusdt
-		self.pages = 3 # how many pages to parse with selected asset
-		self.current_page = 1 # nvm
-		self.general_crypto_url1 = "https://www.tradingview.com/markets/cryptocurrencies/ideas/?sort=recent"
-		self.general_crypto_url2 = f"https://www.tradingview.com/markets/cryptocurrencies/ideas/page-{self.current_page}/?sort=recent"
+		self.asset = "ETCUSDT" # can be exchange or ticker i.e. binance | btcusdt
+		self.pages = 1 # how many pages to parse with selected asset
+		self.current_page = 1  # nvm
+		self.lang = 'ru'
+		self.general_crypto_url1 = f"https://{self.lang}.tradingview.com/markets/cryptocurrencies/ideas/?sort=recent"
+		self.general_crypto_url2 = f"https://{self.lang}.tradingview.com/markets/cryptocurrencies/ideas/page-{self.current_page}/?sort=recent"
 		self.session = self.init_session()
 	
 	def validate_ticker(self):
@@ -26,15 +27,25 @@ class TradingViewParser:
 			raise Exception ("Page not found, check your input data")
 		else: 
 			return f"{self.asset} TW page is being parsed"
+	
+	def return_all_languages(self,page):
+
+		if self.current_page < 2:
+			languages = page.html.find('.tv-dropdown-behavior__body tv-header__dropdown-body js-lang-dropdown-list-desktop i-hidden')
 			
+			print('langs 1',[i.attrs['vertical-align: inherit'].text for i in languages])
+		else:
+			print('langs 2', languages)
+			print('langs 3',[i for i in languages])
+			print('langs 1',[i.attrs['vertical-align: inherit'].text for i in languages])
 	def init_session(self):
 		session = HTMLSession() 
 
-		if self.current_page == 1:
-			page = session.get(f"https://www.tradingview.com/ideas/{self.asset}/?sort=recent"	)
+		if self.current_page:
+			page = session.get(f"https://{self.lang}.tradingview.com/ideas/{self.asset}/?sort=recent"	)
 			return page
 		else:
-			page = session.get(f"https://www.tradingview.com/ideas/{self.asset}/page-{self.current_page}/?sort=recent"	)
+			page = session.get(f"https://{self.lang}.tradingview.com/ideas/{self.asset}/page-{self.current_page}/?sort=recent"	)
 			return page
 				
 	def return_cards(self, page):
@@ -144,19 +155,33 @@ class TradingViewParser:
 		return dfss
 		
 if __name__ == "__main__":
-	tw = TradingViewParser()
 
-	cardss = []
-	for i in range(1, tw.pages):
-		tw.current_page = i
-		page = tw.init_session()
-		print(page.url)
-		cards = tw.return_cards(page)
-		cardss.extend(cards)
+	lang = ['ru', 'en', 'de']
+	for l in lang:
+		tw = TradingViewParser()
 
-	
-	
-	result = tw.ideas_df(cardss)
-	result.to_csv(f'TW_{tw.asset}.csv')
-	print(result)
-	
+		cardss = []
+		tw.lang = l
+		if tw.pages>1:
+			for i in range(1, tw.pages):
+			
+			
+				tw.current_page = i
+				page = tw.init_session()
+				# print(page.url)
+				pgs = tw.return_all_languages(page)
+				cards = tw.return_cards(page)
+				cardss.extend(cards)
+				result = tw.ideas_df(cardss)
+				result.to_csv(f'TW_{tw.asset}_{tw.lang}__ideas.csv')
+				print(result)
+		else:
+				tw.current_page = 1
+				page = tw.init_session()
+				pgs = tw.return_all_languages(page)
+				# print(page.url)
+				cards = tw.return_cards(page)
+				cardss.extend(cards)
+				result = tw.ideas_df(cardss)
+				result.to_csv('TW_{tw.asset}_{tw.lang}__ideas.csv')
+				print(result)
