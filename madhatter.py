@@ -334,7 +334,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         return do
 
     def setup_bot_from_obj(self, bot, config, print_errors=False):
-
+        print(bot,'bot')
         if bot.bBands["Length"] != config.bBands["Length"]:
             do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
                 bot.guid, EnumMadHatterIndicators.BBANDS, 0, config.bBands["Length"]

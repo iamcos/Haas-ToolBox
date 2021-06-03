@@ -142,7 +142,7 @@ class ConfigsManagment:
                     }
                     for i in accounts if EnumPriceSource(i.connectedPriceSource).value == bot_exchange
             ]
-        if len(matching_accounts)>1:
+        if len(matching_accounts)>=1:
             
             selected_exchange = [
                         inquirer.select(
@@ -151,8 +151,6 @@ class ConfigsManagment:
                         ).execute()
                 ]
             return selected_exchange
-        elif len(matching_accounts)==1:
-            return matching_accounts
         else:
              return None
             
@@ -254,7 +252,11 @@ class ConfigsManagment:
     def create_bots_from_obj(self):
         botobjs = self.return_bot_objects()
         exchange = self.match_exchange_with_bot(botobjs[0])
-        acountId = exchange[0].__dict__['guid']
+        print(exchange,'exchange')
+        try:
+            acountId = exchange[0].__dict__['guid']
+        except:
+            acountId = exchange[0]['guid']
         for obj in botobjs:
             market = obj.priceMarket
             name = f"{market.primaryCurrency} {market.secondaryCurrency}"
@@ -292,9 +294,9 @@ class ConfigsManagment:
                         )
     def save_and_sort_results(self, bt_results, obj=True, csv=True):
         if obj:
-            os.makedirs("./botstorage/", exist_ok=True)
+            os.makedirs("./bt_results/", exist_ok=True)
             obj_file_name = (
-                f'./botstorage/{self.bot.priceMarket.primaryCurrency}_{self.bot.priceMarket.secondaryCurrency}_'
+                f'./bt_results/{self.bot.priceMarket.primaryCurrency}_{self.bot.priceMarket.secondaryCurrency}_'
                 f"{datetime.date.today().month}"
                 f"_{datetime.date.today().day}.obj"
             )
@@ -339,13 +341,13 @@ class ConfigsManagment:
             return 'No trade history'
     def return_bot_objects(self):
         files = []
-        for file in os.listdir("./botstorage/"):
+        for file in os.listdir("./bt_results/"):
             # if file.endswith(".obj") or file.endswith('.json'):
             if file.endswith(".obj"):
                 files.append(file)
         file = inquirer.select(message="MH Bots: ",choices=files,
             ).execute()  # where b bot object returned from dic[x] name list
-        objects = pd.read_pickle(f"./botstorage/{file}")
+        objects = pd.read_pickle(f"./bt_results/{file}")
         print(objects,'objects')
         n = [[f"{x.name}| ROI: {x.roi}"][0] for x in objects]
         b = [x for x in objects]  # creates list of names
