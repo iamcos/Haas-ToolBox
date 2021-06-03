@@ -77,7 +77,7 @@ class HaasToolBox():
         if resp == "Create Scalper bots from Tradingview CSV file":
             new_bots = self.tw_to_bots(3)
         elif resp == "Create Mad-Hatter bots from Tradingview CSV file":
-            file = pd.read_csv(self.file_selector())
+            file = pd.read_csv(self.csv_file_selector())
             new_bots = self.tw_to_bots(15, file)
         elif resp == "Create Ping-Pong bots from Tradingview CSV file":
             new_bots = self.tw_to_bots(2)
@@ -102,7 +102,7 @@ class HaasToolBox():
             if response == "Select Bot":
                 bot = self.bot_selector()
             if response == "Select file with configs":
-                file = pd.read_csv(self.file_selector())
+                file = pd.read_csv(self.csv_file_selector())
             if response == "Apply configs":
                 configs = self.config_storage(self.bot.guid).sort_values(
                     by="roi", ascending=False
@@ -145,7 +145,7 @@ class HaasToolBox():
             if response == "Select Bots":
                 bot = self.multiple_bot_sellector()
             elif response == "Select config file":
-                file = pd.read_csv(self.file_selector())
+                file = pd.read_csv(self.csv_file_selector())
             elif response == "Set configs limit":
                 try:
                     num_configs = inquirer.text(

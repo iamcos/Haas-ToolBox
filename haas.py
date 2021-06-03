@@ -1,17 +1,16 @@
 import configparser as cp
 import datetime
-import os
+
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from haasomeapi.enums.EnumPlatform import EnumPlatform
 from InquirerPy import inquirer
 import pandas as pd
 from haasomeapi.HaasomeClient import HaasomeClient
 from scripts.configmanager import ConfigManager
-# from create_from_csv import BotManger
+from configsstorage import ConfigsManagment
 
 
-
-class Haas(ConfigManager):
+class Haas(ConfigManager,ConfigsManagment):
 		"""
 		Haasonline trading software interaction class: get botlist, marketdata,
 		create bots and configure their parameters,
@@ -30,8 +29,40 @@ class Haas(ConfigManager):
 			self.ticks = self.read_ticks()
 
 
+		def get_accounts_with_details(self):
+			accounts = self.c.accountDataApi.get_all_account_details().result
+			accounts_with_details = list(accounts.values())
+			print(accounts_with_details)
+			return accounts_with_details
+  
+		def select_exchange(self):
+			accounts = self.get_accounts_with_details()
+			accounts_inquirer_format = [
+							{
+											"name": f"{EnumPriceSource(i.connectedPriceSource).name} {i.name} {EnumPlatform(i.platformType).name} "
+											f"",
+											"value": i,
+							}
+							for i in accounts
+			]
+			exchange = [
+							inquirer.select(
+											message="Select exchange account by pressing Return or Enter ",
+											choices=accounts_inquirer_format,
+							).execute()
+			]
+			return exchange
 
+		def market_selector(self,exchange):
 
+				market= self.c.marketDataApi.get_price_markets(EnumPriceSource(exchange[0].connectedPriceSource).value).result
+				m2 = [
+						{ 'name':f"{i.primaryCurrency}/" #{EnumPriceSource(i.priceSource).name},
+								f"{i.secondaryCurrency}", "value" : i} for i in market
+						]
+
+				market = inquirer.fuzzy(message="Type tickers to search:",choices=m2).execute()
+				return market
 
 		def client(self):
 			config_data = self.config
@@ -86,38 +117,9 @@ class Haas(ConfigManager):
 			delta_minutes = delta.total_seconds() / 60
 			ticks = delta_minutes
 			
-		def file_selector(self):
-			"""[Displays multiple files and allows for t heir selection
-			Selection then sets self.file path for reference and
-			reads confis into a database self.configs]
+		
 
-			Args:
-				path (str, optional): [description]. Defaults to ".".
-
-			tsm
-			"""
-			files = self.get_csv_files()
-			# print(files[0:5])
-			file = inquirer.select(message="Please Select file from list: ", choices=[i for i in files]).execute()
-
-			configs =self.configs = pd.read_csv(file)
-			return configs
-
-		def return_bot_objects(self):
-			files = []
-			for file in os.listdir("./bt_results/"):
-				# if file.endswith(".obj") or file.endswith('.json'):
-				if file.endswith(".obj"):
-					files.append(file)
-			file = inquirer.select(message="MH Bots: ",choices=files,
-				).execute()  # where b bot object returned from dic[x] name list
-			objects = pd.read_pickle(f"./bt_results/{file}")
-			n = [[f"{x.name}| ROI: {x.roi}"][0] for x in objects]
-			b = [x for x in objects]  # creates list of names
-			dic = dict(zip(b,n))  # creates zipped obj/names list
-			botobj = inquirer.select(message="MH Bots: ",choices=dic,
-				).execute()  # where b bot object returned from dic[x] name list
-			return botobj
+			
 		def trades_to_df(self,bot):
 			completedOrders = [
 				{
@@ -145,3 +147,8 @@ class Haas(ConfigManager):
 				self.bottype = selected_type
 
 
+if __name__ == "__main__":
+	h = Haas()
+	# file = h.obj_file_selector()
+	# object = h.return_bot_objects()
+	# exchange = h.match_exchange_with_bot(object)

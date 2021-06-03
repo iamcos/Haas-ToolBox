@@ -18,6 +18,7 @@ class Menus:
             "Change backtesting date",
             "Find Stoploss",
             "Create bots from CSV",
+            "Create bots from OBJ",
             "Main Menu",
         ]
 
@@ -32,7 +33,7 @@ class Menus:
             if response == "Select Bots":
                 bot = self.bot_selector(15, multi=True)
             elif response == "Select config file":
-                file = self.file_selector()
+                file = self.csv_file_selector()
                 # self.configs.roi = NaN
             elif response == "Set configs limit":
                 self.set_configs_limit()
@@ -75,7 +76,9 @@ class Menus:
                 self.bruteforce_menu()
                 
             elif response == "Create bots from CSV":
-                self.pipeline()
+                self.create_bots_from_csv()
+            elif response == "Create bots from OBJ":
+                self.create_bots_from_obj()
 
             elif response == "Start Backtesting":
                 if self.configs is not pd.DataFrame:
@@ -85,6 +88,8 @@ class Menus:
                     self.bot = bot
                     self.bt()
                     self.create_top_bots()
+                    
+                    
 
             elif response == "Main Menu":
                 break

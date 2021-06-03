@@ -75,9 +75,6 @@ def test_bt():
 	assert len(results.index) == mh.num_configs
 #
 #
-# def test_save_and_sort_results():
-# 	assert False
-#
 #
 def test_create_top_bots():
 	mh.limit = 2

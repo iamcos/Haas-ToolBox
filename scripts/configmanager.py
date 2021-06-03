@@ -15,6 +15,13 @@ class ConfigManager:
 				if file.endswith(".csv"):
 					files.append(file)
 			return files
+		def get_obj_files(self):
+			files = []
+			for file in os.listdir('.'):
+				# if file.endswith(".csv") or file.endswith('.json'):
+				if file.endswith(".obj"):
+					files.append(file)
+			return files
 		def read_range(self,vars=vars):
 			return [x for x in [self.config["MH_LIMITS"].get(p) for p in vars]]
 

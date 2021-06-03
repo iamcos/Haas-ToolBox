@@ -6,7 +6,7 @@ __pycache__
 *.spec
 Misc/
 env/
-
+bt_results/*
 dist/
 build/
 *.csv
@@ -36,3 +36,4 @@ new_sentiment.py
 twitter_parser.py
 bitpeaks_twitter_parser.py
 test-output.xml
+*.obj

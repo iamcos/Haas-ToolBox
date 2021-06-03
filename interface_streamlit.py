@@ -111,14 +111,14 @@ class StreamlitHaasTool(Haas):
 	
 	def return_bot_objects(self):
 		files = []
-		for file in os.listdir("./bt_results/"):
+		for file in os.listdir("./botstorage/"):
 			# if file.endswith(".obj") or file.endswith('.json'):
 			if file.endswith(".obj"):
 				files.append(file)
 		file = st.sidebar.selectbox("Select object file",files)
 		print(file)
 		# self.bot_objects = {}
-		objects = pd.read_pickle(f"./bt_results/{file}")
+		objects = pd.read_pickle(f"./botstorage/{file}")
 		n = [[f"{x.name}| ROI: {x.roi}"][0] for x in objects]
 		b = [x for x in objects]  # creates list of names
 		dic = dict(zip(b,n))  # creates zipped obj/names list

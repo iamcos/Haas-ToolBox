@@ -13,7 +13,6 @@ from marketdata import MarketData
 from optimisation import Optimize
 from menus import Menus
 from configsstorage import ConfigsManagment
-# from create_from_csv import ConfigManager
 
 
 class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
@@ -22,9 +21,9 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         Haas.__init__(self)
         self.stoploss_range = None
         self.num_configs = None
-        self.limit = None
+        
         self.roi_threshold = 1.0
-        self.bt_mode = 0
+        
         self.config_storage = dict()
         self.configs = None
         self.current_config = None
@@ -139,7 +138,6 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
 
         return df
 
-    
 
     def setup_bot_from_df(self, bot, config, print_errors=False):
         do = self.c.customBotApi.set_mad_hatter_safety_parameter(
@@ -384,11 +382,12 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
                 bot.guid,
                 EnumMadHatterIndicators.BBANDS,
                 6,
-                config.bBands["fcc"],
+                config.bBands["RequireFcc"],
             )
         if print_errors == True:
             print(do.errorCode, do.errorMessage)
-        if bot.rsi["RsiLength"] != config.rsi["RsiLength"]:
+        print(bot.rsi)
+        if bot.rsi.__dict__["rsiLength"] != config.rsi["RsiLength"]:
             do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
                 bot.guid,
                 EnumMadHatterIndicators.RSI,
@@ -397,7 +396,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             )
         if print_errors == True:
             print(do.errorCode, do.errorMessage)
-        if bot.rsi["RsiOverbought"] != config.rsi["RsiOverbought"]:
+        if bot.rsi.__dict__["rsiOverbought"] != config.rsi["RsiOverbought"]:
             do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
                 bot.guid,
                 EnumMadHatterIndicators.RSI,
@@ -406,13 +405,13 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             )
         if print_errors == True:
             print(do.errorCode, do.errorMessage)
-        if bot.rsi["RsiOversold"] != config.rsi["RsiOversold"]:
+        if bot.rsi.__dict__["rsiOversold"] != config.rsi["RsiOversold"]:
             do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
                 bot.guid, EnumMadHatterIndicators.RSI, 2, config.rsi["RsiOversold"]
             )
         if print_errors == True:
             print(do.errorCode, do.errorMessage)
-        if bot.macd["MacdFast"] != config.macd["MacdFast"]:
+        if bot.macd.__dict__["macdFast"] != config.macd["MacdFast"]:
             do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
                 bot.guid,
                 EnumMadHatterIndicators.MACD,
@@ -421,7 +420,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             )
         if print_errors == True:
             print(do.errorCode, do.errorMessage)
-        if bot.macd["MacdSlow"] != config.macd["MacdSlow"]:
+        if bot.macd.__dict__["macdSlow"] != config.macd["MacdSlow"]:
             do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
                 bot.guid,
                 EnumMadHatterIndicators.MACD,
@@ -430,7 +429,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             )
         if print_errors == True:
             print(do.errorCode, do.errorMessage)
-        if bot.macd["MacdSign"] != config.macd["MacdSign"]:
+        if bot.macd.__dict__["macdSign"] != config.macd["MacdSign"]:
             do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
                 bot.guid,
                 EnumMadHatterIndicators.MACD,
@@ -460,7 +459,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
                 includeIncompleteInterval=bot.includeIncompleteInterval,
                 mappedBuySignal=bot.mappedBuySignal,
                 mappedSellSignal=bot.mappedSellSignal,
-            ).result
+            )
         if print_errors == True:
             print(do.errorCode, do.errorMessage)
         if bot.useTwoSignals != config.useTwoSignals:
@@ -484,7 +483,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
                 includeIncompleteInterval=bot.includeIncompleteInterval,
                 mappedBuySignal=bot.mappedBuySignal,
                 mappedSellSignal=bot.mappedSellSignal,
-            ).result
+            )
         if print_errors == True:
             print(do.errorCode, do.errorMessage)
 
@@ -496,8 +495,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
                 f"config limit bigger than configs in config file, setting it to "
                 f"{self.num_configs}"
             )
-        print("index", self.configs.index)
-        print("the configs", self.configs)
+
 
         unsorted_results = self.iterate_csv(
             self.configs, self.bot
@@ -506,48 +504,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         self.store_results(bt_results)
         return bt_results
 
-    def save_and_sort_results(self, bt_results, obj=True, csv=True):
-        if obj:
-            os.makedirs("./bt_results/", exist_ok=True)
-            obj_file_name = (
-                f'./bt_results/{self.bot.name.replace("/","_")}_'
-                f"{datetime.date.today().month}"
-                f"_{datetime.date.today().day}.obj"
-            )
 
-            objects = bt_results.obj
-            try:
-                prev_file = pd.read_pickle(obj_file_name)
-                prev_file.append(objects,ignore_index=True)
-                print(prev_file)
-                print(objects)
-            except Exception as e:
-                print(e,'exception')
-
-            objects.to_pickle(obj_file_name)
-            print('objects file size now: ',len(objects))
-
-        if csv:
-            filename = (
-                str(self.bot.name.replace("/", "_"))
-                + str("_")
-                + str(datetime.date.today().month)
-                + str("-")
-                + str(datetime.date.today().day)
-                + str("_")
-                + str(len(bt_results))
-                + str(".csv")
-            )
-            to_csv = bt_results.drop("obj", axis=1)
-            to_csv.sort_values(by="roi", ascending=False, inplace=True)
-            to_csv.drop_duplicates() #subset=to_csv.columns[~to_csv.columns.isin(['roi','obj'])]
-            to_csv.reset_index(inplace=True, drop=True)
-            to_csv.to_csv(filename)
-
-        bt_results2 = bt_results.sort_values(by="roi", ascending=False)
-        bt_results2.drop_duplicates() #subset=bt_results2.columns[~bt_results2.columns.isin(['roi','obj'])]
-        bt_results2.reset_index(inplace=True, drop=True)
-        return bt_results2
 
     def create_top_bots(self):
         bot = self.bot
@@ -557,7 +514,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             self.limit = len(configs.index)
         print("LIMIT", self.limit)
         for c in range(self.limit):
-            name = f"{bot.name} {c} {configs.roi.iloc[c]}%"
+            name = f"{self.bot.priceMarket.primaryCurrency}/{self.bot.priceMarket.secondaryCurrency} {c} {configs.roi.iloc[c]}%"
             self.setup_bot_from_df(bot, configs.iloc[c], print_errors=False)
             self.c.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks())
             self.c.customBotApi.clone_custom_bot_simple(bot.accountId, bot.guid, name)
@@ -635,15 +592,12 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             ]
             print(pcfg)
             print(self.calculate_market_move_percentage(marketdata))
-            if self.possible_profit < 0:
-                break
-            if self.bt_mode == 1:
-                config_df = configs.sample()
-                i = config_df.index[0]
-                config = config_df.loc[i,:]
-            else:
-                config = configs.loc[i]
+    
+            config_df = configs.sample()
+            i = config_df.index[0]
+            config = config_df.loc[i,:]
             self.setup_bot_from_df(bot, config)
+            
             bt = self.c.customBotApi.backtest_custom_bot(bot.guid, self.ticks)
             bt = bt.result
 
@@ -655,8 +609,10 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             self.bot = bt
 
             pbar.update()
-            if  self.possible_profit*self.roi_threshold<=best_roi:
-                break
+            if self.bt_mode == 1:
+                if  self.possible_profit*self.roi_threshold<=best_roi:
+                    break
+                    
         return configs
 
     def set_configs_limit(self):
@@ -676,10 +632,14 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         self.read_limits()
     
     def set_acceptable_roi_threshold(self):
-        
-
+        print('\n  What is ROI threshold?: ')
+        print('\n    You can now define acceptible BT result')
+        print('    by setting backtesting goal as % of market growth over')
+        print('    the backtesting period.')
+        print('    Write 0.9 to set it to 90% \n    backtesting will stop after ROI hits 90% of market growth over BT period\n')
+        print("    0.1 is 10%, 1 is 100%\n")
         self.roi_threshold = inquirer.text(
-            message="If 90% of max possible ROI ok, write 0.9: ",
+            message="Write: ",
         ).execute()
         try:
             self.config.add_section("MH_LIMITS")
@@ -692,8 +652,14 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         self.read_limits()
     
     def set_backtesting_mode(self):
-        
-
+        print('\n     Two BT methods:')
+        print('\n  Backtesting mode 0 does not care about threshold')
+        print('  or negative price change over BT period')
+        print('  Configs are fed in the same order as in file\n')
+        print('  Mode 1 will stop backtesting if coin price ')
+        print('  fell over the course of backtestng period')
+        print('  or if backtesting results are within threshold\n')
+        print('  configs are now selected at random and applied')
         self.bt_mode = int(inquirer.text(
             message="Type 0 for ordered or 1 for random config selection: ",
         ).execute())

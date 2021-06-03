@@ -15,7 +15,7 @@
 		 if ind == 0:
 				 bot = self.bot_selector()
 		 elif ind == 1:
-				 file = pd.read_csv(self.file_selector())
+				 file = pd.read_csv(self.csv_file_selector())
 		 elif ind == 2:
 				 # print(self.configs)
 
