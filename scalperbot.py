@@ -4,7 +4,7 @@ from InquirerPy import inquirer
 import numpy as np
 import pandas as pd
 from alive_progress import alive_bar
-from haasomeapi.enums.EnumPriceSource import EnumPriceSource
+
 from tqdm import tqdm
 
 from haas import Haas
@@ -24,19 +24,7 @@ class ScalperBot(Haas):
 		return botlist
 	
 	
-	def markets_selector(self):
-		for i in self.accounts:
-			print(i,self.accounts)
-			for k in list(i.keys()):
-				print('i',i,'k',k)
-		markets = self.c.marketDataApi.get_price_markets(self.accounts).result
-		m2 = [
-			{ 'name':f"{EnumPriceSource(i.priceSource).name},{i.primaryCurrency}/"
-				f"{i.secondaryCurrency}", "value" : i} for i in markets
-			]
-		
-		self.markets = inquirer.select(message="Select markets",choices=m2).execute()
-		
+
 	
 	def setup_scalper_bot(self,bot,targetpercentage,safetythreshold):
 		
