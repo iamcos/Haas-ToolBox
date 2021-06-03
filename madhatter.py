@@ -702,7 +702,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         except Exception as e:
             print(e,'exception')
         self.config.set(
-            "MH_LIMITS", "set_backtesting_mode", str(self.roi_threshold)
+            "MH_LIMITS", "set_backtesting_mode", str(self.bt_mode)
         )
         self.write_file()
         self.read_limits()
