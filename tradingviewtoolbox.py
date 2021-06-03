@@ -4,7 +4,7 @@ from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 import pandas as pd
 
 from InquirerPy import inquirer
-
+from pprint import pprint as print
 from haasomeapi.enums.EnumPlatform import EnumPlatform
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
@@ -21,39 +21,10 @@ class TradingView(Haas):
         self.markets_to_create = None
         self.bottype = None
 
-    def get_accounts_with_details(self):
-        accounts = self.c.accountDataApi.get_all_account_details().result
-        accounts_with_details = list(accounts.values())
-        print(accounts_with_details)
-        return accounts_with_details
+ 
 
         self.accounts = accounts_with_details
 
-    def select_exchange(self):
-        accounts = self.get_accounts_with_details()
-        accounts_inquirer_format = [
-            {
-                "name": f"{EnumPriceSource(i.connectedPriceSource).name} {i.name} {EnumPlatform(i.platformType).name} "
-                f"",
-                "value": i,
-            }
-            for i in accounts
-        ]
-        exchange = [
-            inquirer.select(
-                message="Select exchange account by pressing Return or Enter ",
-                choices=accounts_inquirer_format,
-            ).execute()
-        ]
-        self.exchange = exchange[0]
-        return exchange
-
-    def select_bottype_to_create(self):
-        bot_types = [{'name':e.name,"value":e.value} for e in EnumCustomBotType]
-        selected_type = inquirer.select(
-            message=" Select bot type to create", choices=bot_types
-        ).execute()
-        self.bottype = selected_type
 
     def process_csv(self):
         csvs = self.get_csv_files()
@@ -79,10 +50,12 @@ class TradingView(Haas):
         ).execute()
         markets_sorted = csv[[ticker, signal]]
         markets_sorted.reset_index(inplace=True)
-        markets_sorted.rename(columns={ticker:'Ticker'},inplace=True)
+        try:
+            markets_sorted.rename(columns={ticker:'Ticker'},inplace=True)
+        except Exception as e:
+            print('No Worries, but',e,"exception has been called, which in this case isn't a problem i belibe")
         ticker = "Ticker"
         markets_sorted.drop_duplicates(subset=ticker, inplace=True)
-       
         for i in range(len(markets_sorted.index)):
             try:
                 markets_sorted.Ticker.iloc[i] = markets_sorted.Ticker.iloc[i].replace('PERP',"")   
@@ -102,8 +75,7 @@ class TradingView(Haas):
         all_markets_on_selected_exchange = all_markets[
             all_markets.pricesource == self.exchange.connectedPriceSource
         ]
-        
-        # print('all markets on selected exchange', all_markets_on_selected_exchange)
+
         print([x.contractName for x in all_markets.marketobj.to_list()][-1:-5])
         markets_on_exchange = pd.merge(
             markets_to_create,
