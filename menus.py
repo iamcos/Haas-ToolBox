@@ -3,7 +3,9 @@ from numpy import NaN
 import pandas as pd
 
 
+
 class Menus:
+   
     def mh_menu(self):
         live_menu = [
             "Select Bots",
@@ -15,11 +17,11 @@ class Menus:
             "Set BT mode",
             "Change backtesting date",
             "Find Stoploss",
-            # "Config optimisation",
+            "Create bots from CSV",
             "Main Menu",
         ]
 
-
+        
 
         while True:
             self.read_limits()
@@ -31,7 +33,7 @@ class Menus:
                 bot = self.bot_selector(15, multi=True)
             elif response == "Select config file":
                 file = self.file_selector()
-                self.configs.roi = NaN
+                # self.configs.roi = NaN
             elif response == "Set configs limit":
                 self.set_configs_limit()
             elif response == "Set ROI treshold limit":
@@ -71,6 +73,9 @@ class Menus:
 
             elif response == "Config optimisation":
                 self.bruteforce_menu()
+                
+            elif response == "Create bots from CSV":
+                self.pipeline()
 
             elif response == "Start Backtesting":
                 if self.configs is not pd.DataFrame:
@@ -83,6 +88,7 @@ class Menus:
 
             elif response == "Main Menu":
                 break
+
 
     def intervals_menu(self):
         try:
@@ -218,29 +224,3 @@ class Menus:
             pass
 
 
-
-        # elif response == "Completed Backtests":
-
-        #     while True:
-        #         menu = inquirer.select(
-        #             message = "Chose",
-        #             choices=[
-        #                 "Select bot from db",
-        #                 "Print results",
-        #                 "Save results to file",
-        #                 "Back",
-        #                 ],
-        #             ).execute()
-        #         if menu == "Select bot from db":
-        #             if self.config_storage:
-        #                 guids = list(self.config_storage.keys())
-        #                 bl = [
-        #                     (x.name,x)
-        #                     for x in
-        #                     self.c.customBotApi.get_all_custom_bots().result
-        #                     if x.botType == 15
-        #                     if bot.guid in guids
-        #                     ]
-
-        #                 while True:
-        #                     bot = inquirer.select(message= "Select Bot",choices=bl).execute()

@@ -1,11 +1,13 @@
 import configparser as cp
 import datetime
 import os
-
+from haasomeapi.enums.EnumPriceSource import EnumPriceSource
+from haasomeapi.enums.EnumPlatform import EnumPlatform
 from InquirerPy import inquirer
 import pandas as pd
 from haasomeapi.HaasomeClient import HaasomeClient
 from scripts.configmanager import ConfigManager
+# from create_from_csv import BotManger
 
 
 
@@ -61,7 +63,7 @@ class Haas(ConfigManager):
 					
 				self.bot = bots
 				self.bots = [self.bot]
-			
+				return bots
 
 
 			else:
@@ -73,6 +75,7 @@ class Haas(ConfigManager):
 						multiselect=True
 						).execute()
 				self.bots = bots
+				return bots
 				
 		def calculate_ticks_from_bot_trades(self,bot):
 				
@@ -97,7 +100,8 @@ class Haas(ConfigManager):
 			# print(files[0:5])
 			file = inquirer.select(message="Please Select file from list: ", choices=[i for i in files]).execute()
 
-			self.configs = pd.read_csv(file)
+			configs =self.configs = pd.read_csv(file)
+			return configs
 
 		def return_bot_objects(self):
 			files = []
@@ -131,5 +135,13 @@ class Haas(ConfigManager):
 			orders_df = pd.DataFrame(completedOrders)
 			return orders_df
 
+
+		
+		def select_bottype_to_create(self):
+				bot_types = [{'name':e.name,"value":e.value} for e in EnumCustomBotType]
+				selected_type = inquirer.select(
+						message=" Select bot type to create", choices=bot_types
+				).execute()
+				self.bottype = selected_type
 
 

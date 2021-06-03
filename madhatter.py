@@ -13,9 +13,11 @@ from marketdata import MarketData
 from optimisation import Optimize
 from menus import Menus
 from configsstorage import ConfigsManagment
+# from create_from_csv import ConfigManager
 
 
 class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
+    
     def __init__(self):
         Haas.__init__(self)
         self.stoploss_range = None
@@ -328,7 +330,8 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             # print("updated_bot",updated_bot.errorCode,updated_bot.errorMessage)
             pass
         except Exception as e:
-            print(e)
+            print(e,'331')
+            
 
         return do
 
@@ -519,7 +522,8 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
                 print(prev_file)
                 print(objects)
             except Exception as e:
-                print(e)
+                print(e,'exception')
+
             objects.to_pickle(obj_file_name)
             print('objects file size now: ',len(objects))
 
@@ -557,7 +561,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             self.setup_bot_from_df(bot, configs.iloc[c], print_errors=False)
             self.c.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks())
             self.c.customBotApi.clone_custom_bot_simple(bot.accountId, bot.guid, name)
-
+        
     def prepare_configs(self, configs):
         configs.loc[0:-1, "obj"] = None
         configs.loc[0:-1, "roi"] = 0
@@ -624,12 +628,15 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
                 print(f"Current Backtest ROI:  {bt.roi} % 	best ROI: " f"{best_roi}%.")
 
             except Exception as e:
-                print(e)
+                print(e,'exception')
+
             pcfg = configs.sort_values(by="roi", ascending=False).drop("obj", axis=1)[
                 0:10
             ]
             print(pcfg)
             print(self.calculate_market_move_percentage(marketdata))
+            if self.possible_profit < 0:
+                break
             if self.bt_mode == 1:
                 config_df = configs.sample()
                 i = config_df.index[0]
@@ -660,8 +667,8 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         ).execute()
         try:
             self.config.add_section("MH_LIMITS")
-        except:
-            pass
+        except Exception as e:
+            print(e,'exception')
         self.config.set(
             "MH_LIMITS", "number_of_configs_to_apply", str(self.num_configs)
         )
@@ -676,8 +683,8 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         ).execute()
         try:
             self.config.add_section("MH_LIMITS")
-        except:
-            pass
+        except Exception as e:
+            print(e,'exception')
         self.config.set(
             "MH_LIMITS", "set_acceptable_roi_threshold", str(self.roi_threshold)
         )
@@ -692,8 +699,8 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         ).execute())
         try:
             self.config.add_section("MH_LIMITS")
-        except:
-            pass
+        except Exception as e:
+            print(e,'exception')
         self.config.set(
             "MH_LIMITS", "set_backtesting_mode", str(self.roi_threshold)
         )
@@ -714,24 +721,24 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
                 self.config["MH_LIMITS"].get("number_of_configs_to_apply")
             )
         except Exception as e:
-            print(e)
+            print(e,'exception')
         try:
             self.roi_threshold = float(
                 self.config["MH_LIMITS"].get("set_acceptable_roi_threshold")
             )
         except Exception as e:
-            print(e)
+            print(e,'exception')
         try:
             self.bt_mode = int(
                 self.config["MH_LIMITS"].get("set_backtesting_mode")
             )
         except Exception as e:
-            print(e)
+            print(e,'exception')
 
         try:
             self.limit = int(self.config["MH_LIMITS"].get("limit_to_create"))
         except Exception as e:
-            print(e)
+            print(e,'exception')
         try:
             self.stoploss_range = [
                 float(self.config["MH_LIMITS"].get("stoploss_range_start")),
@@ -739,13 +746,13 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
                 float(self.config["MH_LIMITS"].get("stoploss_range_step")),
             ]
         except Exception as e:
-            print(e)
+            print(e,'exception')
         try:
             self.selected_intervals = json.loads(
                 self.config["MH_LIMITS"].get("selected_intervals")
             )
         except Exception as e:
-            print(e)
+            print(e,'exception')
 
     
     def get_market_data(self):
@@ -760,7 +767,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         highest = marketdata.Open.max()
         idxmi = marketdata.Close.idxmin()
         idxma = marketdata.Open.idxmax()
-
+        
         if idxmi < idxma:
             first = highest
             second = lowest

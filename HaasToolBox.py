@@ -11,9 +11,9 @@ from tradingviewtoolbox import TradingView
 
 # https://github.com/tmbo/questionary - inquirer analog
 
-class HaasToolBox(Haas):
-    def __init__(self):
-         Haas.__init__(self)
+class HaasToolBox():
+    # def __init__(self):
+    #      Haas.__init__(self)
 
     def main_screen(self):
 
