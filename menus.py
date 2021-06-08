@@ -1,25 +1,22 @@
 from InquirerPy import inquirer
 from numpy import NaN
 import pandas as pd
-
+from mh_share import ShareMH
 
 
 class Menus:
-   
     def mh_menu(self):
         live_menu = [
             "Select Bots",
             "Start Backtesting",
             "Set ROI treshold limit",
+            "Set BT mode",
             "Set create limit",
             "Set configs limit",
             "Select config file",
-            "Set BT mode",
             "Change backtesting date",
             "Find Stoploss",
-            "Create bots from CSV",
-            "Create bots from OBJ",
-            "Save bots to OBJ file",
+            "Bot Management",
             "Main Menu",
         ]
 
@@ -78,10 +75,8 @@ class Menus:
             elif response == "Config optimisation":
                 self.bruteforce_menu()
                 
-            elif response == "Create bots from CSV":
-                self.create_bots_from_csv()
-            elif response == "Create bots from OBJ":
-                self.create_bots_from_obj()
+            elif response == "Bot Management":
+                ShareMH.share_mh(self)
 
             elif response == "Start Backtesting":
                 if self.configs is not pd.DataFrame:

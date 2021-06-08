@@ -4,7 +4,9 @@ from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from haasomeapi.enums.EnumPlatform import EnumPlatform
 import os
 import datetime
-class ConfigsManagment:
+from InquirerPy import inquirer
+
+class ConfigsManagment():
     def create_bots_from_csv(self):
         exchange = self.select_exchange()
         market = self.market_selector(exchange)
@@ -380,3 +382,5 @@ class ConfigsManagment:
         df = pd.DataFrame(botlist,columns=['bots'])
         filename = f"{datetime.date.today().month}-{datetime.date.today().day}-{len(botlist)}_bots_save.obj"
         df.bots.to_pickle(filename)
+        
+        

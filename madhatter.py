@@ -750,5 +750,6 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         self.possible_profit = round(percentage, 2)
 
 
+
 if __name__ == "__main__":
     mh = MadHatterBot().mh_menu()

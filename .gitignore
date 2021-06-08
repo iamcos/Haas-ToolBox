@@ -37,3 +37,4 @@ twitter_parser.py
 bitpeaks_twitter_parser.py
 test-output.xml
 *.obj
+*.obj

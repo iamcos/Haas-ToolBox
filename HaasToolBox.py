@@ -23,7 +23,7 @@ class HaasToolBox():
             "Flash-Crash Bots",
             "AssistedBT",
             "Scalper Bots",
-            "Create bots from CSV",
+            "TradingView",
             "Quit",
         ]
         loop_count = 10
@@ -51,7 +51,7 @@ class HaasToolBox():
             abt = AssistedBT()
             m = abt.menu()
 
-        if resp == "Create bots from CSV":
+        if resp == "TradingView":
             tw = TradingView().main()
 
         if resp == "Quit":
