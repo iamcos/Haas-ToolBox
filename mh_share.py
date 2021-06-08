@@ -4,8 +4,8 @@ from InquirerPy import inquirer
 class ShareMH(Haas, ConfigsManagment):
 	def share_mh(self):
 		menu_options = [
-			"Create bots from CSV",
-			"Create bots from OBJ",
+			# "Create bots from CSV",
+			"Create bots from OBJ",\
 			"Save bots to OBJ file",
 		]
 

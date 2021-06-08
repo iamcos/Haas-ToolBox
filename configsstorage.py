@@ -270,8 +270,8 @@ class ConfigsManagment():
                         market.secondaryCurrency,
                         market.contractName).result
                     
-            self.setup_bot_from_obj(bot,obj,print_errors=True)
-            bot = self.check_bot_trade_ammount(bot)
+        # self.setup_bot_from_obj(bot,obj,print_errors=True)
+        # bot = self.check_bot_trade_ammount(bot)
             # bot = self.c.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks()).result
             # bot = self.c.customBotApi.setup_mad_hatter_bot(
             #                 # This code sets time interval
