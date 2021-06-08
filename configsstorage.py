@@ -343,13 +343,14 @@ class ConfigsManagment():
             return 'No trade history'
     def return_bot_objects(self):
         files = []
-        for file in os.listdir("./bt_results/"):
-            # if file.endswith(".obj") or file.endswith('.json'):
-            if file.endswith(".obj"):
-                files.append(file)
+        folder = "./"
+        for file in os.listdir(folder):
+                # if file.endswith(".obj") or file.endswith('.json'):
+                if file.endswith(".obj"):
+                    files.append(file)
         file = inquirer.select(message="MH Bots: ",choices=files,
             ).execute()  # where b bot object returned from dic[x] name list
-        objects = pd.read_pickle(f"./bt_results/{file}")
+        objects = pd.read_pickle(f"{folder}{file}")
         print(objects,'objects')
         n = [[f"{x.name}| ROI: {x.roi}"][0] for x in objects]
         b = [x for x in objects]  # creates list of names
@@ -380,7 +381,8 @@ class ConfigsManagment():
    
     def save_bots_to_file(self,botlist):
         df = pd.DataFrame(botlist,columns=['bots'])
-        filename = f"{datetime.date.today().month}-{datetime.date.today().day}-{len(botlist)}_bots_save.obj"
+        print(df)
+        filename = f"{datetime.date.today().year}-{datetime.date.today().month}-{datetime.date.today().day}-{len(botlist)}_mh_bots.obj"
         df.bots.to_pickle(filename)
         
         
