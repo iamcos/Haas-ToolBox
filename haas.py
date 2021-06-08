@@ -4,6 +4,7 @@ import datetime
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from haasomeapi.enums.EnumPlatform import EnumPlatform
 from InquirerPy import inquirer
+from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 import pandas as pd
 from haasomeapi.HaasomeClient import HaasomeClient
 from scripts.configmanager import ConfigManager
@@ -150,5 +151,5 @@ class Haas(ConfigManager,ConfigsManagment):
 if __name__ == "__main__":
 	h = Haas()
 	# file = h.obj_file_selector()
-	# object = h.return_bot_objects()
+	# object = h.		()
 	# exchange = h.match_exchange_with_bot(object)

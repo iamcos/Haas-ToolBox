@@ -108,7 +108,9 @@ class TradeBotEditor:
                         Separator("No Insurances to select"),
                         Separator(""),
                     ]
+                
                 if len(self.tradebot.safeties) > 0:
+                    print(self.tradebot.safeties[list(self.tradebot.safeties.keys())[0]].__dict__)
                     safety_choices = [Separator(""), Separator("Safeties:")] + [
                         {"name": f"  {EnumSafety(y.safetyType).name}", "value": y}
                         if y.enabled == True
@@ -182,6 +184,16 @@ class TradeBotEditor:
             value = round(float(selectedInterfaceParameter.value), 3)
         if selectedInterfaceParameter.step == 0.0001:
             value = round(float(selectedInterfaceParameter.value), 4)
+        if selectedInterfaceParameter.step == 0.00001:
+            value = round(float(selectedInterfaceParameter.value), 5)
+        if selectedInterfaceParameter.step == 0.000001:
+            value = round(float(selectedInterfaceParameter.value), 6)
+        if selectedInterfaceParameter.step == 0.0000001:
+            value = round(float(selectedInterfaceParameter.value), 7)
+        if selectedInterfaceParameter.step == 0.00000001:
+            value = round(float(selectedInterfaceParameter.value), 8)
+        if selectedInterfaceParameter.step == 0.000000001:
+            value = round(float(selectedInterfaceParameter.value), 9)
         return value
 
     def get_param_step(self, selectedInterfaceParameter):
@@ -195,6 +207,16 @@ class TradeBotEditor:
             step = round(float(selectedInterfaceParameter.step), 3)
         if selectedInterfaceParameter.step == 0.0001:
             step = round(float(selectedInterfaceParameter.step), 4)
+        if selectedInterfaceParameter.step == 0.00001:
+            step = round(float(selectedInterfaceParameter.step), 5)
+        if selectedInterfaceParameter.step == 0.000001:
+            step = round(float(selectedInterfaceParameter.step), 6)
+        if selectedInterfaceParameter.step == 0.0000001:
+            step = round(float(selectedInterfaceParameter.step), 7)
+        if selectedInterfaceParameter.step == 0.00000001:
+            step = round(float(selectedInterfaceParameter.step), 8)
+        if selectedInterfaceParameter.step == 0.000000001:
+            step = round(float(selectedInterfaceParameter.step), 9)
         return step
 
     def calculate_next_value(self, value, step, direction):

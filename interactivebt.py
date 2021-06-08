@@ -51,8 +51,12 @@ class InteractiveBT(MadHatterBot):
 		while self.bot.botLogBook:
 			# print(self.bot.botLogBook)
 			sleep(1.5)
-			self.bot = self.c.customBotApi.get_custom_bot(self.bot.guid,15).result
-			
+			self.bot = self.c.customBotApi.get_custom_bot(self.bot.guid,15)
+			if self.bot.errorCode.value == 100:
+				self.bot = self.bot.result
+			else:
+				print('False')
+				return False
 			config_now = self.bot_config(self.bot)
 			
 			configs_are_the_same = config_now.drop(["obj",'roi','trades'],axis=1).equals(
