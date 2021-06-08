@@ -272,28 +272,28 @@ class ConfigsManagment():
                     
             self.setup_bot_from_obj(bot,obj,print_errors=True)
             bot = self.check_bot_trade_ammount(bot)
-            bot = self.c.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks()).result
-            bot = self.c.customBotApi.setup_mad_hatter_bot(
-                            # This code sets time interval
-                            botName= f"{market.primaryCurrency} {market.secondaryCurrency} {bot.roi}%",
-                            botGuid=bot.guid,
-                            accountGuid=bot.accountId,
-                            primaryCoin=bot.priceMarket.primaryCurrency,
-                            secondaryCoin=bot.priceMarket.secondaryCurrency,
-                            contractName=bot.priceMarket.contractName,
-                            leverage=bot.leverage,
-                            templateGuid=bot.customTemplate,
-                            position=bot.coinPosition,
-                            fee=bot.currentFeePercentage,
-                            tradeAmountType=bot.amountType,
-                            tradeAmount=bot.currentTradeAmount,
-                            useconsensus=bot.useTwoSignals,
-                            disableAfterStopLoss=bot.disableAfterStopLoss,
-                            interval=bot.interval,
-                            includeIncompleteInterval=bot.includeIncompleteInterval,
-                            mappedBuySignal=bot.mappedBuySignal,
-                            mappedSellSignal=bot.mappedSellSignal,
-                        )
+            # bot = self.c.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks()).result
+            # bot = self.c.customBotApi.setup_mad_hatter_bot(
+            #                 # This code sets time interval
+            #                 botName= f"{market.primaryCurrency} {market.secondaryCurrency} {bot.roi}%",
+            #                 botGuid=bot.guid,
+            #                 accountGuid=bot.accountId,
+            #                 primaryCoin=bot.priceMarket.primaryCurrency,
+            #                 secondaryCoin=bot.priceMarket.secondaryCurrency,
+            #                 contractName=bot.priceMarket.contractName,
+            #                 leverage=bot.leverage,
+            #                 templateGuid=bot.customTemplate,
+            #                 position=bot.coinPosition,
+            #                 fee=bot.currentFeePercentage,
+            #                 tradeAmountType=bot.amountType,
+            #                 tradeAmount=bot.currentTradeAmount,
+            #                 useconsensus=bot.useTwoSignals,
+            #                 disableAfterStopLoss=bot.disableAfterStopLoss,
+            #                 interval=bot.interval,
+            #                 includeIncompleteInterval=bot.includeIncompleteInterval,
+            #                 mappedBuySignal=bot.mappedBuySignal,
+            #                 mappedSellSignal=bot.mappedSellSignal,
+            #             )
     def save_and_sort_results(self, bt_results, obj=True, csv=True):
         if obj:
             os.makedirs("./bt_results/", exist_ok=True)
