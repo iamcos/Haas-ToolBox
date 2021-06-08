@@ -23,7 +23,7 @@ class TradingView(Haas):
 
  
 
-        self.accounts = accounts_with_details
+        self.accounts = self.get_accounts_with_details()
 
 
     def process_csv(self):
@@ -120,7 +120,7 @@ class TradingView(Haas):
         
     def main(self):
 
-        self.select_exchange()
+        self.exchange = self.select_exchange()[0]
         self.select_bottype_to_create()
         self.process_csv()
         self.create_bots_for_selected_markets()
