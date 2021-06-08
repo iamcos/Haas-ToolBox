@@ -309,7 +309,9 @@ class ConfigsManagment():
             except Exception as e:
                 print(e,'exception')
                 objects.to_pickle(obj_file_name)
-            else:
+            finally:
+                
+                prev_file = pd.read_pickle(obj_file_name)
                 prev_file.append(objects,ignore_index=True)
             
             prev_file.to_pickle(obj_file_name)
