@@ -6,6 +6,7 @@ __pycache__
 *.spec
 Misc/
 env/
+env*/
 bt_results/*
 dist/
 build/
@@ -38,3 +39,4 @@ bitpeaks_twitter_parser.py
 test-output.xml
 *.obj
 *.obj
+version
