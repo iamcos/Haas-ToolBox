@@ -9,7 +9,7 @@ class Menus:
         live_menu = [
             "Select Bots",
             "Start Backtesting",
-            "Set ROI treshold limit",
+            # "Set ROI treshold limit",
             "Set BT mode",
             "Set create limit",
             "Set configs limit",
@@ -20,7 +20,7 @@ class Menus:
             "Main Menu",
         ]
 
-        
+
 
         while True:
             self.read_limits()
@@ -74,7 +74,7 @@ class Menus:
 
             elif response == "Config optimisation":
                 self.bruteforce_menu()
-                
+
             elif response == "Bot Management":
                 ShareMH.share_mh(self)
 
@@ -86,12 +86,12 @@ class Menus:
                     self.bot = bot
                     self.bt()
                     self.create_top_bots()
-                    
-                    
+
+
 
             elif response == "Main Menu":
                 break
-            
+
 
 
     def intervals_menu(self):
@@ -226,5 +226,3 @@ class Menus:
             pass
         elif response == "MACD Signal":
             pass
-
-

@@ -17,6 +17,11 @@ class HaasToolBox():
 
     def main_screen(self):
 
+        """ToolBox main menu initiation script.
+        choices = list of menu options
+        resp = user selected choice
+        """
+
         choices = [
             "Mad-Hatter Bots",
             'Trade Bots',
@@ -33,6 +38,9 @@ class HaasToolBox():
             message="Choose action: ",
             choices=choices,
         ).execute()
+
+
+    ## Menu execution logic below
 
         if resp == "Mad-Hatter Bots":
             mh = MadHatterBot()
@@ -61,7 +69,8 @@ class HaasToolBox():
             self.apply_configs_menu()
 
     def dev_features(self):
-
+        """ Returns alternative main menu f or dev purposes
+        """
         resp = inquirer.select(
             "resp",
             "Select Something",
@@ -88,6 +97,11 @@ class HaasToolBox():
             self.bot = fcb.menu()
 
     def apply_configs_menu(self):
+        """Applies config from a selected csv file on a selected bot
+
+        Returns:
+            [type]: [description]
+        """
         options = [
             "Select Bot",
             "Select file with configs",
@@ -125,8 +139,6 @@ class HaasToolBox():
                     else:
                         break
 
-            elif ind == 3:
-                break
 
     def multiple_bot_auto_bt_menu(self):
 
@@ -193,7 +205,10 @@ class HaasToolBox():
             ]
 
             print(bl)
-            name = f"{b.name} #{c}: {b.roi}%"
+
+            #name = f"{b.name} #{c}: {b.roi}%"
+            name = f"{b.priceMarket.primaryCurrency}/{b.priceMarket.secondaryCurrency}, {b.roi}%"
+
             new_bot = self.c.customBotApi.clone_custom_bot_simple(
                 b.accountId, b.guid, name
             )

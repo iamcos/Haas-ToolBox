@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from numpy.ma import arange
-
+from nomics import Nomics
 from haas import Haas
 from marketdata import MarketData as md
 from twircy import Twitter_Parser
@@ -320,16 +320,9 @@ class StreamlitHaasTool(Haas):
 	
 	def add_indicators(self):
 		md = self.marketdata
-		# md.ta.log_return(cumulative=True,append=True)
-		# md.ta.percent_return(cumulative=True,append=True)
-		# md.ta.strategy('All')
-		# mama_short = md.mama(length=10,append=True)
-		# rsismall = md.ta.rsi(length=7,buy=10,sell=90,append=True)
-		
 		st.write(md.columns)
 		st.write(md.tail())
 		md.plot(figsize=(16,10))
-	
 	
 	
 	def plot_indicators(self):
@@ -347,13 +340,14 @@ class StreamlitHaasTool(Haas):
 if __name__ == "__main__":
 	str = StreamlitHaasTool()
 	resp = st.sidebar.selectbox('Select',
-	                            [
-	                              'Plot Market Data',
-	                              'Ta-Lib',
-	                              'Plot Bot Trades',
-																'Twitter Data'
-		                            ]
-	                            )
+		[
+			'Check Nomics Predictions',
+			'Plot Market Data',
+			'Ta-Lib',
+			'Plot Bot Trades',
+			'Twitter Data'
+			]
+		)
 	
 	#
 	if resp == 'Twitter Data':
@@ -375,9 +369,28 @@ if __name__ == "__main__":
 		str.plot_bot_trades_from_csv()
 	elif resp == 'Plot Market Data':
 		str.market_data_viewer()
-	# str.add_indicators()
-	# str.plot_indicators()
-
+	elif resp == 'Check Nomics Predictions':
+		predictions = Nomics().return_df_with_predictions()
+		primarycoin = st.multiselect('Select markets: ', predictions.primarycurrency.unique())
+		secondarycoin = st.multiselect('Select secondary coin: ',predictions.secondarycurrency.unique())
+		exchange = st.multiselect('Select exchange: ', predictions.pricesource.unique())
+		if primarycoin and secondarycoin and exchange:
+				df = st.dataframe(predictions[predictions.primarycurrency.isin(primarycoin)][predictions.secondarycurrency.isin(secondarycoin)][predictions.pricesource.isin(exchange)])
+		elif primarycoin and secondarycoin:
+			st.dataframe(predictions[predictions.primarycurrency.isin(primarycoin)][predictions.secondarycurrency.isin(secondarycoin)])
+		elif primarycoin and exchange:
+  			df = st.dataframe(predictions[predictions.primarycurrency.isin(primarycoin)][predictions.pricesource.isin(exchange)])
+		elif secondarycoin and exchange:
+  			df = st.dataframe(predictions[predictions.primarycurrency.isin(secondarycoin)][predictions.pricesource.isin(exchange)])
+		elif primarycoin:
+			st.dataframe(predictions[predictions.primarycurrency.isin(primarycoin)])	
+		elif secondarycoin:
+			st.dataframe(predictions[predictions.secondarycurrency.isin(secondarycoin)])
+		elif exchange:
+			st.dataframe(predictions[predictions.pricesource.isin(exchange)])
+		
+		
+		
 	elif resp == 'Ta-Lib':
 		st.write('yay!')
 

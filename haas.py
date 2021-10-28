@@ -9,6 +9,7 @@ import pandas as pd
 from haasomeapi.HaasomeClient import HaasomeClient
 from scripts.configmanager import ConfigManager
 from configsstorage import ConfigsManagment
+from haasomeapi.enums.EnumTradeType import EnumTradeType
 
 
 class Haas(ConfigManager,ConfigsManagment):
@@ -33,9 +34,8 @@ class Haas(ConfigManager,ConfigsManagment):
 		def get_accounts_with_details(self):
 			accounts = self.c.accountDataApi.get_all_account_details().result
 			accounts_with_details = list(accounts.values())
-			print(accounts_with_details)
 			return accounts_with_details
-  
+
 		def select_exchange(self):
 			accounts = self.get_accounts_with_details()
 			accounts_inquirer_format = [
@@ -49,7 +49,7 @@ class Haas(ConfigManager,ConfigsManagment):
 			exchange = [
 							inquirer.select(
 											message="Select exchange account by pressing Return or Enter ",
-											choices=accounts_inquirer_format,
+											choices=accounts_inquirer_format+['ALL'],
 							).execute()
 			]
 			return exchange
@@ -81,18 +81,18 @@ class Haas(ConfigManager,ConfigsManagment):
 				for x in self.c.customBotApi.get_all_custom_bots().result
 				if x.botType == botType
 				]
-				
+
 			bots.sort(key=lambda x:x.name,reverse=False)
 			b2 = [{'name':f"{i.name} {i.priceMarket.primaryCurrency}-"
 				f"{i.priceMarket.secondaryCurrency}, {i.roi}",'value':i} for i in bots]
 
 			if multi != True:
 				bots = inquirer.select(
-	
+
 						message="Select SINGLE BOT using arrow and ENTER keys",
 						choices=b2,
 						).execute()
-					
+
 				self.bot = bots
 				self.bots = [self.bot]
 				return bots
@@ -100,7 +100,7 @@ class Haas(ConfigManager,ConfigsManagment):
 
 			else:
 				bots = inquirer.select(
-						
+
 						message="Select MULTIPLE BOTS (or just one) using SPACEBAR.\n"
 								"   Confirm selection using ENTER.",
 						choices=b2,
@@ -108,19 +108,19 @@ class Haas(ConfigManager,ConfigsManagment):
 						).execute()
 				self.bots = bots
 				return bots
-				
+
 		def calculate_ticks_from_bot_trades(self,bot):
-				
+
 			trades_df = self.trades_to_df(bot)
 			first_trade = trades_df.date.iloc[0]
-			
+
 			delta = datetime.datetime.now() - first_trade
 			delta_minutes = delta.total_seconds() / 60
 			ticks = delta_minutes
-			
-		
 
-			
+
+
+
 		def trades_to_df(self,bot):
 			completedOrders = [
 				{
@@ -139,7 +139,6 @@ class Haas(ConfigManager,ConfigsManagment):
 			return orders_df
 
 
-		
 		def select_bottype_to_create(self):
 				bot_types = [{'name':e.name,"value":e.value} for e in EnumCustomBotType]
 				selected_type = inquirer.select(

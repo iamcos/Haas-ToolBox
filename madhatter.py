@@ -16,14 +16,14 @@ from configsstorage import ConfigsManagment
 
 
 class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
-    
+
     def __init__(self):
         Haas.__init__(self)
         self.stoploss_range = None
         self.num_configs = None
-        
-        self.roi_threshold = 1.0
-        
+
+        self.roi_threshold = 0.2
+
         self.config_storage = dict()
         self.configs = None
         self.current_config = None
@@ -329,7 +329,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             pass
         except Exception as e:
             print(e,'331')
-            
+
 
         return do
 
@@ -518,7 +518,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             self.setup_bot_from_df(bot, configs.iloc[c], print_errors=False)
             self.c.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks())
             self.c.customBotApi.clone_custom_bot_simple(bot.accountId, bot.guid, name)
-        
+
     def prepare_configs(self, configs):
         configs.loc[0:-1, "obj"] = None
         configs.loc[0:-1, "roi"] = 0
@@ -550,11 +550,11 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
 
 
     def check_bot_trade_ammount(self,bot):
-        
+
         bt = self.c.customBotApi.backtest_custom_bot(bot.guid, self.ticks).result
         bot = self.set_min_trade_ammount(bt)
         return bot
-        
+
     def set_min_trade_ammount(self, bot):
         for x in bot.botLogBook:
             if "Minimum trade amount: " in x:
@@ -569,7 +569,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
     def iterate_csv(self, configs, bot):
         configs = self.prepare_configs(configs)
         bot = self.check_bot_trade_ammount(bot)
-   
+
         configs = self.iterate_configs(configs, bot)
         return configs
 
@@ -592,12 +592,12 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             ]
             print(pcfg)
             print(self.calculate_market_move_percentage(marketdata))
-    
+
             config_df = configs.sample()
             i = config_df.index[0]
             config = config_df.loc[i,:]
             self.setup_bot_from_df(bot, config)
-            
+
             bt = self.c.customBotApi.backtest_custom_bot(bot.guid, self.ticks)
             bt = bt.result
 
@@ -609,14 +609,16 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             self.bot = bt
 
             pbar.update()
-            if self.bt_mode == 1:
-                if  self.possible_profit*self.roi_threshold<=best_roi:
-                    break
-                    
+
+            # if self.bt_mode == 1:
+            #     if  self.possible_profit*self.roi_threshold<=best_roi:
+            #         break
+            # else:
+            #     pass
         return configs
 
     def set_configs_limit(self):
-	
+
         self.num_configs = inquirer.text(
             message="Type the number of configs you wish to apply from a "
             "given file: ",
@@ -630,7 +632,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         )
         self.write_file()
         self.read_limits()
-    
+
     def set_acceptable_roi_threshold(self):
         print('\n  What is ROI threshold?: ')
         print('\n    You can now define acceptible BT result')
@@ -650,7 +652,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         )
         self.write_file()
         self.read_limits()
-    
+
     def set_backtesting_mode(self):
         print('\n     Two BT methods:')
         print('\n  Backtesting mode 0 does not care about threshold')
@@ -720,20 +722,20 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         except Exception as e:
             print(e,'exception')
 
-    
+
     def get_market_data(self):
         marketdata = MarketData().get_market_data(
             self.bot.priceMarket, self.bot.interval, int(self.ticks)/self.bot.interval
         )
         return marketdata
-    
+
     def calculate_market_move_percentage(self, marketdata):
-        
+
         lowest = marketdata.Close.min()
         highest = marketdata.Open.max()
         idxmi = marketdata.Close.idxmin()
         idxma = marketdata.Open.idxmax()
-        
+
         if idxmi < idxma:
             first = highest
             second = lowest
@@ -745,7 +747,7 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             percentage = (first - second) / first * 100
             print(f"high: {idxma.strftime('%x %X')}—{highest} low: {idxmi.strftime('%x %X')}:{lowest} Fall: {round(percentage, 2)}%")
 
-        
+
         print(f"{round(percentage, 2)}% is max price change over bt period")
         self.possible_profit = round(percentage, 2)
 

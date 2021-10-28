@@ -4,6 +4,7 @@ import pandas as pd
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 from haas import Haas
 from ratelimit import limits , sleep_and_retry
+from haasomeapi.enums.EnumTradeType import EnumTradeType
 
 class MarketData(Haas):
     def __init__(self):
@@ -29,7 +30,7 @@ class MarketData(Haas):
             for x in market_history
         ]
         df = pd.DataFrame(market_data)
-        
+
         try:
             df["Date"] = pd.to_datetime(df["Date"], unit="s")
             dti = pd.DatetimeIndex([x for x in df["Date"]])
@@ -73,7 +74,7 @@ class MarketData(Haas):
         """
 
         df = self.get_all_markets()
-   
+
         if ticker != None:
             marketobj = df[df["Ticker"] == ticker][
                 df["pricesource"] == pricesource
@@ -122,8 +123,32 @@ class MarketData(Haas):
             print('marketdata is syncing')
             return self.get_market_data(priceMarketObject, interval, depth)
 
+    def return_market_ticker(self,priceMarket):
+        ticker = self.c.marketDataApi.get_price_ticker_from_market(priceMarket).result
+        return ticker
+    @sleep_and_retry
+    @limits(calls=1, period=1)
+    def last_market_trades_to_df(self,priceMarket):
 
-    
+        last_trades = self.c.marketDataApi.get_last_trades_from_market(priceMarket).result
+        # print(last_trades)
+        # print(type(last_trades))
+        # print(last_trades.keys())
+        # help(last_trades)
+        trades = [
+        {
+
+            "TradeType":x['TradeType'],
+            "amount":x['Amount'],
+            "price":x['Price'],
+            "UnixTimestamp":pd.to_datetime(x['UnixTimestamp'],unit="s"),
+            }
+        for x in last_trades.lastTrades
+        ]
+        trades_df = pd.DataFrame(trades)
+        return trades_df
+
+
     def save_market_data_to_csv(self, marketData, marketobj):
         """
         Saves provided MarketData dataframe to CSV file in a name format provided below
@@ -154,7 +179,14 @@ class MarketData(Haas):
         # print(data)
         return data
 
-    
+
+def main():
+    md = MarketData()
+    exchange = md.select_exchange()
+    priceMarket = md.market_selector(exchange)
+    while True:
+        ticker = md.return_market_ticker(priceMarket)
+        print(ticker.__dict__)
 
 if __name__ == "__main__":
-    pass
+    main()
