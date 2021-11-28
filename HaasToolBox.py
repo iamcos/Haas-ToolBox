@@ -254,13 +254,3 @@ class HaasToolBox():
                     self.setup_bot_from_csv(i2, self.configs.iloc[c])
 
                     self.bt(i)
-
-
-def main():
-
-    mm = HaasToolBox()
-    mm.main_screen()
-
-
-if __name__ == "__main__":
-    main()
