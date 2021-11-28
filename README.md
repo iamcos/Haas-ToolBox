@@ -23,5 +23,5 @@ chmod +x *.py
 ## First run
 
 ```
-python3 BaseHaas.py
+python3 start_app.py
 ```
