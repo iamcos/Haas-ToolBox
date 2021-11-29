@@ -50,7 +50,7 @@ class Haas():
 				} for _ in accounts
 			]
 
-			# TODO: Know what is ALL
+			# TODO: To know what is ALL
 			accounts_inquirer_format.append({'ALL' : []})
 
 			exchange : list[Any] = [
