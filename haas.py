@@ -14,8 +14,6 @@ Haasonline trading software interaction class: get botlist, marketdata,
 create bots and configure their parameters,
 initiate backtests and so forth can be done through this class
 """
-
-
 # TODO: Make SRP
 # TODO: Rename pass more info
 class Haas:
