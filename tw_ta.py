@@ -122,7 +122,7 @@ class TW_TA(Haas):
 	
 		
 	def get_current_price(self):
-		current_price = self.c.marketDataApi.get_price_ticker(
+		current_price = self.client.marketDataApi.get_price_ticker(
 			EnumPriceSource(self.bot.priceMarket.priceSource).value,
 			self.bot.priceMarket.primaryCurrency,
 			self.bot.priceMarket.secondaryCurrency,
@@ -132,7 +132,7 @@ class TW_TA(Haas):
 		self.current_price = current_price
 
 	def return_average_order_size(self):
-		do = self.c.marketDataApi.get_last_trades_from_market(self.bot.priceMarket)
+		do = self.client.marketDataApi.get_last_trades_from_market(self.bot.priceMarket)
 		# print(do.errorCode, do.errorMessage)
 		trades_container = do.result
 		# print(trades_container.__dict__)
@@ -153,7 +153,7 @@ class TW_TA(Haas):
 
 	def add_order(self):
 		print("trade_amount",self.trade_amount)
-		trade_result = self.c.customBotApi.add_order_bot_order(
+		trade_result = self.client.customBotApi.add_order_bot_order(
 			self.bot.guid,
 			dependson="",
 			dependsonnotexecuted="",
@@ -168,7 +168,7 @@ class TW_TA(Haas):
 
 	def CL(self):
 		try:
-			self.c.customBotApi.activate_custom_bot(self.bot.guid)
+			self.client.customBotApi.activate_custom_bot(self.bot.guid)
 		except Exception as e:
 			print("bot activation error", e)
 		preorders = self.bot.preOrders

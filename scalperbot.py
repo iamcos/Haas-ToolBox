@@ -19,7 +19,7 @@ class ScalperBot(Haas):
 	
 	def return_scalper_bots(self):
 		
-		bl = self.c.customBotApi.get_all_custom_bots().result
+		bl = self.client.customBotApi.get_all_custom_bots().result
 		botlist = [x for x in bl if x.botType == 3]
 		return botlist
 	
@@ -28,7 +28,7 @@ class ScalperBot(Haas):
 	
 	def setup_scalper_bot(self,bot,targetpercentage,safetythreshold):
 		
-		do = self.c.customBotApi.setup_scalper_bot(
+		do = self.client.customBotApi.setup_scalper_bot(
 			accountguid=bot.accountId,
 			botguid=bot.guid,
 			botname=bot.name,
@@ -124,7 +124,7 @@ class ScalperBot(Haas):
 								safetythreshold=round(s,2),
 								)
 							
-							bt_result = self.c.customBotApi.backtest_custom_bot(
+							bt_result = self.client.customBotApi.backtest_custom_bot(
 								bot.guid,self.read_ticks()
 								).result
 							
@@ -154,7 +154,7 @@ class ScalperBot(Haas):
 						df_res.targetpercentage.iloc[0],
 						)
 					
-					self.c.customBotApi.backtest_custom_bot(bot.guid,self.read_ticks())
+					self.client.customBotApi.backtest_custom_bot(bot.guid,self.read_ticks())
 		else:
 			self.select_multiple_bots_by_type(3)
 	
@@ -188,7 +188,7 @@ class ScalperBot(Haas):
 				self.backtest()
 			elif user_response == "backtest every bot":
 				sb = ScalperBot()
-				sb.bot = self.c.customBotApi.get_all_custom_bots().result
+				sb.bot = self.client.customBotApi.get_all_custom_bots().result
 				
 				sb.backtest()
 			elif user_response == "Main menu":
@@ -196,7 +196,7 @@ class ScalperBot(Haas):
 	
 	
 	def populate_virtual_wallet(self):
-		accounts = self.c.accountDataApi.get_all_account_details().result
+		accounts = self.client.accountDataApi.get_all_account_details().result
 		# for i in list(accounts.keys()):
 		# 	# print(i,accounts[i].__dict__)
 		a = [
@@ -215,7 +215,7 @@ class ScalperBot(Haas):
 		for i in self.accounts:
 			for m in self.markets:
 				try:
-					self.c.customBotApi.new_custom_bot(
+					self.client.customBotApi.new_custom_bot(
 						accountguid=i,
 						bottype=3,
 						botname=f'{m.primaryCurrency} {m.secondaryCurrency}',

@@ -97,7 +97,7 @@ class TradingView(Haas):
         print(self.markets_to_create)
         for i in range(len(self.markets_to_create.index)):
             try:
-                newbot = self.c.customBotApi.new_custom_bot_from_market(
+                newbot = self.client.customBotApi.new_custom_bot_from_market(
                     self.exchange.guid,
                     self.bottype,
                     f"TW {self.markets_to_create['marketobj'][i].primaryCurrency}/{self.markets_to_create['marketobj'][i].secondaryCurrency}",
@@ -113,7 +113,7 @@ class TradingView(Haas):
     
     def setup_ping_pong_bot(self,bot):
         if EnumCustomBotType[self.bottype].value == 2:
-            bot = self.c.customBotApi.setup_ping_pong_bot(self.exchange.guid, bot.guid, bot.name, bot.priceMarket.primaryCurrency, bot.priceMarket.secondaryCurrency, bot.customTemplate, bot.priceMarket.contractName, bot.leverage, bot.amountType, bot.priceMarket.minimumTradeAmout if bot.currentTradeAmount < bot.priceMarket.minimumTradeAmout else  bot.currentTradeAmount, 0, bot.priceMarket.fee, bot)
+            bot = self.client.customBotApi.setup_ping_pong_bot(self.exchange.guid, bot.guid, bot.name, bot.priceMarket.primaryCurrency, bot.priceMarket.secondaryCurrency, bot.customTemplate, bot.priceMarket.contractName, bot.leverage, bot.amountType, bot.priceMarket.minimumTradeAmout if bot.currentTradeAmount < bot.priceMarket.minimumTradeAmout else  bot.currentTradeAmount, 0, bot.priceMarket.fee, bot)
             print(bot.errorCode, bot.errorMessage)
         else:
             pass

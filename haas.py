@@ -1,4 +1,4 @@
-import configparser as config_parser
+from configparser import ConfigParser
 from typing import Any
 import pandas as pd
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
@@ -19,21 +19,21 @@ initiate backtests and so forth can be done through this class
 class Haas():
 
 		def __init__(self) -> None:
-			self.config_parser = config_parser.ConfigParser()
-			self.configs_management = ConfigsManagment()
-			self.config_manager = ConfigManager()
+			self.config_parser: ConfigParser = ConfigParser()
+			self.configs_management: ConfigsManagment = ConfigsManagment()
+			self.config_manager: ConfigManager = ConfigManager()
 
 			self.bot = None
 			self.bots = None
 
-			self.c = self.generate_client()
-			self.ticks = self.config_manager.read_ticks()
+			self.client: HaasomeClient = self.generate_client()
+			self.ticks: int = self.config_manager.read_ticks()
 
 			self.config_manager.check_config()
 
 
 		def get_accounts_with_details(self) -> list:
-			accounts = self.c.accountDataApi.get_all_account_details().result
+			accounts = self.client.accountDataApi.get_all_account_details().result
 			accounts_with_details = list(accounts.values())
 
 			return accounts_with_details
@@ -64,7 +64,7 @@ class Haas():
 
 
 		def get_market_selector(self, exchange) -> Any:
-			markets : list = self.c.marketDataApi.get_price_markets(EnumPriceSource(exchange[0].connectedPriceSource).value).result
+			markets : list = self.client.marketDataApi.get_price_markets(EnumPriceSource(exchange[0].connectedPriceSource).value).result
 			name_format : str = """{market.primaryCurrency}/ {market.secondaryCurrency}"""
 
 			m2 : list[dict[str, str | list]] = [
@@ -110,7 +110,7 @@ class Haas():
 
 
 		def _get_bots_as_choices(self, botType : int) -> list:
-			all_custom_bots : list = self.c.customBotApi.get_all_custom_bots().result
+			all_custom_bots : list = self.client.customBotApi.get_all_custom_bots().result
 			bots : list = [bot for bot in all_custom_bots if bot.botType == botType]
 
 			bots.sort(key=lambda x : x.name, reverse=False)

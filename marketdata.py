@@ -48,7 +48,7 @@ class MarketData(Haas):
         """
         markets = [
             (i.primaryCurrency, i.secondaryCurrency,i.contractName, int(i.priceSource), i)
-            for i in self.c.marketDataApi.get_all_price_markets().result
+            for i in self.client.marketDataApi.get_all_price_markets().result
         ]
         df = pd.DataFrame(
             markets,
@@ -93,7 +93,7 @@ class MarketData(Haas):
         Returns dataframe full of candlestick data including volume in any interval and depth supported by Haasonline.
 
         """
-        marketdata = self.c.marketDataApi.get_history_from_market(
+        marketdata = self.client.marketDataApi.get_history_from_market(
             priceMarketObject, int(interval), int(depth)
         )
         # print('get_market_data', 'errorcode', marketdata.errorCode,
@@ -124,13 +124,13 @@ class MarketData(Haas):
             return self.get_market_data(priceMarketObject, interval, depth)
 
     def return_market_ticker(self,priceMarket):
-        ticker = self.c.marketDataApi.get_price_ticker_from_market(priceMarket).result
+        ticker = self.client.marketDataApi.get_price_ticker_from_market(priceMarket).result
         return ticker
     @sleep_and_retry
     @limits(calls=1, period=1)
     def last_market_trades_to_df(self,priceMarket):
 
-        last_trades = self.c.marketDataApi.get_last_trades_from_market(priceMarket).result
+        last_trades = self.client.marketDataApi.get_last_trades_from_market(priceMarket).result
         # print(last_trades)
         # print(type(last_trades))
         # print(last_trades.keys())
