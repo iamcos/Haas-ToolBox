@@ -10,10 +10,12 @@ from scripts.configmanager import ConfigManager
 from configsstorage import ConfigsManagment
 
 """
-Haasonline trading software interaction class: get botlist, marketdata,
+Haasonline trading software interaction class: get bots list, market data,
 create bots and configure their parameters,
-initiate backtests and so forth can be done through this class
+initiate back tests and so forth can be done through this class
 """
+
+
 # TODO: Make SRP
 # TODO: Rename pass more info
 class Haas:
