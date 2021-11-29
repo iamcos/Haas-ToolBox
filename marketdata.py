@@ -183,7 +183,7 @@ class MarketData(Haas):
 def main():
     md = MarketData()
     exchange = md.select_exchange()
-    priceMarket = md.market_selector(exchange)
+    priceMarket = md.get_market_selector(exchange)
     while True:
         ticker = md.return_market_ticker(priceMarket)
         print(ticker.__dict__)

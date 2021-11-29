@@ -105,7 +105,7 @@ class InteractiveBT(MadHatterBot):
 				]
 			                           ).execute()
 			if resp == 'Select Bot':
-				self.bot_selector(15)
+				self.select_single_bot_by_type(15)
 			if resp == 'Set Create Limit':
 				self.limit = 	inquirer.text('Type number top of configs to create as bots at the end?').execute()
 				self.write_file()

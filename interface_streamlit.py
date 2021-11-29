@@ -153,7 +153,7 @@ class StreamlitHaasTool(Haas):
 			st.write(
 				f"{self.bot.name} has {len(self.bot.completedOrders)} trades"
 				)
-			trades_df = self.trades_to_df(self.bot)
+			trades_df = self.convert_trades_to_dataframe(self.bot)
 			first_trade = trades_df.date.iloc[0]
 			# st.write(f"First trade date: {first_trade}")
 			
@@ -190,7 +190,7 @@ class StreamlitHaasTool(Haas):
 					)
 				)
 		if len(bot.completedOrders) > 0:
-			trades_df = self.trades_to_df(self.bot)
+			trades_df = self.convert_trades_to_dataframe(self.bot)
 			trades_df.drop(
 				["orderId","orderStatus","amountFilled"],axis=1,inplace=True
 				)

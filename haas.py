@@ -1,154 +1,151 @@
-import configparser as cp
-import datetime
-
+import configparser as config_parser
+from typing import Any
+import pandas as pd
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-from haasomeapi.enums.EnumPlatform import EnumPlatform
 from InquirerPy import inquirer
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
-import pandas as pd
 from haasomeapi.HaasomeClient import HaasomeClient
+from pandas.core.frame import DataFrame
 from scripts.configmanager import ConfigManager
 from configsstorage import ConfigsManagment
-from haasomeapi.enums.EnumTradeType import EnumTradeType
 
+"""
+Haasonline trading software interaction class: get botlist, marketdata,
+create bots and configure their parameters,
+initiate backtests and so forth can be done through this class
+"""
+# TODO: Make SRP
+# TODO: Rename pass more info
+class Haas():
 
-class Haas(ConfigManager,ConfigsManagment):
-		"""
-		Haasonline trading software interaction class: get botlist, marketdata,
-		create bots and configure their parameters,
-		initiate backtests and so forth can be done through this class
-		"""
+		def __init__(self) -> None:
+			self.config = config_parser.ConfigParser()
+			self.configs_management = ConfigsManagment()
+			self.config_manager = ConfigManager()
 
-		def __init__(self):
-			self.config = cp.ConfigParser()
 			self.bot = None
 			self.bots = None
-			self.ip = None
-			self.secret = None
-			self.check_config()
 
-			self.c = self.client()
-			self.ticks = self.read_ticks()
+			self.c = self.generate_client()
+			self.ticks = self.config_manager.read_ticks()
+
+			self.config_manager.check_config()
 
 
-		def get_accounts_with_details(self):
+		def get_accounts_with_details(self) -> list:
 			accounts = self.c.accountDataApi.get_all_account_details().result
 			accounts_with_details = list(accounts.values())
+
 			return accounts_with_details
 
-		def select_exchange(self):
-			accounts = self.get_accounts_with_details()
-			accounts_inquirer_format = [
-							{
-											"name": f"{EnumPriceSource(i.connectedPriceSource).name} {i.name} {EnumPlatform(i.platformType).name} "
-											f"",
-											"value": i,
-							}
-							for i in accounts
+
+		def select_exchange(self) -> list[Any]:
+			accounts : list = self.get_accounts_with_details()
+
+			name_format : str = """{EnumPriceSource(.connectedPriceSource).name} {bot.name} {EnumPlatform(bot.platformType).name} """
+			accounts_inquirer_format : list[dict[str, list]] = [
+				{
+					"name": name_format.format(bot=_),
+					"value": _,
+				} for _ in accounts
 			]
-			exchange = [
-							inquirer.select(
-											message="Select exchange account by pressing Return or Enter ",
-											choices=accounts_inquirer_format+['ALL'],
-							).execute()
+
+			# TODO: Know what is ALL
+			accounts_inquirer_format.append({'ALL' : []})
+
+			exchange : list[Any] = [
+				inquirer.select(
+					message="Select exchange account by pressing Return or Enter ",
+					choices=accounts_inquirer_format,
+				).execute()
 			]
+
 			return exchange
 
-		def market_selector(self,exchange):
 
-				market= self.c.marketDataApi.get_price_markets(EnumPriceSource(exchange[0].connectedPriceSource).value).result
-				m2 = [
-						{ 'name':f"{i.primaryCurrency}/" #{EnumPriceSource(i.priceSource).name},
-								f"{i.secondaryCurrency}", "value" : i} for i in market
-						]
+		def get_market_selector(self, exchange) -> Any:
+			markets : list = self.c.marketDataApi.get_price_markets(EnumPriceSource(exchange[0].connectedPriceSource).value).result
+			name_format : str = """{market.primaryCurrency}/ {market.secondaryCurrency}"""
 
-				market = inquirer.fuzzy(message="Type tickers to search:",choices=m2).execute()
-				return market
+			m2 : list[dict[str, str | list]] = [
+				{ 'name':name_format.format(market=_), "value" : _} for _ in markets
+			]
 
-		def client(self):
-			config_data = self.config
+			markets = inquirer.fuzzy(message="Type tickers to search:",choices=m2).execute()
+			return markets
 
-			haasomeclient = HaasomeClient(self.ip,self.secret)
+
+		def generate_client(self) -> HaasomeClient:
+			haasomeclient = HaasomeClient(self.config_manager.ip, self.config_manager.secret)
 			return haasomeclient
 
 
-			return ticks
+		def select_single_bot_by_type(self, botType: int) -> Any:
+			bots_as_choices = self._get_bots_as_choices(botType)
 
-		def bot_selector(self,botType,multi=False):
+			# TODO: Separate condition for two funcs
+			bots: Any = inquirer.select(
+				message="Select SINGLE BOT using arrow and ENTER keys",
+				choices=bots_as_choices,
+			).execute()
 
-			bots = [
-				x
-				for x in self.c.customBotApi.get_all_custom_bots().result
-				if x.botType == botType
-				]
+			self.bot = bots
+			self.bots = [self.bot]
 
-			bots.sort(key=lambda x:x.name,reverse=False)
-			b2 = [{'name':f"{i.name} {i.priceMarket.primaryCurrency}-"
-				f"{i.priceMarket.secondaryCurrency}, {i.roi}",'value':i} for i in bots]
-
-			if multi != True:
-				bots = inquirer.select(
-
-						message="Select SINGLE BOT using arrow and ENTER keys",
-						choices=b2,
-						).execute()
-
-				self.bot = bots
-				self.bots = [self.bot]
-				return bots
+			return bots
 
 
-			else:
-				bots = inquirer.select(
+		def select_multiple_bots_by_type(self, botType: int) -> Any:
+			bots_as_choices = self._get_bots_as_choices(botType)
 
-						message="Select MULTIPLE BOTS (or just one) using SPACEBAR.\n"
-								"   Confirm selection using ENTER.",
-						choices=b2,
-						multiselect=True
-						).execute()
-				self.bots = bots
-				return bots
+			bots: Any = inquirer.select(
+				message="Select MULTIPLE BOTS (or just one) using SPACEBAR.\n"
+						"   Confirm selection using ENTER.",
+				choices=bots_as_choices,
+				multiselect=True
+			).execute()
 
-		def calculate_ticks_from_bot_trades(self,bot):
-
-			trades_df = self.trades_to_df(bot)
-			first_trade = trades_df.date.iloc[0]
-
-			delta = datetime.datetime.now() - first_trade
-			delta_minutes = delta.total_seconds() / 60
-			ticks = delta_minutes
+			self.bots = bots
+			return bots
 
 
+		def _get_bots_as_choices(self, botType : int) -> list:
+			all_custom_bots : list = self.c.customBotApi.get_all_custom_bots().result
+			bots : list = [bot for bot in all_custom_bots if bot.botType == botType]
+
+			bots.sort(key=lambda x : x.name, reverse=False)
+
+			name_format : str = """{bot.name} {bot.priceMarket.primaryCurrency}-{bot.priceMarket.secondaryCurrency}"""
+			bots_as_choices = [{'name':name_format.format(bot=_), 'value':_} for _ in bots]
+
+			return bots_as_choices
 
 
-		def trades_to_df(self,bot):
-			completedOrders = [
+		def convert_trades_to_dataframe(self, bot) -> DataFrame:
+			completedOrders : list = [
 				{
-					"orderId":x.orderId,
-					"orderStatus":x.orderStatus,
-					"amountFilled":x.amountFilled,
-					"orderType":x.orderType,
-					"amount":x.amount,
-					"price":x.price,
-					"date":pd.to_datetime(x.unixAddedTime,unit="s"),
-					}
-				for x in bot.completedOrders
-				]
+					"orderId" : _.orderId,
+					"orderStatus" : _.orderStatus,
+					"amountFilled" : _.amountFilled,
+					"orderType" : _.orderType,
+					"amount" : _.amount,
+					"price" : _.price,
+					"date" : pd.to_datetime(_.unixAddedTime,unit="s"),
+				} for _ in bot.completedOrders
+			]
 
-			orders_df = pd.DataFrame(completedOrders)
-			return orders_df
+			return pd.DataFrame(completedOrders)
 
 
 		def select_bottype_to_create(self):
-				bot_types = [{'name':e.name,"value":e.value} for e in EnumCustomBotType]
-				selected_type = inquirer.select(
-						message=" Select bot type to create", choices=bot_types
-				).execute()
-				self.bottype = selected_type
+			bot_types = [{'name':_.name,"value":_.value} for _ in EnumCustomBotType]
+
+			selected_type = inquirer.select(
+				message=" Select bot type to create", choices=bot_types
+			).execute()
+
+			self.bottype = selected_type
 
 
 if __name__ == "__main__":
-	h = Haas()
-	# file = h.obj_file_selector()
-	# object = h.		()
-	# exchange = h.match_exchange_with_bot(object)
+	Haas()

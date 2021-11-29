@@ -156,7 +156,7 @@ class ScalperBot(Haas):
 					
 					self.c.customBotApi.backtest_custom_bot(bot.guid,self.read_ticks())
 		else:
-			self.bot_selector(3,multi=True)
+			self.select_multiple_bots_by_type(3)
 	
 	def scalper_bot_menu(self):
 		while True:
@@ -174,7 +174,7 @@ class ScalperBot(Haas):
 					],
 				).execute()
 			if user_response == "Select bots":
-				self.bot_selector(3,multi=True)
+				self.select_multiple_bots_by_type(3)
 			elif user_response == "Set range for safety threshold":
 				self.set_safetythreshold_range()
 			elif user_response == "Set range for target percentage":

@@ -25,7 +25,7 @@ class FlashCrashBot(Haas):
 	
 	def bt(self):
 		bt = self.c.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks)
-		orders_df = self.trades_to_df(bt.result)
+		orders_df = self.convert_trades_to_dataframe(bt.result)
 		if bt.errorCode.value == 1021:
 			for i in range(5):
 				print('Market history is being loaded. Retrying in 5...')
@@ -412,7 +412,7 @@ class FlashCrashBot(Haas):
 				menu_items = ['Select bot','Quit']
 				resp = inquirer.select(message = 'Menu:',choices=menu_items).execute()
 				if resp == 'Select bot':
-					self.bot_selector(6)
+					self.select_single_bot_by_type(6)
 				elif resp == 'Quit':
 					break
 			
@@ -471,7 +471,7 @@ class FlashCrashBot(Haas):
 					break
 				
 				if resp == "Select Bot" or "Select another bot":
-					self.bot_selector(6)
+					self.select_single_bot_by_type(6)
 	
 
 
