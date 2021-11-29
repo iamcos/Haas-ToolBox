@@ -19,7 +19,7 @@ initiate backtests and so forth can be done through this class
 class Haas():
 
 		def __init__(self) -> None:
-			self.config = config_parser.ConfigParser()
+			self.config_parser = config_parser.ConfigParser()
 			self.configs_management = ConfigsManagment()
 			self.config_manager = ConfigManager()
 

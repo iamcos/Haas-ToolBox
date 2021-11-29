@@ -74,11 +74,11 @@ class ScalperBot(Haas):
 	
 	def bt_date_to_unix(self):
 		
-		min = self.config["BT DATE"].get("min")
-		hour = self.config["BT DATE"].get("hour")
-		day = self.config["BT DATE"].get("day")
-		month = self.config["BT DATE"].get("month")
-		year = self.config["BT DATE"].get("year")
+		min = self.config_parser["BT DATE"].get("min")
+		hour = self.config_parser["BT DATE"].get("hour")
+		day = self.config_parser["BT DATE"].get("day")
+		month = self.config_parser["BT DATE"].get("month")
+		year = self.config_parser["BT DATE"].get("year")
 		btd = datetime.datetime(int(year),int(month),int(day),int(hour),int(min))
 		return btd
 	

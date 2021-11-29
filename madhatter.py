@@ -15,6 +15,7 @@ from menus import Menus
 from configsstorage import ConfigsManagment
 
 
+# TODO: GO to composition
 class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
 
     def __init__(self):
@@ -624,10 +625,10 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             "given file: ",
         ).execute()
         try:
-            self.config.add_section("MH_LIMITS")
+            self.config_parser.add_section("MH_LIMITS")
         except Exception as e:
             print(e,'exception')
-        self.config.set(
+        self.config_parser.set(
             "MH_LIMITS", "number_of_configs_to_apply", str(self.num_configs)
         )
         self.write_file()
@@ -644,10 +645,10 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             message="Write: ",
         ).execute()
         try:
-            self.config.add_section("MH_LIMITS")
+            self.config_parser.add_section("MH_LIMITS")
         except Exception as e:
             print(e,'exception')
-        self.config.set(
+        self.config_parser.set(
             "MH_LIMITS", "set_acceptable_roi_threshold", str(self.roi_threshold)
         )
         self.write_file()
@@ -666,10 +667,10 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
             message="Type 0 for ordered or 1 for random config selection: ",
         ).execute())
         try:
-            self.config.add_section("MH_LIMITS")
+            self.config_parser.add_section("MH_LIMITS")
         except Exception as e:
             print(e,'exception')
-        self.config.set(
+        self.config_parser.set(
             "MH_LIMITS", "set_backtesting_mode", str(self.bt_mode)
         )
         self.write_file()
@@ -679,45 +680,45 @@ class MadHatterBot(Haas, Optimize, FineTune, Menus, ConfigsManagment):
         self.limit = inquirer.text(
             message="Type a number how many top bots to create "
         ).execute()
-        self.config.set("MH_LIMITS", "limit_to_create", str(self.limit))
+        self.config_parser.set("MH_LIMITS", "limit_to_create", str(self.limit))
         self.write_file()
         self.read_limits()
 
     def read_limits(self):
         try:
             self.num_configs = int(
-                self.config["MH_LIMITS"].get("number_of_configs_to_apply")
+                self.config_parser["MH_LIMITS"].get("number_of_configs_to_apply")
             )
         except Exception as e:
             print(e,'exception')
         try:
             self.roi_threshold = float(
-                self.config["MH_LIMITS"].get("set_acceptable_roi_threshold")
+                self.config_parser["MH_LIMITS"].get("set_acceptable_roi_threshold")
             )
         except Exception as e:
             print(e,'exception')
         try:
             self.bt_mode = int(
-                self.config["MH_LIMITS"].get("set_backtesting_mode")
+                self.config_parser["MH_LIMITS"].get("set_backtesting_mode")
             )
         except Exception as e:
             print(e,'exception')
 
         try:
-            self.limit = int(self.config["MH_LIMITS"].get("limit_to_create"))
+            self.limit = int(self.config_parser["MH_LIMITS"].get("limit_to_create"))
         except Exception as e:
             print(e,'exception')
         try:
             self.stoploss_range = [
-                float(self.config["MH_LIMITS"].get("stoploss_range_start")),
-                float(self.config["MH_LIMITS"].get("stoploss_range_stop")),
-                float(self.config["MH_LIMITS"].get("stoploss_range_step")),
+                float(self.config_parser["MH_LIMITS"].get("stoploss_range_start")),
+                float(self.config_parser["MH_LIMITS"].get("stoploss_range_stop")),
+                float(self.config_parser["MH_LIMITS"].get("stoploss_range_step")),
             ]
         except Exception as e:
             print(e,'exception')
         try:
             self.selected_intervals = json.loads(
-                self.config["MH_LIMITS"].get("selected_intervals")
+                self.config_parser["MH_LIMITS"].get("selected_intervals")
             )
         except Exception as e:
             print(e,'exception')
