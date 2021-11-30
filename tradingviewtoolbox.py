@@ -121,7 +121,7 @@ class TradingView(Haas):
     def main(self):
 
         self.exchange = self.select_exchange()[0]
-        self.select_bottype_to_create()
+        self.select_bot_type_to_create()
         self.process_csv()
         self.create_bots_for_selected_markets()
 

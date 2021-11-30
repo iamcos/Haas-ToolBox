@@ -3,7 +3,7 @@ from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 import pytest
 
 mh = MadHatterBot()
-botlist = mh.return_botlist()
+botlist = mh.return_bots_by_15_type()
 botlist_guid = [x.guid for x in botlist]
 print(botlist)
 def test_return_botlist():
@@ -21,9 +21,9 @@ def test_create_mh():
 
 
 
-	new = mh.create_mh(bot,name)
+	new = mh.create_mad_hatter_bot(bot, name)
 	print(new)
-	botlist2 = mh.return_botlist()
+	botlist2 = mh.return_bots_by_15_type()
 	botlist2_guid = [x.guid for x in botlist2]
 	created = []
 	for b in botlist2_guid:
@@ -53,7 +53,7 @@ def test_setup_bot_from_df():
 	
 	mh.setup_bot_from_df(bot,config)
 	bot2 = mh.c.customBotApi.get_custom_bot(bot.guid,EnumCustomBotType(15).name).result
-	bot_new_config = mh.bot_config(bot2)
+	bot_new_config = mh.get_bot_config_as_dataframe(bot2)
 	pc = config.values[0:-3]
 	nc = bot_new_config.values[0][1:-3]
 	print(pc, '\n',nc)
@@ -78,11 +78,11 @@ def test_bt():
 #
 def test_create_top_bots():
 	mh.limit = 2
-	botlist = mh.return_botlist()
+	botlist = mh.return_bots_by_15_type()
 	botlist_guid = [x.guid for x in botlist]
 	print('LIMIT',mh.limit)
 	mh.create_top_bots()
-	botlist2 = mh.return_botlist()
+	botlist2 = mh.return_bots_by_15_type()
 	botlist2_guid = [x.guid for x in botlist2]
 	created = []
 	for b in botlist2_guid:

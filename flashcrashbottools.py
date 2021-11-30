@@ -24,13 +24,13 @@ class FlashCrashBot(Haas):
 		self.totalsell = None
 	
 	def bt(self):
-		bt = self.c.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks)
+		bt = self.client.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks)
 		orders_df = self.convert_trades_to_dataframe(bt.result)
 		if bt.errorCode.value == 1021:
 			for i in range(5):
 				print('Market history is being loaded. Retrying in 5...')
 				time.sleep(5)
-				bt = self.c.customBotApi.backtest_custom_bot(
+				bt = self.client.customBotApi.backtest_custom_bot(
 					self.bot.guid,int(self.ticks)
 					)
 				if bt.errorCode.value != 1021:
@@ -47,16 +47,16 @@ class FlashCrashBot(Haas):
 		return bt.result
 	
 	def read_range(self,vars=vars):
-		return [x for x in [self.config["FCB_LIMITS"].get(p) for p in vars]]
+		return [x for x in [self.config_parser["FCB_LIMITS"].get(p) for p in vars]]
 	
 	def set_total_buy(self):
 		response = inquirer.text('Type Buy amount: ').execute()
-		self.config.set('FCB_LIMITS','Total_buy',response)
+		self.config_parser.set('FCB_LIMITS','Total_buy',response)
 		self.write_file()
 	
 	def set_total_sell(self):
 		response = inquirer.text('Type Sell amount: ').execute()
-		self.config.set('FCB_LIMITS','Total_sell',response)
+		self.config_parser.set('FCB_LIMITS','Total_sell',response)
 		self.write_file()
 	
 	def setup_fcb(self,print_errors=False):
@@ -71,7 +71,7 @@ class FlashCrashBot(Haas):
 		primarycoin = self.bot.priceMarket.primaryCurrency
 		secondarycoin = self.bot.priceMarket.secondaryCurrency
 		fee = self.bot.currentFeePercentage
-		baseprice = self.c.marketDataApi.get_price_ticker(
+		baseprice = self.client.marketDataApi.get_price_ticker(
 			self.bot.priceMarket.priceSource,
 			self.bot.priceMarket.primaryCurrency,
 			self.bot.priceMarket.secondaryCurrency,
@@ -127,7 +127,7 @@ class FlashCrashBot(Haas):
 				minpercentage=minpercentage,
 				maxpercentage=maxpercentage,
 				):
-			do = self.c.customBotApi.setup_flash_crash_bot(
+			do = self.client.customBotApi.setup_flash_crash_bot(
 				accountguid=accountguid,
 				botguid=botguid,
 				botname=botname,
@@ -317,12 +317,12 @@ class FlashCrashBot(Haas):
 	
 		self.pricespread = [start,end,step]
 		try:
-			self.config.add_section("FCB_LIMITS")
+			self.config_parser.add_section("FCB_LIMITS")
 		except Exception as e:
 			pass
-		self.config.set("FCB_LIMITS","pricespread_start",self.pricespread[0])
-		self.config.set("FCB_LIMITS","pricespread_end",self.pricespread[1])
-		self.config.set("FCB_LIMITS","pricespread_step",self.pricespread[2])
+		self.config_parser.set("FCB_LIMITS","pricespread_start",self.pricespread[0])
+		self.config_parser.set("FCB_LIMITS","pricespread_end",self.pricespread[1])
+		self.config_parser.set("FCB_LIMITS","pricespread_step",self.pricespread[2])
 		self.write_file()
 	
 	def set_percentage_range(self):
@@ -338,12 +338,12 @@ class FlashCrashBot(Haas):
 		print(self.percentageboost,self.bot)
 		
 		try:
-			self.config.add_section("FCB_LIMITS")
+			self.config_parser.add_section("FCB_LIMITS")
 		except Exception as e:
 			print(e)
-		self.config.set("FCB_LIMITS","percentageboost_start",self.percentageboost[0])
-		self.config.set("FCB_LIMITS","percentageboost_end",self.percentageboost[1])
-		self.config.set("FCB_LIMITS","percentageboost_step",self.percentageboost[2])
+		self.config_parser.set("FCB_LIMITS","percentageboost_start",self.percentageboost[0])
+		self.config_parser.set("FCB_LIMITS","percentageboost_end",self.percentageboost[1])
+		self.config_parser.set("FCB_LIMITS","percentageboost_step",self.percentageboost[2])
 		self.write_file()
 	
 	def set_multiplier_range(self):
@@ -357,12 +357,12 @@ class FlashCrashBot(Haas):
 		print(self.multiplyer,self.bot)
 		
 		try:
-			self.config.add_section("FCB_LIMITS")
+			self.config_parser.add_section("FCB_LIMITS")
 		except Exception as e:
 			print(e)
-		self.config.set("FCB_LIMITS","multiplyer_start",self.multiplyer[0])
-		self.config.set("FCB_LIMITS","multiplyer_end",self.multiplyer[1])
-		self.config.set("FCB_LIMITS","multiplyer_step",self.multiplyer[2])
+		self.config_parser.set("FCB_LIMITS","multiplyer_start",self.multiplyer[0])
+		self.config_parser.set("FCB_LIMITS","multiplyer_end",self.multiplyer[1])
+		self.config_parser.set("FCB_LIMITS","multiplyer_step",self.multiplyer[2])
 		self.write_file()
 	
 	def set_min_range(self):
@@ -376,12 +376,12 @@ class FlashCrashBot(Haas):
 		print(self.multiplyer_min,self.bot)
 		
 		try:
-			self.config.add_section("FCB_LIMITS")
+			self.config_parser.add_section("FCB_LIMITS")
 		except Exception as e:
 			print(e)
-		self.config.set("FCB_LIMITS","multiplyer_min_start",self.multiplyer_min[0])
-		self.config.set("FCB_LIMITS","multiplyer_min_end",self.multiplyer_min[1])
-		self.config.set("FCB_LIMITS","multiplyer_min_step",self.multiplyer_min[2])
+		self.config_parser.set("FCB_LIMITS","multiplyer_min_start",self.multiplyer_min[0])
+		self.config_parser.set("FCB_LIMITS","multiplyer_min_end",self.multiplyer_min[1])
+		self.config_parser.set("FCB_LIMITS","multiplyer_min_step",self.multiplyer_min[2])
 		self.write_file()
 	
 	def set_max_range(self):
@@ -395,12 +395,12 @@ class FlashCrashBot(Haas):
 		print(self.multiplyer_max,self.bot)
 		
 		try:
-			self.config.add_section("FCB_LIMITS")
+			self.config_parser.add_section("FCB_LIMITS")
 		except Exception as e:
 			print(e)
-		self.config.set("FCB_LIMITS","multiplyer_max_start",self.multiplyer_max[0])
-		self.config.set("FCB_LIMITS","multiplyer_max_end",self.multiplyer_max[1])
-		self.config.set("FCB_LIMITS","multiplyer_max_step",self.multiplyer_max[2])
+		self.config_parser.set("FCB_LIMITS","multiplyer_max_start",self.multiplyer_max[0])
+		self.config_parser.set("FCB_LIMITS","multiplyer_max_end",self.multiplyer_max[1])
+		self.config_parser.set("FCB_LIMITS","multiplyer_max_step",self.multiplyer_max[2])
 		self.write_file()
 	
 	def menu(self):

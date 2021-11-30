@@ -24,7 +24,7 @@ class InteractiveBT(MadHatterBot):
 	@sleep_and_retry
 	@limits(calls=5,period=1)
 	def monitor_bot(self):
-		bot_config = self.bot_config(self.bot)
+		bot_config = self.get_bot_config_as_dataframe(self.bot)
 		bt_results = [bot_config]
 		self.bot = self.c.customBotApi.backtest_custom_bot(self.bot.guid,self.ticks).result
 		
@@ -57,7 +57,7 @@ class InteractiveBT(MadHatterBot):
 			else:
 				print('False')
 				return False
-			config_now = self.bot_config(self.bot)
+			config_now = self.get_bot_config_as_dataframe(self.bot)
 			
 			configs_are_the_same = config_now.drop(["obj",'roi','trades'],axis=1).equals(
 				bot_config.drop(["obj",'roi','trades'],axis=1))
@@ -67,7 +67,7 @@ class InteractiveBT(MadHatterBot):
 				bt = self.c.customBotApi.backtest_custom_bot(
 					self.bot.guid,self.ticks
 					).result
-				bot_config = self.bot_config(
+				bot_config = self.get_bot_config_as_dataframe(
 					self.c.customBotApi.get_custom_bot(self.bot.guid,15).result)
 				# print('bot_config',bot_config)
 				bt_results.append(bot_config)
