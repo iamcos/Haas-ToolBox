@@ -84,7 +84,7 @@ def finetune(self, bot):
                         + str(datetime.date.today().day)
                         + str("_")
                         + str(len(bt_results))
-                        + str(".csv")
+                        + str(".config")
                 )
                 bt_results.to_csv(filename)
             elif ind == 4:
