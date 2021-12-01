@@ -38,7 +38,6 @@ class MarketData(Haas):
             df.set_index(dti, inplace=True)
         except:
             print("Whops")
-            # print(df)
         return df
 
     def get_all_markets(self):
@@ -133,10 +132,6 @@ class MarketData(Haas):
     def last_market_trades_to_df(self, priceMarket):
 
         last_trades = self.client.marketDataApi.get_last_trades_from_market(priceMarket).result
-        # print(last_trades)
-        # print(type(last_trades))
-        # print(last_trades.keys())
-        # help(last_trades)
         trades = [
             {
 
@@ -177,7 +172,6 @@ class MarketData(Haas):
         data["Date"] = pd.to_datetime(data["Date"])
         dti = pd.DatetimeIndex([x for x in data["Date"]])
         data.set_index(dti, inplace=True)
-        # print(data)
         return data
 
 
