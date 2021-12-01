@@ -6,8 +6,8 @@ from InquirerPy import inquirer
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.HaasomeClient import HaasomeClient
 from pandas.core.frame import DataFrame
-from scripts.configmanager import ConfigManager
-from configsstorage import ConfigsManagment
+from scripts.config_manager import ConfigManager
+from bots_creator import BotsCreator
 
 """
 Haasonline trading software interaction class: get bots list, market data,
@@ -22,7 +22,7 @@ class Haas:
 
     def __init__(self) -> None:
         self.config_parser: ConfigParser = ConfigParser()
-        self.configs_management: ConfigsManagment = ConfigsManagment()
+        self.configs_management: BotsCreator = BotsCreator()
         self.config_manager: ConfigManager = ConfigManager()
 
         self.bot = None
