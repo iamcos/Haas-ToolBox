@@ -62,7 +62,7 @@ class Optimize:
             )
             bt_results.append([do2.result.roi, round(i, 2)])
             print(
-                f"Current stoploss {round(i,2)} : ROI {do2.result.roi}% with {expected_roi}% set as target"
+                f"Current stoploss {round(i, 2)} : ROI {do2.result.roi}% with {expected_roi}% set as target"
             )
 
         bt_results = pd.DataFrame(bt_results, columns=["roi", "stoploss"])
@@ -71,7 +71,7 @@ class Optimize:
         bt_results.reset_index(inplace=True, drop=True)
         print("Stoploss results: ", bt_results)
         print(
-            f"Best result for bot {self.bot.name,bt_results.stoploss.iloc[0]}: {bt_results.roi.iloc[0]} is O.K."
+            f"Best result for bot {self.bot.name, bt_results.stoploss.iloc[0]}: {bt_results.roi.iloc[0]} is O.K."
         )
         if bt_results.roi.iloc[0] >= expected_roi:
             print(
@@ -101,7 +101,6 @@ class Optimize:
         try:
             if self.ranges.bot.intervals.selected:
                 if self.bot:
-
                     bot = self.bot
                     self.bt_interval(bot)
 
@@ -159,7 +158,7 @@ class Optimize:
                 )
                 bot_config = self.bot_config(bt.result)
                 print(
-                    f'  BT result: {bt.result.roi}% with interval {configs.loc[int(i),"interval"]} minutes'
+                    f'  BT result: {bt.result.roi}% with interval {configs.loc[int(i), "interval"]} minutes'
                 )
                 bt_results.append(bot_config)
         else:
@@ -224,7 +223,6 @@ class Optimize:
         configs = self.remove_already_backtested(new_configs)
 
         for i in range(len(configs.index)):
-
             do = self.setup_bot_from_df(bot=self.bot, config=configs.iloc[i])
             # do = self.c.customBotApi.set_mad_hatter_indicator_parameter(
             # 		bot.guid,EnumMadHatterIndicators.BBANDS,0,int(configs.bbl.iloc[i])
