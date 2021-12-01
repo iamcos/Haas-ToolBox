@@ -6,8 +6,13 @@ from InquirerPy import inquirer
 from haasomeapi.enums.EnumPlatform import EnumPlatform
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
 
+from haas import Haas
+
 
 class BotsCreator:
+    haas: Haas = Haas()
+
+
     def create_bots_from_csv(self):
         exchange = self.select_exchange()
         market = self.market_selector(exchange)
@@ -18,12 +23,13 @@ class BotsCreator:
         bots = self.create_bots(exchange, market, configs, selected_configs)
         return bots
 
+
     def create_bots(self, exchange, market, configs, selected_configs):
         acountId = exchange[0].__dict__['guid']
 
         for i in selected_configs:
             name = f"{market.primaryCurrency} {market.secondaryCurrency}"
-            new_bot = self.c.customBotApi.new_custom_bot(
+            new_bot = self.haas.client.customBotApi.new_custom_bot(
                 acountId,
                 15,
                 name,
@@ -38,7 +44,7 @@ class BotsCreator:
 
             self.setup_bot_from_df(bot, configs[configs.roi == i].iloc[0], print_errors=False)
             bot = self.check_bot_trade_ammount(bot)
-            bot = self.c.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks()).result
+            bot = self.haas.client.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks()).result
             # bot2 = self.c.customBotApi.clone_custom_bot_simple(bot.accountId, bot.guid, f"{bot.name}.{bot.roi}")
             # bot = self.c.customBotApi.setup_mad_hatter_bot()
             bot = self.c.customBotApi.setup_mad_hatter_bot(
@@ -62,6 +68,7 @@ class BotsCreator:
                 mappedBuySignal=bot.mappedBuySignal,
                 mappedSellSignal=bot.mappedSellSignal,
             )
+
 
     def create_from_csv(self):
         bot = None
@@ -135,6 +142,7 @@ class BotsCreator:
                     )
                     # print(bot.errorCode, bot.errorMessage)
 
+
     def match_exchange_with_bot(self, botobject):
         bot_exchange = EnumPriceSource(botobject.priceMarket.priceSource).value
         accounts = self.get_accounts_with_details()
@@ -158,8 +166,8 @@ class BotsCreator:
         else:
             return None
 
-    def store_results(self, bt_results):
 
+    def store_results(self, bt_results):
         if self.bot.guid in self.config_storage:
             configs = self.config_storage[self.bot.guid]
 
@@ -175,6 +183,7 @@ class BotsCreator:
 
         else:
             self.config_storage[self.bot.guid] = bt_results
+
 
     def remove_already_backtested(self, new_configs):
         """Drops already processed configs from input dataframe.
@@ -216,6 +225,7 @@ class BotsCreator:
         else:
             return new_configs
 
+
     def find_difference_between_two_configs(self, first_config, second_config):
         """Returns the difference in configuration parameters between two configs.
         It subtracts one config from another, creating new row with difference in it.
@@ -249,6 +259,7 @@ class BotsCreator:
         print(changes)
         return changes
 
+
     def create_bots_from_obj(self):
         botobjs = self.return_bot_objects()
         exchange = self.match_exchange_with_bot(botobjs[0])
@@ -268,30 +279,6 @@ class BotsCreator:
                 market.secondaryCurrency,
                 market.contractName).result
 
-        # self.setup_bot_from_obj(bot,obj,print_errors=True)
-        # bot = self.check_bot_trade_ammount(bot)
-        # bot = self.c.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks()).result
-        # bot = self.c.customBotApi.setup_mad_hatter_bot(
-        #                 # This code sets time interval
-        #                 botName= f"{market.primaryCurrency} {market.secondaryCurrency} {bot.roi}%",
-        #                 botGuid=bot.guid,
-        #                 accountGuid=bot.accountId,
-        #                 primaryCoin=bot.priceMarket.primaryCurrency,
-        #                 secondaryCoin=bot.priceMarket.secondaryCurrency,
-        #                 contractName=bot.priceMarket.contractName,
-        #                 leverage=bot.leverage,
-        #                 templateGuid=bot.customTemplate,
-        #                 position=bot.coinPosition,
-        #                 fee=bot.currentFeePercentage,
-        #                 tradeAmountType=bot.amountType,
-        #                 tradeAmount=bot.currentTradeAmount,
-        #                 useconsensus=bot.useTwoSignals,
-        #                 disableAfterStopLoss=bot.disableAfterStopLoss,
-        #                 interval=bot.interval,
-        #                 includeIncompleteInterval=bot.includeIncompleteInterval,
-        #                 mappedBuySignal=bot.mappedBuySignal,
-        #                 mappedSellSignal=bot.mappedSellSignal,
-        #             )
 
     def save_and_sort_results(self, bt_results, obj=True, csv=True):
         if obj:
@@ -330,10 +317,12 @@ class BotsCreator:
         bt_results2.reset_index(inplace=True, drop=True)
         return bt_results2
 
+
     def obj_file_selector(self):
         files = self.get_obj_files()
         file = inquirer.select(message="Please Select file from list: ", choices=[i for i in files]).execute()
         return file
+
 
     def get_days(self, x):
         if len(x.completedOrders) > 0:
@@ -342,6 +331,7 @@ class BotsCreator:
             return f'{diff.days} days ago'
         else:
             return 'No trade history'
+
 
     def return_bot_objects(self):
         files = []
@@ -360,11 +350,12 @@ class BotsCreator:
         format = "%m/%d/%Y"
 
         bot_list = [{
-                        'name': f"{x.name} {x.priceMarket.primaryCurrency}/{x.priceMarket.secondaryCurrency} {x.roi}% {self.get_days(x)}",
-                        'value': x} for x in objects]
+            'name': f"{x.name} {x.priceMarket.primaryCurrency}/{x.priceMarket.secondaryCurrency} {x.roi}% {self.get_days(x)}",
+            'value': x} for x in objects]
         botobjects = inquirer.select(message="    Name     Ticker     Roi   Last Trade ", choices=bot_list,
                                      multiselect=True).execute()  # where b bot object returned from dic[x] name list
         return botobjects
+
 
     def csv_file_selector(self):
         """[Displays multiple files and allows for t heir selection
@@ -382,6 +373,7 @@ class BotsCreator:
 
         configs = self.configs = pd.read_csv(file)
         return configs
+
 
     def save_bots_to_file(self, botlist):
         df = pd.DataFrame(botlist, columns=['bots'])

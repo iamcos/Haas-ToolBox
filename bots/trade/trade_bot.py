@@ -1,6 +1,4 @@
-
 from haas import Haas
-from InquirerPy.utils import patched_print as print
 from haasomeapi.apis.TradeBotApi import TradeBotApi
 from InquirerPy import inquirer
 from scripts.trade_bot_editor import TradeBotEditor
@@ -12,7 +10,6 @@ class Trade_Bot(Haas, TradeBotEditor):
         self.tradebot = None
         self.tradebotapi = TradeBotApi(self.ip, self.secret)
         self.value = None
-
 
     def menu(self):
         while True:
@@ -30,7 +27,6 @@ class Trade_Bot(Haas, TradeBotEditor):
                 ).execute()
 
                 if user_selection == "Select another Trade Bot":
-
                     self.tradebot = None
                     self.tradebot = self.select_tradebot()
 
