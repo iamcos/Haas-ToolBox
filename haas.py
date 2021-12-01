@@ -43,14 +43,14 @@ class Haas:
     def select_exchange(self) -> list[Any]:
         accounts: list = self.get_accounts_with_details()
 
-        name_format: str = """{EnumPriceSource(.connectedPriceSource).name} {bot.name} {EnumPlatform(
-        bot.platformType).name} """
+        name_format: str = """{EnumPriceSource(account.connectedPriceSource).name} {account.name} {EnumPlatform(
+        account.platformType).name} """
 
         accounts_inquirer_format: list[dict[str, list]] = [
             {
-                "name": name_format.format(bot=_),
-                "value": _,
-            } for _ in accounts
+                "name": name_format.format(bot=account),
+                "value": account,
+            } for account in accounts
         ]
 
         # TODO: To know what is ALL
