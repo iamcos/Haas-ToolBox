@@ -2,9 +2,9 @@
 .history
 .vscode
 .DS_Store
-__pycache__
+**__pycache__**
 *.spec
-Misc/
+misc/
 env/
 env*/
 bt_results/*
@@ -40,3 +40,4 @@ test-output.xml
 *.obj
 *.obj
 version
+pyrightconfig.json
