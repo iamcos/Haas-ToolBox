@@ -118,7 +118,7 @@ class Haas:
 
         return bots_as_choices
 
-    def convert_trades_to_dataframe(bot) -> DataFrame:
+    def convert_trades_to_dataframe(self, bot) -> DataFrame:
         completed_orders: list = [
             {
                 "orderId": _.orderId,

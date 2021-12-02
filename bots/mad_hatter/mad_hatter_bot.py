@@ -93,14 +93,14 @@ class MadHatterBot(Optimize, FineTune, Menus):
 					bot.guid, current_type, fieldNo, value
 				)
 
-	def _generate_safeties_config() -> dict[EnumMadHatterSafeties, int]:
+	def _generate_safeties_config(self) -> dict[EnumMadHatterSafeties, int]:
 		return {
 			EnumMadHatterSafeties(0): 0,
 			EnumMadHatterSafeties(1): 0,
 			EnumMadHatterSafeties(2): 0
 		}
 
-	def _generate_indicators_config(config: DataFrame) -> \
+	def _generate_indicators_config(self, config: DataFrame) -> \
 			dict[EnumMadHatterIndicators, list[dict[int, str or int or bool]]]:
 		return {
 			EnumMadHatterIndicators.BBANDS: [
@@ -154,7 +154,7 @@ class MadHatterBot(Optimize, FineTune, Menus):
 		bot = self.set_min_trade_amount(bt)
 		return bot
 
-	def set_min_trade_amount(bot):
+	def set_min_trade_amount(self, bot):
 		for x in bot.botLogBook:
 			if "Minimum trade amount: " in x:
 				a = x.partition("Minimum trade amount: ")
