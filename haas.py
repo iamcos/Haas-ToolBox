@@ -118,7 +118,6 @@ class Haas:
 
         return bots_as_choices
 
-    @staticmethod
     def convert_trades_to_dataframe(bot) -> DataFrame:
         completed_orders: list = [
             {

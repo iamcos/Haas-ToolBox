@@ -93,7 +93,6 @@ class MadHatterBot(Optimize, FineTune, Menus):
 					bot.guid, current_type, fieldNo, value
 				)
 
-	@staticmethod
 	def _generate_safeties_config() -> dict[EnumMadHatterSafeties, int]:
 		return {
 			EnumMadHatterSafeties(0): 0,
@@ -101,7 +100,6 @@ class MadHatterBot(Optimize, FineTune, Menus):
 			EnumMadHatterSafeties(2): 0
 		}
 
-	@staticmethod
 	def _generate_indicators_config(config: DataFrame) -> \
 			dict[EnumMadHatterIndicators, list[dict[int, str or int or bool]]]:
 		return {
@@ -141,7 +139,6 @@ class MadHatterBot(Optimize, FineTune, Menus):
 			self.haas.client.customBotApi.backtest_custom_bot(bot.guid, self.read_ticks())
 			self.haas.client.customBotApi.clone_custom_bot_simple(bot.accountId, bot.guid, name)
 
-	@staticmethod
 	def prepare_configs(configs):
 		configs.loc[0:-1, "obj"] = None
 		configs.loc[0:-1, "roi"] = 0
@@ -157,7 +154,6 @@ class MadHatterBot(Optimize, FineTune, Menus):
 		bot = self.set_min_trade_amount(bt)
 		return bot
 
-	@staticmethod
 	def set_min_trade_amount(bot):
 		for x in bot.botLogBook:
 			if "Minimum trade amount: " in x:
