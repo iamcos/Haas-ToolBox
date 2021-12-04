@@ -7,6 +7,7 @@ from InquirerPy import inquirer
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 import pandas as pd
 from haasomeapi.HaasomeClient import HaasomeClient
+<<<<<<< Updated upstream
 from scripts.configmanager import ConfigManager
 from configsstorage import ConfigsManagment
 from haasomeapi.enums.EnumTradeType import EnumTradeType
@@ -26,6 +27,40 @@ class Haas(ConfigManager,ConfigsManagment):
 			self.ip = None
 			self.secret = None
 			self.check_config()
+=======
+from pandas.core.frame import DataFrame
+from scripts.config_manager import ConfigManager
+from bots_creator import BotsCreator
+
+"""
+Haasonline trading software interaction class: get bots list, market data,
+create bots and configure their parameters,
+initiate back tests and so forth can be done through this class
+"""
+
+
+# TODO: Make SRP
+# TODO: Rename pass more info
+class Haas:
+
+    def __init__(self) -> None:
+
+        self.configs_management: BotsCreator = BotsCreator()
+        self.config_manager: ConfigManager = ConfigManager()
+        self.config_parser: ConfigParser = self.config_manager.get_config_data()
+
+
+
+        self.bot = None
+        self.bots = None
+        self.bot_type = None
+
+
+        self.client: HaasomeClient = self.config_manager.check_config()
+        self.ticks: int = self.config_manager.read_ticks()
+
+
+>>>>>>> Stashed changes
 
 			self.c = self.client()
 			self.ticks = self.read_ticks()
@@ -82,9 +117,15 @@ class Haas(ConfigManager,ConfigsManagment):
 				if x.botType == botType
 				]
 
+<<<<<<< Updated upstream
 			bots.sort(key=lambda x:x.name,reverse=False)
 			b2 = [{'name':f"{i.name} {i.priceMarket.primaryCurrency}-"
 				f"{i.priceMarket.secondaryCurrency}, {i.roi}",'value':i} for i in bots]
+=======
+    def generate_client(self) -> HaasomeClient:
+        # print('CM',self.config_manager.__dict__)
+        return HaasomeClient(self.config_manager.ip, self.config_manager.secret)
+>>>>>>> Stashed changes
 
 			if multi != True:
 				bots = inquirer.select(

@@ -1,7 +1,11 @@
 from InquirerPy import inquirer
 from numpy import NaN
 import pandas as pd
+<<<<<<< Updated upstream:menus.py
 from mh_share import ShareMH
+=======
+from bots.mad_hatter.share_mad_hatter import ShareMadHatter
+>>>>>>> Stashed changes:bots/mad_hatter/menus.py
 
 
 class Menus:
@@ -29,7 +33,9 @@ class Menus:
                 choices=live_menu,
             ).execute()
             if response == "Select Bots":
-                bot = self.bot_selector(15, multi=True)
+                bot = self.bot_selector.bot_selector(15, multi=True)
+
+
             elif response == "Select config file":
                 file = self.csv_file_selector()
                 # self.configs.roi = NaN
@@ -80,12 +86,17 @@ class Menus:
 
             elif response == "Start Backtesting":
                 if self.configs is not pd.DataFrame:
+<<<<<<< Updated upstream:menus.py
                     self.configs = pd.read_csv("./bots.csv")
+=======
+                    self.configs = pd.read_csv("config/bots.csv")
+>>>>>>> Stashed changes:bots/mad_hatter/menus.py
                     self.configs.roi = NaN
-                for bot in self.bots:
-                    self.bot = bot
-                    self.bt()
-                    self.create_top_bots()
+                if type(bot) == list:
+                    for b in bot:
+                        self.bot = b
+                        self.bt()
+                        self.create_top_bots()
 
 
 

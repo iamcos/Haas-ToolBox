@@ -40,3 +40,9 @@ test-output.xml
 *.obj
 *.obj
 version
+<<<<<<< Updated upstream
+=======
+pyrightconfig.json
+*.md
+>>>>>>> Stashed changes
+*.txt

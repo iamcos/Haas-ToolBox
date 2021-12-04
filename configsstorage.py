@@ -6,7 +6,17 @@ import os
 import datetime
 from InquirerPy import inquirer
 
+<<<<<<< Updated upstream:configsstorage.py
 class ConfigsManagment():
+=======
+# from haas import Haas
+
+
+class BotsCreator:
+    # haas: Haas = Haas()
+
+
+>>>>>>> Stashed changes:bots_creator.py
     def create_bots_from_csv(self):
         exchange = self.select_exchange()
         market = self.market_selector(exchange)
