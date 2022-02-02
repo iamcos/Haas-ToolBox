@@ -4,7 +4,7 @@
 .DS_Store
 pyrightconfig.json
 
-misc/
+api/Misc/
 env/
 bt_results/
 dist/

@@ -2,9 +2,8 @@ import time
 
 import pandas as pd
 from haasomeapi.enums.EnumPriceSource import EnumPriceSource
-from haas import Haas
+from api.Haas import Haas
 from ratelimit import limits, sleep_and_retry
-from haasomeapi.enums.EnumTradeType import EnumTradeType
 
 
 class MarketData(Haas):
