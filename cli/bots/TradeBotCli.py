@@ -67,7 +67,7 @@ class TradeBotCli(BotCli):
         tradebots: list[TradeBot] = self.manager.get_available_tradebots()
         log.info(f"{tradebots=}")
         bots_chain: list[dict[str, Union[str, TradeBot]]] = []
-        price_source_format: str = "{} | {}"
+        price_source_format: str = "{}"
 
         # log.info(f"{tradebots[0].name=}")
         # price_source_format: str = """{{i}.name}"""
@@ -86,7 +86,7 @@ class TradeBotCli(BotCli):
         log.info("salfkj")
         action: TradeBot = inquirer.select(
             message="Select Trade Bot",
-            choices=[bots_chain, "Refresh Botlist"],
+            choices=[*bots_chain, "Refresh Botlist"],
         ).execute()
 
         return action
