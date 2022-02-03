@@ -21,7 +21,7 @@ class TradeBotCli(BotCli):
         self.indicators_names: tuple[tuple[str, str], ...] = tuple((
             ("indicator", "Indicators"),
             ("insurance", "Insurances"),
-            ("safety", "Safeties"),
+            ("safety", "Safeties" ),
         ))
 
         self.tradebot_setting_options: dict[str, Callable] = dict({
