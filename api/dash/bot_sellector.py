@@ -16,7 +16,7 @@ class BotSellector:
 		return bot.result
 	def get_trade_bots(self):
 		#Returns all Trade Bots as a list
-		allbots = self.c().tradeBotApi.all_tradebots().result
+		allbots = self.c().tradeBotApi.get_all_trade_bots().result
 		return allbots
 
 	def get_all_custom_bots(self):

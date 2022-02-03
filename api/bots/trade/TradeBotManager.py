@@ -26,7 +26,7 @@ class TradeBotManager:
     def get_available_tradebots(self) -> list[TradeBot]:
         # TODO: Maybe use caching, not every time request
         # TODO: Add error catching
-        tradebots_res: HaasomeClientResponse = self.tradebot_api.all_tradebots()
+        tradebots_res: HaasomeClientResponse = self.tradebot_api.get_all_trade_bots()
 
         log.info(
             f'ErrorCode: {tradebots_res.errorCode}, '
