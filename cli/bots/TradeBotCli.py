@@ -34,6 +34,7 @@ class TradeBotCli(BotCli):
         if not self.manager.tradebot_selected():
             log.info("Trade bot isn't selected")
             self.manager.set_tradebot(self._select_tradebot())
+            self.menu()
         else:
             log.info("Trade bot selected")
             user_selection: str = inquirer.select(
@@ -120,6 +121,7 @@ class TradeBotCli(BotCli):
         choices: list[InterfacesForCli] = []
 
         for indicator in self.indicators_names:
+            log.info('Indicator', indicator)
             indicators: list[Interfaces] = self.manager \
                                 .get_available_interfaces(indicator[1].lower())
 
