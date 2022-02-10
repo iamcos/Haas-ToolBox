@@ -1,3 +1,4 @@
+from inspect import getargs
 from typing import Any, Callable, NamedTuple, Union, cast
 from InquirerPy import get_style, inquirer
 from InquirerPy.prompts.list import ListPrompt
@@ -14,14 +15,20 @@ from cli.bots.BotCli import BotCli
 
 InterfacesForCli = Union[Safety, Indicator, Insurance, Separator, str]
 
+
+class InterfaceName(NamedTuple):
+    name: str
+    uppercase_name: str
+
+
 class TradeBotCli(BotCli):
     def __init__(self) -> None:
         self.manager: TradeBotManager = TradeBotManager()
 
-        self.indicators_names: tuple[tuple[str, str], ...] = tuple((
-            ("indicator", "Indicators"),
-            ("insurance", "Insurances"),
-            ("safety", "Safeties" ),
+        self.interfaces_names: tuple[InterfaceName, ...] = tuple((
+            InterfaceName("indicator", "Indicators"),
+            InterfaceName("insurance", "Insurances"),
+            InterfaceName("safety", "Safeties" ),
         ))
 
         self.tradebot_setting_options: dict[str, Callable] = dict({
@@ -31,20 +38,41 @@ class TradeBotCli(BotCli):
         })
 
     def menu(self) -> None:
+        self._choose_tradebot()
+
+        selection_options: str = inquirer.select(
+            message="Select action:",
+            choices=list(self.tradebot_setting_options.keys())
+        ).execute()
+
+
+        # TODO: Add 'Back' option
+        user_choice: Union[TradeBot, Interfaces, KeyboardInterrupt] = \
+            self.tradebot_setting_options[selection_options]()
+
+        self._process_user_choice(user_choice)
+
+    def _choose_tradebot(self) -> None:
         if not self.manager.tradebot_selected():
             log.info("Trade bot isn't selected")
             self.manager.set_tradebot(self._select_tradebot())
             self.menu()
         else:
             log.info("Trade bot selected")
-            user_selection: str = inquirer.select(
-                message="Select action:",
-                choices=list(self.tradebot_setting_options.keys())
-            ).execute()
+            return
 
-            # TODO: Add 'Back' option
-            self.tradebot_setting_options[user_selection]()
+    def _process_user_choice(self,
+                choice: Union[TradeBot, Interfaces, KeyboardInterrupt]) -> None:
 
+        if type(choice) is TradeBot:
+            log.info("Choosed TradeBot")
+            self.manager.set_tradebot(cast(TradeBot, choice))
+
+        elif type(choice) in [Indicator, Safety, Insurance]:
+            log.info("Choosed Interface")
+
+        else:
+            log.info("Bye :)")
 
     def _select_tradebot(self) -> TradeBot:
         log.info("Starting selecting trade bot...")
@@ -63,35 +91,26 @@ class TradeBotCli(BotCli):
             self._wait_creating()
             return self._select_tradebot()
 
+
     def _process_selecting_bot(self) -> Union[TradeBot, str]:
         log.info("Starting processing selecting bot..")
-        tradebots: list[TradeBot] = self.manager.get_available_tradebots()
-        log.info(f"{tradebots=}")
-        bots_chain: list[dict[str, Union[str, TradeBot]]] = []
-        price_source_format: str = "{}"
 
-        # log.info(f"{tradebots[0].name=}")
-        # price_source_format: str = """{{i}.name}"""
-        # log.info(f"{price_source_format.format(tradebots[0])=}")
+        tradebots: list[TradeBot] = self.manager.get_available_tradebots()
+        bots_chain: list[dict[str, Union[str, TradeBot]]] = []
+        log.info(f"{tradebots=}")
 
         for i in tradebots:
             bots_chain.append({
-                "name": price_source_format.format(
-                    i.name,
-                    # FIXME
-                    # EnumPriceSource(i.priceMarket.priceSource)
-                ),
+                "name": f"{i.name} {i.priceMarket.displayName}",
                 "value": i,
             })
 
-        log.info("salfkj")
         action: TradeBot = inquirer.select(
             message="Select Trade Bot",
             choices=[*bots_chain, "Refresh Botlist"],
         ).execute()
 
         return action
-
 
     def _wait_creating(self) -> None:
         msg: str = "NO TRADE BOT DETECTED! Please create one by hand"
@@ -107,12 +126,12 @@ class TradeBotCli(BotCli):
         ).execute()
 
 
+    # Interface selection methods
     def _select_interface(self) -> Interfaces:
         choices: list[InterfacesForCli] = self._interfaces_menu_options()
         action = inquirer.select(
             message="Select Interface:",
             choices=choices,
-            style=get_style({"seprator": "#658bbf bg:#ffffff"}),
         )
         return action.execute()
 
@@ -120,24 +139,73 @@ class TradeBotCli(BotCli):
     def _interfaces_menu_options(self) -> list[InterfacesForCli]:
         choices: list[InterfacesForCli] = []
 
-        for indicator in self.indicators_names:
-            log.info('Indicator', indicator)
-            indicators: list[Interfaces] = self.manager \
-                                .get_available_interfaces(indicator[1].lower())
+        for interface_name in self.interfaces_names:
+            log.info(f"Interface name: {interface_name}")
 
-            selected_indicator = self._display_indicator_selector(
-                # indicator[0],
-                # (indicator[1], indicators)
-                indicator, indicators
+            interfaces: tuple[Interfaces] = self.manager.get_available_interfaces(
+                interface_name.uppercase_name.lower()
             )
+            log.info(f"{interfaces=}")
 
-            choices.append(selected_indicator)
+            iterface_selector = self._display_indicator_selector(
+                interface_name, interfaces
+            )
+            log.info(f"{iterface_selector=}")
 
+            choices.extend(iterface_selector)
+
+        log.info(f"{choices=}")
         choices.extend([Separator(""), "Back"])
 
         return choices
 
+    def _display_indicator_selector(self,
+                                    interface_name: InterfaceName,
+                                    interfaces: tuple[Interfaces]
+                                    ) -> list[InterfacesForCli]:
+        if interfaces:
+            log.info("Interfaces size more than 0")
+            return self._menu_for_choosing_indicator(
+                interface_name,
+                interfaces
+            )
+        else:
+            log.info("Interfaces size less than 0")
+            msg: str = f"No {interface_name.uppercase_name} to select"
+            return self._get_separated_msg(msg)
 
+    def _menu_for_choosing_indicator(self, interface_name: InterfaceName,
+                interfaces: tuple[Interfaces, ...]) -> list[InterfacesForCli]:
+
+        # name_format: str = "  {EnumIndicator(indicator." + \
+        #                     interface_name + "Type).name}"
+
+        indicators_menu: list[Any] = list([
+            Separator(""),
+            Separator(interface_name.uppercase_name + ":")
+        ])
+
+        for i in interfaces:
+            if i.enabled:
+                name: str = getattr(i, interface_name.name + "Name")
+                indicators_menu.append({
+                    "name": " " * 4 + name,
+                    "value": i
+                })
+            else:
+                indicators_menu.append(Separator(str(i) + " DISABLED"))
+
+        log.info(f"")
+        return indicators_menu
+
+    def _get_separated_msg(self, msg: str) -> list[InterfacesForCli]:
+        return list([
+            Separator(""),
+            Separator(msg),
+        ])
+
+
+    # Interfaces settings method
     def _parameter_selector(
             self, interfaces: list[IndicatorOption]) -> IndicatorOption:
 
@@ -157,48 +225,6 @@ class TradeBotCli(BotCli):
         log.info("selected_parameter number", interfaceParameters.__dict__)
 
         return interfaceParameters
-
-    def _display_indicator_selector(self, indicator: tuple[str, str], tradebot_indicators) -> list[InterfacesForCli]:
-        # TODO: Add method for getting tradebot indicators to manager
-        # tradebot_indicators: tuple[str, list]
-        if len(tradebot_indicators) > 0:
-            return self._menu_for_choosing_indicator(
-                indicator[0], tradebot_indicators
-            )
-        else:
-            msg: str = f"No {tradebot_indicators[0]} to select"
-            return self._get_separated_msg(msg )
-
-    def _get_separated_msg(self, msg: str) -> list[Separator]:
-        return list([
-            Separator(""),
-            Separator(msg),
-            Separator(""),
-        ])
-
-    def _menu_for_choosing_indicator(self, indicator_name: str,
-                tradebot_indicators: tuple[str, list]) -> list[Any]:
-
-        name_format: str = "  {EnumIndicator(indicator." + \
-                            indicator_name + "Type).name}"
-
-        indicators_menu: list[Any] = list([
-            Separator(""),
-            Separator(tradebot_indicators[0] + ":")
-        ])
-
-        for i in tradebot_indicators[1]:
-            if i.enabled:
-                indicators_menu.append({
-                    "name": name_format.format(i),
-                    "value": i
-                })
-            else:
-                indicators_menu.append(
-                    Separator(indicator_name.format(i) + " DISABLED")
-                )
-
-        return indicators_menu
 
     def _get_indicator_options(self,
                                source) -> Union[list[IndicatorOption], None]:
@@ -228,6 +254,7 @@ class TradeBotCli(BotCli):
                 "Select another parameter",
             ],
         )
+
 
     class TradeBotBackTestMethods(NamedTuple):
         backtest_up: Callable
@@ -286,11 +313,11 @@ class TradeBotCli(BotCli):
 
     @staticmethod
     def backtest_10_steps_down(tradebot: TradeBot) -> TradeBot:
-        return backtest_steps(tradebot, 10, 0)
+        return TradeBotCli.backtest_steps(tradebot, 10, 0)
 
     @staticmethod
     def backtest_10_steps_up(tradebot: TradeBot) -> TradeBot:
-        return backtest_steps(tradebot, 10, 1)
+        return TradeBotCli.backtest_steps(tradebot, 10, 1)
 
     @staticmethod
     def backtest_steps(tradebot: TradeBot, steps: int, direction: int) -> TradeBot:

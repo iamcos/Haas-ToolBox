@@ -23,10 +23,13 @@ class TradeBotManager:
     def set_tradebot(self, tradebot: TradeBot):
         self._tradebot = tradebot
 
+    def clear_selected_tradebot(self):
+        self._tradebot = None
+
     def get_available_tradebots(self) -> list[TradeBot]:
         # TODO: Maybe use caching, not every time request
         # TODO: Add error catching
-        tradebots_res: HaasomeClientResponse = self.tradebot_api.get_all_trade_bots()
+        tradebots_res: HaasomeClientResponse = self.tradebot_api.all_tradebots()
 
         log.info(
             f'ErrorCode: {tradebots_res.errorCode}, '
@@ -35,9 +38,9 @@ class TradeBotManager:
 
         return tradebots_res.result
 
-    def get_available_interfaces(self, indicator: str) -> list[Interfaces]:
+    def get_available_interfaces(self, indicator: str) -> tuple[Interfaces]:
         """
         Gets values of all indicators, insurances and safeties
         from current tradebot
         """
-        return getattr(self._tradebot, indicator).values()
+        return tuple(getattr(self._tradebot, indicator).values())

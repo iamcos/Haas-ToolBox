@@ -4,11 +4,11 @@ from loguru import logger as log
 
 
 def main():
-    try:
+    # try:
         cli_context.main_menu.start_session()
-    except Exception as e:
-        log.error(e)
-        write_error_log(str(e))
+    # except Exception as e:
+    #     log.error(e)
+    #     write_error_log(str(e))
 
 
 def write_error_log(error: str):
