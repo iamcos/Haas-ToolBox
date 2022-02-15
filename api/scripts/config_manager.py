@@ -1,7 +1,7 @@
 from configparser import NoSectionError, SafeConfigParser
 
 from InquirerPy import inquirer
-import datetime
+from datetime import datetime
 from loguru import logger as log
 
 
@@ -9,12 +9,11 @@ class ConfigManager:
 
     def __init__(self):
         self.config_parser: SafeConfigParser = SafeConfigParser()
-        # TODO: add full path 
         self.config_parser.read('config.ini')
         self.url, self.secret = self._get_ip_and_secret()
 
     def _get_ip_and_secret(self) -> tuple[str, str]:
-        if 'SERVER DATA' in self.config_parser:
+        if "SERVER DATA" in self.config_parser:
             url: str = self.config_parser.get("SERVER DATA", "server_address")
             secret: str = self.config_parser.get("SERVER DATA", "secret")
             return (url, secret)
@@ -28,43 +27,40 @@ class ConfigManager:
             return (url, secret)
 
     def _save_new_url_secret(self, url: str, secret: str) -> None:
-        log.info(f"{self.config_parser.sections()=}")
         self.config_parser.set("SERVER DATA", "server_address", url)
         self.config_parser.set("SERVER DATA", "secret", secret)
 
-        with open("config.ini", "w") as f:
-            self.config_parser.write(f)
+        self.write_file()
 
     def write_date(self):
+        today = datetime.today()
+        choices = (
+            ("Write Year: ", str(today.year)),
+            ("Write month: ", str(today.month)),
+            ("Write day: ", str(today.day)),
+            ("Write  hour: ", str(today.hour)),
+            ("Write min: ", str(today.minute))
+        )
 
-        choices = [
-            f"Write Year ({str(datetime.datetime.today().year)}): ",
-            f"Write month (current is {str(datetime.datetime.today().month)}): ",
-            f"Write day (today is {str(datetime.datetime.today().day)}): ",
-            f"Write  hour (now is {str(datetime.datetime.today().hour)}): ",
-            f"Write min (now {str(datetime.datetime.today().minute)}): ",
+        time: list[str] = [
+            inquirer.text(message=msg[0], default=msg[1]).execute()
+            for msg in choices
         ]
-
-        y = inquirer.text(message=choices[0]).execute()
-        m = inquirer.text(message=choices[1]).execute()
-        d = inquirer.text(message=choices[2]).execute()
-        h = inquirer.text(message=choices[3]).execute()
-        min = inquirer.text(message=choices[4]).execute()
 
         self.config_parser.add_section("BT DATE")
         self.config_parser["BT DATE"] = {
-            "year": y,
-            "month": m,
-            "day": d,
-            "hour": h,
-            "min": min,
+            "year": time[0] if time[0] else str(today.year),
+            "month": time[1] if time[1] else str(today.month),
+            "day": time[2] if time[2] else str(today.day),
+            "hour": time[3] if time[3] else str(today.hour),
+            "min": time[4] if time[4] else str(today.minute),
         }
 
         self.write_file()
 
     def read_ticks(self):
         try:
-            dt_from = datetime.datetime(
+            dt_from = datetime(
                 int(self.config_parser.get("BT DATE", "year")),
                 int(self.config_parser.get("BT DATE", "month")),
                 int(self.config_parser.get("BT DATE", "day")),
@@ -72,15 +68,15 @@ class ConfigManager:
                 int(self.config_parser.get("BT DATE", "min")),
             )
 
-            delta = datetime.datetime.now() - dt_from
+            delta = datetime.now() - dt_from
             delta_minutes = delta.total_seconds() / 60
 
             return int(delta_minutes)
         except NoSectionError as e:
-            log.warning(f"No BT DATE section, requesting grom user... {e=}")
+            log.warning(f"No BT DATE section, requesting from user...")
             self.write_date()
             return self.read_ticks()
 
     def write_file(self) -> None:
-        with open("config.ini", "a") as f:
+        with open("config.ini", "w") as f:
             self.config_parser.write(f)
