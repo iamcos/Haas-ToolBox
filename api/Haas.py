@@ -10,7 +10,6 @@ from api.scripts.config_manager import ConfigManager
 from api.bots_creator import BotsCreator
 
 
-# TODO: Make SRP
 # TODO: Rename pass more info
 class Haas:
     """
@@ -30,7 +29,6 @@ class Haas:
 
         self.client: HaasomeClient = self.generate_client()
         self.ticks: int = self.config_manager.read_ticks()
-
         # self.config_manager._check_config()
 
     def get_accounts_with_details(self) -> list:
@@ -45,7 +43,7 @@ class Haas:
         name_format: str = """{EnumPriceSource(account.connectedPriceSource).name} {account.name} {EnumPlatform(
         account.platformType).name} """
 
-        accounts_inquirer_format: list[dict[str, list]] = [
+        accounts_inquirer_format: list[dict[str, Any]] = [
             {
                 "name": name_format.format(bot=account),
                 "value": account,
