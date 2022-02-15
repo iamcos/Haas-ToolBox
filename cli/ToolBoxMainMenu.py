@@ -1,7 +1,9 @@
 """https://github.com/tmbo/questionary - inquirer analog"""
+import functools
 from typing import Any
 from InquirerPy import inquirer
 from InquirerPy.prompts.list import ListPrompt
+from cli.bots.BotCli import BotCli
 # from api.bots.flash_crash import FlashCrashBotManager
 # from api.bots.interactive.InteractiveBotManager import InteractiveBotManager
 # from api.bots.mad_hatter.MadHatterBotManager import MadHatterBotManager
@@ -18,8 +20,7 @@ class ToolBoxMainMenu:
     def __init__(self) -> None:
         # TODO: Use CLI classes here, not managers !
         self._start_message: str = "Choose action: "
-        # FIXME: Delete Nones!
-        self._bot_chain: dict[str, type] = {
+        self._bot_chain: dict[str, type[BotCli]] = {
             # Fully configurable
             "Trade Bots": TradeBotCli,
             # Custom
@@ -41,10 +42,11 @@ class ToolBoxMainMenu:
 
         self._process_main_menu_response(response)
 
+    @functools.lru_cache
     def _process_main_menu_response(self, response: str) -> None:
-        self._bot_chain[response]().menu()
+        return self._bot_chain[response]().menu()
 
 
-class QuitOption:
+class QuitOption(BotCli):
     def menu(self):
         KeyboardInterrupt()
