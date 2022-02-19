@@ -122,7 +122,7 @@ class TradeBotCli(BotCli):
         ).execute()
 
         if type(action) is str:
-            return self._process_selecting_bot(bots_chain)
+            return self._select_tradebot()
 
         return cast(TradeBot, action)
 
