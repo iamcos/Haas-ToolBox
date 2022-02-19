@@ -21,7 +21,7 @@ class ConfigManager:
             self.config_parser.add_section("SERVER DATA")
             ip = inquirer.text(message="Type Haas Local api IP like so: 127.0.0.1", default="127.0.0.1").execute()
             port = inquirer.text(message="Type Haas Local api PORT like so: 8095", default="8095").execute()
-            secret = inquirer.text(message="Type Haas Local Key (Secret) like so: 123", ).execute()
+            secret = inquirer.text(message="Type Haas Local Key (Secret) like so: 123", default="123").execute()
             url = f"http://{ip}:{port}"
             self._save_new_url_secret(url, secret)
             return (url, secret)
