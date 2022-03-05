@@ -9,7 +9,8 @@ from cli.bots.BotCli import BotCli
 # from api.bots.mad_hatter.MadHatterBotManager import MadHatterBotManager
 # from api.TradingViewManager import TradingViewManager
 # from api.bots.scalper.ScalperBotManager import ScalperBotManager
-from cli.bots.TradeBotCli import TradeBotCli
+from cli.bots.tradebot.TradeBotCli import TradeBotCli
+from cli.bots.madhatter.MadHatterCli import MadHatterCli
 
 
 class ToolBoxMainMenu:
@@ -23,6 +24,7 @@ class ToolBoxMainMenu:
         self._bot_chain: dict[str, type[BotCli]] = {
             # Fully configurable
             "Trade Bots": TradeBotCli,
+            "Mad-Hatter Bots": MadHatterCli,
             # Custom
             # "[Not working] Mad-Hatter Bots": None,
             # "[Not working] Scalper Bots": None,

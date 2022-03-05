@@ -9,7 +9,7 @@ class ConfigManager:
 
     def __init__(self):
         self.config_parser: SafeConfigParser = SafeConfigParser()
-        self.config_parser.read('config.ini')
+        self.config_parser.read('./api/config/config.ini')
         self.url, self.secret = self._get_ip_and_secret()
 
     def _get_ip_and_secret(self) -> tuple[str, str]:
@@ -78,5 +78,5 @@ class ConfigManager:
             return self.read_ticks()
 
     def write_file(self) -> None:
-        with open("config.ini", "w") as f:
+        with open("./api/config/config.ini", "w") as f:
             self.config_parser.write(f)

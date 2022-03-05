@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 from typing import Any
 from haasomeapi.dataobjects.custombots.BaseCustomBot import BaseCustomBot
@@ -9,20 +10,20 @@ from haasomeapi.enums.EnumMadHatterSafeties import EnumMadHatterSafeties
 from pandas.core.frame import DataFrame
 from ratelimit import limits, sleep_and_retry
 from sqlalchemy.util.deprecations import deprecated
+from api.scripts.config_manager import ConfigManager
 
 import madhatter_consts
-from api.bots.mad_hatter.finetune import FineTune
 from api.Haas import Haas
 from market_data import MarketData
-from menus import Menus
-from optimisation import Optimize
+
+from api.MainContext import main_context
 
 
-# TODO: GO to composition
-class MadHatterBotManager(Optimize, FineTune, Menus):
+# TODO: Go to composition
+class MadHatterBotManager:
 
     def __init__(self):
-        self.haas: Haas = Haas()
+        self.haas: Haas = main_context.haas
         self.stoploss_range: list[float] = []
         self.num_configs: int
         self.limit: int
@@ -36,7 +37,8 @@ class MadHatterBotManager(Optimize, FineTune, Menus):
         self.intervals: list[int] = madhatter_consts.intervals
         self.columns: list[str] = madhatter_consts.columns
         self.possible_profit: int
-        self.ticks: int
+        self.config_manager: ConfigManager = main_context.config_manager
+        self.ticks: int = self.config_manager.read_ticks()
 
     @sleep_and_retry
     @limits(calls=5, period=1)
@@ -93,15 +95,16 @@ class MadHatterBotManager(Optimize, FineTune, Menus):
                     bot.guid, current_type, fieldNo, value
                 )
 
-    def _generate_safeties_config(self) -> dict[EnumMadHatterSafeties, int]:
-        return {
-            EnumMadHatterSafeties(0): 0,
-            EnumMadHatterSafeties(1): 0,
-            EnumMadHatterSafeties(2): 0
-        }
+    def _generate_safeties_config(
+        self
+    ) -> defaultdict[EnumMadHatterSafeties, int]:
+        return defaultdict(lambda: 0)
 
-    def _generate_indicators_config(self, config: DataFrame) -> \
-            dict[EnumMadHatterIndicators, list[dict[int, str or int or bool]]]:
+    def _generate_indicators_config(
+        self,
+        config: DataFrame
+    ) -> dict[EnumMadHatterIndicators, list[dict[int, str | int | bool]]]:
+
         return {
             EnumMadHatterIndicators.BBANDS: [
                 {0: int(config['bbl'])},
@@ -137,14 +140,15 @@ class MadHatterBotManager(Optimize, FineTune, Menus):
 
             self.setup_bot_from_df(bot, configs.iloc[c])
             self.haas.client.customBotApi.backtest_custom_bot(
-                bot.guid, self.read_ticks())
+                bot.guid, self.config_manager.read_ticks())
             self.haas.client.customBotApi.clone_custom_bot_simple(
                 bot.accountId, bot.guid, name)
 
-    def prepare_configs(configs):
+    def prepare_configs(self, configs: DataFrame) -> DataFrame:
         configs.loc[0:-1, "obj"] = None
         configs.loc[0:-1, "roi"] = 0
 
+        # FIXME: Do without loop
         for c in configs.columns:
             if c not in madhatter_consts.cols:
                 configs.drop(c, axis=1, inplace=True)
@@ -153,9 +157,10 @@ class MadHatterBotManager(Optimize, FineTune, Menus):
 
     def check_bot_trade_amount(self, bot):
         bt = self.haas.client.customBotApi.backtest_custom_bot(
-            bot.guid, self.ticks).result
-        bot = self.set_min_trade_amount(bt)
-        return bot
+            bot.guid, self.ticks
+        ).result
+
+        return self.set_min_trade_amount(bt)
 
     def set_min_trade_amount(self, bot):
         for x in bot.botLogBook:
@@ -198,14 +203,14 @@ class MadHatterBotManager(Optimize, FineTune, Menus):
         return int(self.haas.config_parser["MH_LIMITS"].get("limit_to_create"))
 
     def _cfg_stoploss_range(self) -> list[float]:
-        return [
+        return list([
             float(self.haas.config_parser["MH_LIMITS"].get(
                 "stoploss_range_start")),
             float(self.haas.config_parser["MH_LIMITS"].get(
                 "stoploss_range_stop")),
             float(self.haas.config_parser["MH_LIMITS"].get(
                 "stoploss_range_step")),
-        ]
+        ])
 
     def _cfg_selected_intervals(self) -> Any:
         return json.loads(self.haas.config_parser["MH_LIMITS"].get("selected_intervals"))
@@ -233,3 +238,4 @@ class MadHatterBotManager(Optimize, FineTune, Menus):
 
 if __name__ == "__main__":
     mh = MadHatterBotManager().menu()
+
