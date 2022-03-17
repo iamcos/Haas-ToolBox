@@ -1,12 +1,15 @@
-from typing import DefaultDict, NamedTuple
+from dataclasses import dataclass
+from typing import DefaultDict
 from api.bots.BotManager import InterfaceGuid
 
 
-class BotRoiData(NamedTuple):
+@dataclass
+class BotRoiData:
     value: str | int
     ticks: int
     option_num: int
-    roi: float
+    intreface_guid: str
+    roi: float = 0.0
 
 
 class BacktestsCache:
@@ -15,4 +18,5 @@ class BacktestsCache:
             InterfaceGuid, set[BotRoiData]] = DefaultDict(lambda: set())
 
     def add_data(self, data: BotRoiData) -> None:
-        pass
+        self.roi_values[data.intreface_guid].add(data)
+
