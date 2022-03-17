@@ -1,10 +1,8 @@
+from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from cli.bots.BotCli import BotCli
-from loguru import logger as log
 
 
 class MadHatterCli(BotCli):
     def __init__(self) -> None:
-        pass
+        super().__init__(MadHatterBot)
 
-    def menu(self) -> None:
-        log.info("Starting working with MadHatterBot")
