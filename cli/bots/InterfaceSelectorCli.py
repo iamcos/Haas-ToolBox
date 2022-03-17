@@ -28,7 +28,6 @@ class InterfaceSelectorCli:
     def _interfaces_menu_options(self) -> list[InterfacesForCli]:
         choices: list[InterfacesForCli] = []
 
-        # TODO: Add manager method to get available interfaces
         for interface_name in self.manager.get_available_interface_types():
             log.info(f"Interface name: {interface_name}")
 
