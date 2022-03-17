@@ -1,5 +1,6 @@
 from typing import Type
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
+from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
 from api.bots.BacktestsCache import BacktestsCache, BotRoiData
 from api.bots.BotWrapper import BotWrapper
@@ -50,4 +51,7 @@ class MadHatterBotManager(BotManager):
 
     def bot_name(self) -> str:
         return "Mad Hatter Bot"
+
+    def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
+        return tuple([Indicator])
 

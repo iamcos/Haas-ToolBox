@@ -11,7 +11,7 @@ class BotManager():
     def bot_not_selected(self) -> bool: pass
 
     @abstractmethod
-    def set_bot(self, bot: Bot)-> None: pass
+    def set_bot(self, bot: Bot) -> None: pass
 
     @abstractmethod
     def get_available_bots(self) -> list[Bot]: pass
@@ -31,3 +31,7 @@ class BotManager():
 
     @abstractmethod
     def bot_name(self) -> str: pass
+
+    @abstractmethod
+    def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
+        pass

@@ -91,4 +91,6 @@ class TradeBotManager(BotManager):
     def bot_name(self) -> str:
         return "Trade Bot"
 
+    def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
+        return tuple([Indicator, Safety, Insurance])
 
