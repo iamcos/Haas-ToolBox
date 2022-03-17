@@ -72,7 +72,7 @@ class ConfigManager:
             delta_minutes = delta.total_seconds() / 60
 
             return int(delta_minutes)
-        except NoSectionError as e:
+        except NoSectionError:
             log.warning(f"No BT DATE section, requesting from user...")
             self.write_date()
             return self.read_ticks()
