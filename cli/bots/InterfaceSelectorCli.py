@@ -1,6 +1,3 @@
-from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
-from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
-from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from api.bots.BotManager import BotManager
 from api.bots.BotApiProvider import Interfaces
 from loguru import logger as log
@@ -32,7 +29,7 @@ class InterfaceSelectorCli:
         choices: list[InterfacesForCli] = []
 
         # TODO: Add manager method to get available interfaces
-        for interface_name in (Indicator, Safety, Insurance):
+        for interface_name in self.manager.get_available_interface_types():
             log.info(f"Interface name: {interface_name}")
 
             interfaces: tuple[Interfaces] = self.manager.get_interfaces_by_type(
