@@ -10,10 +10,8 @@ from api.bots.trade.TradeBotIndicatorOptionMethods import TradeBotIndicatorOptio
 
 
 class BotBacktestCli:
-
     def __init__(self, manager: BotManager) -> None:
         self.manager: BotManager = manager
-
 
     def process_backtest(
         self,
