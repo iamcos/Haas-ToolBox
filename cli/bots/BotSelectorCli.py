@@ -46,7 +46,8 @@ class BotSelectorCli:
     def _get_bots_chain(self) -> list[dict[str, Bot | str]]:
         return [
             {
-                "name": f"{bot.name} {bot.priceMarket}",
+                "name": f"{bot.name} {bot.priceMarket.primaryCurrency}/"
+                        + f"{bot.priceMarket.secondaryCurrency}",
                 "value": bot
             }
             for bot in self.manager.get_available_bots()
