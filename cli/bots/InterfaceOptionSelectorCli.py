@@ -1,13 +1,10 @@
-from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
-from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
+from api.bots.BoostedInterface import BoostedInterface
 from api.bots.BotManager import BotManager
 from api.bots.BotApiProvider import Interfaces
 from loguru import logger as log
 from InquirerPy import inquirer
-
-from api.bots.trade.TradeBotApiProvider import TradeBotException
+from cli.bots.config.ignored_options import ignored_options
 
 
 class InterfaceOptionSelectorCli:
@@ -22,7 +19,7 @@ class InterfaceOptionSelectorCli:
 
     def _parameter_selector(
             self,
-            indicator_options: list[IndicatorOption]
+            indicator_options: tuple[IndicatorOption]
     ) -> IndicatorOption:
 
         choices: list[dict[str, str | IndicatorOption]] = [
@@ -44,17 +41,15 @@ class InterfaceOptionSelectorCli:
     def _indicator_options(
             self,
             source: Interfaces
-    ) -> list[IndicatorOption]:
-        if type(source) is Safety:
-            return source.safetyInterface
+    ) -> tuple[IndicatorOption]:
+        boosted: BoostedInterface = BoostedInterface(source)
 
-        elif type(source) is Indicator:
-            return source.indicatorInterface
+        log.info(str(ignored_options[self.bot_name]))
 
-        elif type(source) is Insurance:
-            return source.insuranceInterface
+        filtered_options: tuple[IndicatorOption] = tuple([
+            i for i in boosted.options
+            if i.title not in ignored_options[self.bot_name][boosted.name]
+        ])
 
-        raise TradeBotException(
-            f"No {self.bot_name} interface passed: {type(source)}"
-        )
+        return filtered_options
 
