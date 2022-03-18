@@ -1,21 +1,21 @@
 from __future__ import annotations
 from datetime import datetime
 from functools import cmp_to_key
-from typing import NamedTuple, cast
+from typing import NamedTuple
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from api.bots.trade.TradeBotManager import Interfaces, TradeBotException, TradeBotManager
-from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
-from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
-from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
+from api.bots.BacktestsCache import BotRoiData
+from api.bots.BoostedInterface import BoostedInterface
+from api.bots.BotManager import BotManager
+from api.bots.trade.TradeBotManager import Interfaces, TradeBotException
 from loguru import logger as log
 from api.MainContext import main_context
 
 
-class TradeBotIndicatorOptionMethods:
+class BotBacketster:
 
     def __init__(
             self,
-            manager: TradeBotManager,
+            manager: BotManager,
             interface: Interfaces,
             option: IndicatorOption,
             value: str,
@@ -58,12 +58,7 @@ class TradeBotIndicatorOptionMethods:
             f"{self.option.title}"
             f" : {self.value} ROI:{self.manager.bot_roi()}%")
 
-        self.manager.save_roi(
-            self.value,
-            self.ticks,
-            self.option_num,
-            self.interface.guid
-        )
+        self.manager.save_roi(self._get_bot_roi_data())
 
         self.used_values.add(_CurrentOptionParameters(
             self.manager.bot_roi(),
@@ -84,12 +79,7 @@ class TradeBotIndicatorOptionMethods:
             f"{self.option.title}"
             f" : {self.value} ROI:{self.manager.bot_roi()}%")
 
-        self.manager.save_roi(
-            self.value,
-            self.ticks,
-            self.option_num,
-            self.interface.guid
-        )
+        self.manager.save_roi(self._get_bot_roi_data())
 
     def backtesting_length_x2(self) -> None:
         self.ticks = self.ticks * 2
@@ -165,15 +155,16 @@ class TradeBotIndicatorOptionMethods:
         numbers_after_dot: int = len(str(self.step)[2:])
         return round(float(self.value), numbers_after_dot)
 
-    def _get_indicator_options(self) -> list[IndicatorOption]:
-        if type(self.interface) is Safety:
-            return cast(Safety, self.interface).safetyInterface
-        elif type(self.interface) is Indicator:
-            return cast(Indicator, self.interface).indicatorInterface
-        elif type(self.interface) is Insurance:
-            return cast(Insurance, self.interface).insuranceInterface
+    def _get_indicator_options(self) -> tuple[IndicatorOption]:
+        return BoostedInterface(self.interface).options
 
-        raise TradeBotException(f"{self.interface} not a TradeBot interface")
+    def _get_bot_roi_data(self) -> BotRoiData:
+        return BotRoiData(
+            self.value,
+            self.ticks,
+            self.option_num,
+            self.interface.guid
+        )
 
 
 class _CurrentOptionParameters(NamedTuple):
