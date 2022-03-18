@@ -12,6 +12,7 @@ class BotManagerCreationException(Exception):
 
 
 def get_bot_manager(t: Type):
+    # TODO: Go to dict, delete if else
     if t is TradeBot:
         return TradeBotManager()
     elif t is MadHatterBot:
