@@ -1,10 +1,8 @@
-from dataclasses import dataclass
-from typing import DefaultDict
+from typing import DefaultDict, NamedTuple
 from api.bots.BotManager import InterfaceGuid
 
 
-@dataclass
-class BotRoiData:
+class BotRoiData(NamedTuple):
     value: str | int
     ticks: int
     option_num: int
