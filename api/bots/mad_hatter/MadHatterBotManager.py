@@ -46,7 +46,7 @@ class MadHatterBotManager(BotManager):
     def save_roi(self, data: BotRoiData) -> None:
         roi: float = self.bot_roi()
         if roi > 0:
-            data.roi = roi
+            data._replace(roi=roi)
             self.backtests_cache.add_data(data)
 
     def bot_roi(self) -> float:
@@ -70,7 +70,7 @@ class MadHatterBotManager(BotManager):
     def _get_all_bot_options(self) -> tuple[IndicatorOption]:
         self.refresh_bot()
         return tuple(chain(*[
-            BoostedInterface(i).options()
+            BoostedInterface(i).options
             for i in self.provider.get_all_interfaces(self._wbot.guid)
         ]))
 
