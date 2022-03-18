@@ -70,6 +70,7 @@ class BotCli:
             self._process_interface(cast(Interfaces, choice))
         elif type(choice) is KeyboardInterrupt:
             self._process_keyboard_interrupt()
+            exit("666")
 
         self.menu()
 
