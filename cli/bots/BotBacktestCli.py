@@ -5,7 +5,7 @@ from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import Indica
 from api.bots.BotManager import BotManager
 
 from api.bots.trade.TradeBotManager import Interfaces, TradeBotException
-from api.bots.trade.TradeBotIndicatorOptionMethods import TradeBotIndicatorOptionMethods
+from api.bots.BotBacktester import BotBacketster
 
 
 
@@ -22,7 +22,7 @@ class BotBacktestCli:
         if selected_option.step is None:
             raise TradeBotException("Step must be not None")
 
-        backtest_methods = TradeBotIndicatorOptionMethods(
+        backtest_methods = BotBacketster(
             self.manager,
             interface,
             selected_option,
@@ -47,7 +47,7 @@ class BotBacktestCli:
     def _get_backtest_promt(
         self,
         option: IndicatorOption,
-        backtest_methods: TradeBotIndicatorOptionMethods
+        backtest_methods: BotBacketster
 
     ) -> ListPrompt:
 
