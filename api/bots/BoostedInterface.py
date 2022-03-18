@@ -9,7 +9,8 @@ class BoostedInterface:
     def __init__(self, interface: Interfaces) -> None:
         self.interface: Interfaces = interface
 
-    def indicator_options(self) -> tuple[IndicatorOption]:
+    @property
+    def options(self) -> tuple[IndicatorOption]:
         match self.interface:
             case Safety():
                 return tuple(self.interface.safetyInterface)
@@ -20,6 +21,17 @@ class BoostedInterface:
         raise BoostedInterfaceException(
             f"Passes not an interface: {self.interface}")
 
+    @property
+    def name(self) -> str:
+        match self.interface:
+            case Safety():
+                return self.interface.safetyName
+            case Insurance():
+                return self.interface.insuranceName
+            case Indicator():
+                return self.interface.indicatorName
+        raise BoostedInterfaceException(
+            f"Passes not an interface: {self.interface}")
 
 class BoostedInterfaceException(Exception):
     pass
