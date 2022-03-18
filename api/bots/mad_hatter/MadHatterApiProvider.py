@@ -6,6 +6,7 @@ from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import Indica
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
+from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 from api.bots.BotApiProvider import BotApiProvider
 from api.MainContext import main_context
 from api.bots.BotManager import Interfaces
@@ -23,7 +24,7 @@ class MadHatterApiProvider(BotApiProvider):
 
         self.options_names: dict[str, tuple[str, ...]] = dict({
             "Mad Hatter MACD": ("MACD Fast", "MACD Slow"),
-            "Mad Hatter RSI": ("Buy level", "Sell level"),
+            "Mad Hatter RSI": ("Length", "Buy level", "Sell level"),
             "Mad Hatter BBands": ("Length", "Dev.Up", "Dev.Down"),
         })
 
@@ -31,7 +32,6 @@ class MadHatterApiProvider(BotApiProvider):
         bots = self.process_error(
             self.api.get_all_custom_bots(), "Can't get bots list")
         res = tuple(bot for bot in bots if bot.botType == 15)
-        log.info(f"{vars(res[0])=}")
         return res
 
     def get_all_interfaces(self, guid: str) -> tuple[Interfaces]:
@@ -45,20 +45,22 @@ class MadHatterApiProvider(BotApiProvider):
         return tuple(res)
 
     def get_as_dict(self, bot: MadHatterBot, indicator_name: str) -> dict:
-        if indicator_name == "bBands":
-            return getattr(bot, indicator_name)
-        return vars(getattr(bot, indicator_name))
+        interface = getattr(bot, indicator_name)
+        if type(interface) is not dict:
+            interface = vars(interface)
+        return interface
 
     def create_indicator(self, d: dict) -> Indicator:
-        log.info(f"{d=}")
-        indicator_name: str = d["indicatorName"] \
-            if "indicatorName" in d.keys() \
-            else d["IndicatorName"]
+        log.info(f"Mad indicator as dict: {d=}")
+        if "indicatorName" in d.keys():
+            indicator_name: str = d["indicatorName"]
+        else:
+            indicator_name: str = d["IndicatorName"]
 
-        interfaces: list = d["indicatorInterface"] \
-            if "indicatorInterface" in d.keys() \
-            else d["IndicatorInterface"]
-
+        if "indicatorInterface" in d.keys():
+            interfaces: list = d["indicatorInterface"]
+        else:
+            interfaces: list = d["IndicatorInterface"]
 
         options_dict: dict[str, dict[str, Any]] = dict(
             [(i["Title"], i) for i in interfaces]
@@ -67,6 +69,11 @@ class MadHatterApiProvider(BotApiProvider):
         indicator = Indicator()
         indicator.indicatorName = indicator_name
         indicator.enabled = True
+
+        indicator.guid = indicator_name
+
+        # max_option_num: int = max(self.options_names[indicator_name], key=lambda x: x[1])
+
         indicator.indicatorInterface = [
             self.create_option(options_dict[i])
             for i in self.options_names[indicator_name]
@@ -74,13 +81,13 @@ class MadHatterApiProvider(BotApiProvider):
 
         return indicator
 
+    # TODO: Add support for sma (add to options list)
     def create_option(self, d: dict[str, Any]) -> IndicatorOption:
         option: IndicatorOption = IndicatorOption()
         option.title = d["Title"]
         option.value = d["Value"]
         option.step = d["Step"]
         return option
-
 
     def get_interfaces_by_type(
         self,
@@ -96,9 +103,31 @@ class MadHatterApiProvider(BotApiProvider):
         return self.process_error(response, "Error while refreshing bot")
 
     def get_edit_interface_method(self, t: Interfaces) -> Callable:
-        # https://haasome-tools.github.io/haasomeapi/haasomeapi.apis.CustomBotApi.html
-        # set_mad_hatter_indicator_parameter
-        return super().get_edit_interface_method(t)
+        return self._inject_interface_type(self._get_indicator_enum_type(t))
+
+    def _inject_interface_type(
+        self,
+        t: EnumMadHatterIndicators,
+    ) -> Callable:
+        return lambda a, b, c: self.api.set_mad_hatter_indicator_parameter(
+            a, t, b, c
+        )
+
+    def _get_indicator_enum_type(self, t: Interfaces) -> EnumMadHatterIndicators:
+        if type(t) is not Indicator:
+            raise MadHatterException("Only indicators supported now")
+
+        match t.indicatorName:
+            case "Mad Hatter MACD":
+                return EnumMadHatterIndicators.MACD
+            case "Mad Hatter RSI":
+                return EnumMadHatterIndicators.RSI
+            case "Mad Hatter BBands":
+                return EnumMadHatterIndicators.BBANDS
+
+        raise MadHatterException(
+            f"Wrong indicator for getting enum type: {t.indicatorName}"
+        )
 
     def get_backtest_method(self) -> Callable:
         return self.api.backtest_custom_bot
