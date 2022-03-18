@@ -1,5 +1,8 @@
 from abc import abstractmethod
-from typing import Type
+from typing import Type, Any
+
+from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
+from api.bots.BacktestsCache import BotRoiData
 
 from api.bots.BotApiProvider import Bot, Interfaces
 
@@ -35,3 +38,22 @@ class BotManager():
     @abstractmethod
     def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
         pass
+
+    @abstractmethod
+    def update_option(self, option: IndicatorOption) -> IndicatorOption: pass
+
+    @abstractmethod
+    def save_max_result(self): pass
+
+    @abstractmethod
+    def edit_interface(self, interface: Interfaces, option_num: int, value: Any): pass
+
+    @abstractmethod
+    def backtest_bot(self, ticks: int) -> None: pass
+
+    @abstractmethod
+    def bot_roi(self) -> float: pass
+
+    @abstractmethod
+    def save_roi(self, data: BotRoiData) -> float: pass
+
