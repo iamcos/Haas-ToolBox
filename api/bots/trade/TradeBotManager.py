@@ -8,7 +8,7 @@ from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from haasomeapi.dataobjects.tradebot.TradeBot import TradeBot
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
 
-from api.bots.BoostedInterface import BoostedInterface
+from api.bots.InterfaceWrapper import InterfaceWrapper
 
 from api.bots.BotManager import BotManager
 from api.bots.BotWrapper import BotWrapper
@@ -64,7 +64,7 @@ class TradeBotManager(BotManager):
     def _get_all_bot_options(self) -> tuple[IndicatorOption]:
         self.refresh_bot()
         return tuple(itertools.chain(*[
-            BoostedInterface(i).options()
+            InterfaceWrapper(i).options
             for i in self.provider.get_all_interfaces(self._wbot.guid)
         ]))
 
