@@ -1,14 +1,13 @@
 from __future__ import annotations
 from datetime import datetime
-from functools import cmp_to_key
-from typing import NamedTuple
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from api.bots.BacktestsCache import BotRoiData
-from api.bots.BoostedInterface import BoostedInterface
+from api.bots.InterfaceWrapper import InterfaceWrapper
 from api.bots.BotManager import BotManager
 from api.bots.trade.TradeBotManager import Interfaces, TradeBotException
 from loguru import logger as log
 from api.MainContext import main_context
+from api.model.models import UsedOptionParameters
 
 
 class BotBacketster:
@@ -18,6 +17,7 @@ class BotBacketster:
             manager: BotManager,
             interface: Interfaces,
             option: IndicatorOption,
+            # TODO: Is value and step needed here ? (interface option containes them)
             value: str,
             step: str
     ) -> None:
@@ -28,8 +28,22 @@ class BotBacketster:
         self.step = step
         self.ticks = main_context.config_manager.read_ticks()
 
-        self.used_values: set[_CurrentOptionParameters] = set()
+        self.used_values: set[UsedOptionParameters] = \
+            self._generate_used_values()
         self.option_num: int = self._get_param_num_of_option()
+
+    def _generate_used_values(self) -> set[UsedOptionParameters]:
+        res: set[UsedOptionParameters] = set()
+
+        current_value: UsedOptionParameters = UsedOptionParameters(
+            self.manager.bot_roi(),
+            self.ticks,
+            self.step,
+            str(self.value)
+        )
+        res.add(current_value)
+
+        return res
 
     def calculate_ticks(self, start_date, interval) -> int:
         delta = datetime.now() - start_date
@@ -37,14 +51,7 @@ class BotBacketster:
         return delta_minutes
 
     def stop_backtesting(self) -> None:
-        max_result: _CurrentOptionParameters = max(
-            self.used_values,
-            key=cmp_to_key(_compare)
-        );
-
-        print(f"{max_result=}")
-
-        self.manager.save_max_result()
+        self.manager.save_max_result(self.interface, self.option_num)
 
     def backtest_up(self) -> None:
         log.info("Backtesting up")
@@ -60,7 +67,7 @@ class BotBacketster:
 
         self.manager.save_roi(self._get_bot_roi_data())
 
-        self.used_values.add(_CurrentOptionParameters(
+        self.used_values.add(UsedOptionParameters(
             self.manager.bot_roi(),
             self.ticks,
             self.step,
@@ -110,7 +117,7 @@ class BotBacketster:
     def _calculate_next_value_up(self) -> int:
         current_value: int = int(self._smart_round()) + int(float(self.step))
 
-        while current_value in self.used_values:
+        while current_value in [int(i.parameter_value) for i in self.used_values]:
             log.info(f"{current_value=} already used")
             current_value: int = int(
                 float(current_value)
@@ -120,7 +127,7 @@ class BotBacketster:
 
         self.value = current_value
 
-        self.used_values.add(_CurrentOptionParameters(
+        self.used_values.add(UsedOptionParameters(
             self.manager.bot_roi(),
             self.ticks,
             self.step,
@@ -132,7 +139,7 @@ class BotBacketster:
     def _calculate_next_value_down(self) -> int:
         current_value: int = int(self._smart_round()) - int(float(self.step))
 
-        while current_value in self.used_values:
+        while current_value in [int(i.parameter_value) for i in self.used_values]:
             log.info(f"{current_value=} already used")
             current_value = int(
                 float(current_value)
@@ -142,7 +149,7 @@ class BotBacketster:
 
         self.value = current_value
 
-        self.used_values.add(_CurrentOptionParameters(
+        self.used_values.add(UsedOptionParameters(
             self.manager.bot_roi(),
             self.ticks,
             self.step,
@@ -156,7 +163,7 @@ class BotBacketster:
         return round(float(self.value), numbers_after_dot)
 
     def _get_indicator_options(self) -> tuple[IndicatorOption]:
-        return BoostedInterface(self.interface).options
+        return InterfaceWrapper(self.interface).options
 
     def _get_bot_roi_data(self) -> BotRoiData:
         return BotRoiData(
@@ -167,35 +174,3 @@ class BotBacketster:
         )
 
 
-class _CurrentOptionParameters(NamedTuple):
-    roi: float
-    ticks: int
-    step: str
-    parameter_value: str
-
-def _compare(a: _CurrentOptionParameters, b: _CurrentOptionParameters) -> int:
-    if a.roi > b.roi:
-        return 1
-    return -1
-
-
-    # def _iterate_parameter(
-    #         self, interface,
-    #         selectedInterfaceParmeter,
-    #         param_num,
-    # ) -> None:
-
-    #     value_roi = []
-    #     value = self._get_param_value(selectedInterfaceParmeter)
-    #     step = self._get_param_step(selectedInterfaceParmeter)
-
-    # if action == "Select another parameter":
-    #     if len(value_roi) > 0:
-    #         value = sorted(value_roi, key=lambda x: x[0], reverse=True)
-    #         log.info(value)
-    #         self.manager.edit_param_value(interface, param_num, value)
-    # elif action == "Set best value by ROI":
-    #     if len(value_roi) > 0:
-    #         value = sorted(value_roi, key=lambda x: x[0], reverse=True)
-    #         self.manager.edit_param_value(interface, param_num, value)
-    #         log.info(value)
