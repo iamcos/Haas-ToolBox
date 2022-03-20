@@ -1,6 +1,7 @@
 from typing import Type, Optional, cast
 
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
+from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
 from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from api.bots.BotManager import BotManager
@@ -79,7 +80,12 @@ class BotCli:
 
     def _process_interface(self, choice: Interfaces) -> None:
         option = self.indictator_option_selector.select_option(choice)
-        self.backtester.process_backtest(choice, option)
+        if type(option) is str and option == "Back":
+            interface: Interfaces = self.interface_selector.select_interface()
+            return self._process_user_choice(interface)
+        else:
+            self.backtester.process_backtest(choice, cast(IndicatorOption, option))
+            return self._process_interface(choice)
 
     def _process_keyboard_interrupt(self) -> None:
         log.info("Bye :)")

@@ -1,5 +1,5 @@
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from api.bots.BoostedInterface import BoostedInterface
+from api.bots.BoostedInterface import InterfaceWrapper
 from api.bots.BotManager import BotManager
 from api.bots.BotApiProvider import Interfaces
 from loguru import logger as log
@@ -12,7 +12,7 @@ class InterfaceOptionSelectorCli:
         self.manager: BotManager = manager
         self.bot_name: str = manager.bot_name()
 
-    def select_option(self, interface: Interfaces) -> IndicatorOption:
+    def select_option(self, interface: Interfaces) -> IndicatorOption | str:
         return self._parameter_selector(
             self._indicator_options(interface)
         )
@@ -20,7 +20,7 @@ class InterfaceOptionSelectorCli:
     def _parameter_selector(
             self,
             indicator_options: tuple[IndicatorOption]
-    ) -> IndicatorOption:
+    ) -> IndicatorOption | str:
 
         choices: list[dict[str, str | IndicatorOption]] = [
             {
@@ -30,19 +30,20 @@ class InterfaceOptionSelectorCli:
             for i in indicator_options
         ]
 
+        choices.append({"name": "Back", "value": "Back"})
+
         selected_option: IndicatorOption = inquirer.select(
             message="Select Parameter",
             choices=choices,
         ).execute()
 
-        log.info(f"{selected_option.__dict__=}")
         return selected_option
 
     def _indicator_options(
             self,
             source: Interfaces
     ) -> tuple[IndicatorOption]:
-        boosted: BoostedInterface = BoostedInterface(source)
+        boosted: InterfaceWrapper = InterfaceWrapper(source)
 
         log.info(str(ignored_options[self.bot_name]))
 
