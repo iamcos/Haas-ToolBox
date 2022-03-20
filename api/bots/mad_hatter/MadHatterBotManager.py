@@ -9,11 +9,12 @@ from api.bots.BotWrapper import BotWrapper
 from api.bots.BotManager import BotManager, Interfaces
 from api.bots.mad_hatter.MadHatterApiProvider import MadHatterApiProvider, MadHatterException
 from itertools import chain
-from api.bots.BoostedInterface import BoostedInterface
+from api.bots.InterfaceWrapper import InterfaceWrapper
+from loguru import logger as log
 
 
 class MadHatterBotManager(BotManager):
-    def __init__(self):
+    def __init__(self) -> None:
         self._wbot: BotWrapper = BotWrapper()
         self.provider = MadHatterApiProvider()
         self.backtests_cache = BacktestsCache()
@@ -22,7 +23,6 @@ class MadHatterBotManager(BotManager):
         return self._wbot.bot_is_not_set()
 
     def set_bot(self, bot: MadHatterBot) -> None:
-        print(f"Selectd bot: {bot}")
         self._wbot.bot = bot
 
     def get_available_bots(self) -> tuple[MadHatterBot]:
@@ -70,7 +70,7 @@ class MadHatterBotManager(BotManager):
     def _get_all_bot_options(self) -> tuple[IndicatorOption]:
         self.refresh_bot()
         return tuple(chain(*[
-            BoostedInterface(i).options
+            InterfaceWrapper(i).options
             for i in self.provider.get_all_interfaces(self._wbot.guid)
         ]))
 
@@ -86,4 +86,12 @@ class MadHatterBotManager(BotManager):
 
         self.provider.process_error(
             res, "Error while getting edit bot interface settings")
+
+    def save_max_result(self, interface: Interfaces, option_num: int) -> None:
+        res = self.backtests_cache.get_best_result(
+            InterfaceWrapper(interface).guid, option_num
+        )
+
+        log.info(f"Best result: {res}")
+        self.edit_interface(interface, option_num, res.value)
 
