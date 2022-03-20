@@ -5,6 +5,7 @@ from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import Indica
 from api.bots.BacktestsCache import BotRoiData
 
 from api.bots.BotApiProvider import Bot, Interfaces
+from api.model.models import UsedOptionParameters
 
 InterfaceGuid = str
 
@@ -43,7 +44,7 @@ class BotManager():
     def update_option(self, option: IndicatorOption) -> IndicatorOption: pass
 
     @abstractmethod
-    def save_max_result(self): pass
+    def save_max_result(self, interface: Interfaces, option_num: int): pass
 
     @abstractmethod
     def edit_interface(self, interface: Interfaces, option_num: int, value: Any): pass
