@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Callable, Type
+from typing import Any, Callable, Optional, Type
 from haasomeapi.apis.TradeBotApi import TradeBotApi
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
@@ -57,17 +57,22 @@ class TradeBotApiProvider(BotApiProvider):
 
     def process_error(
         self,
-        response: HaasomeClientResponse,
-        message: str
+        response: Optional[HaasomeClientResponse] = None,
+        message: str = "Trade Bot Error"
     ) -> Any:
-        if response.errorCode is EnumErrorCode.SUCCESS:
-            return response.result
-        else:
+        if response is None:
+            raise TradeBotException(message)
+        elif response.errorCode is not EnumErrorCode.SUCCESS:
             raise TradeBotException(
                 f"{message}"
                 f" [Error code: {response.errorCode} "
                 f" Error message: {response.errorMessage}]"
             )
+
+        return response.result
+
+    def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
+        return tuple([Indicator, Safety, Insurance])
 
 
 class TradeBotException(Exception): pass

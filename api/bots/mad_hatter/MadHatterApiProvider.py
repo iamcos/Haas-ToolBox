@@ -1,4 +1,4 @@
-from typing import Any, Callable, Type
+from typing import Any, Callable, Optional, Type
 from haasomeapi.apis.CustomBotApi import CustomBotApi
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
@@ -137,17 +137,22 @@ class MadHatterApiProvider(BotApiProvider):
 
     def process_error(
         self,
-        response: HaasomeClientResponse,
-        message: str
+        response: Optional[HaasomeClientResponse] = None,
+        message: str = "Mad Hatter Error"
     ) -> Any:
-        if response.errorCode is EnumErrorCode.SUCCESS:
-            return response.result
-        else:
+        if response is None:
+            raise MadHatterException(message)
+        elif response.errorCode is not EnumErrorCode.SUCCESS:
             raise MadHatterException(
                 f"{message}"
                 f" [Error code: {response.errorCode} "
                 f" Error message: {response.errorMessage}]"
             )
+
+        return response.result
+
+    def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
+        return tuple([Indicator])
 
 
 class MadHatterException(Exception): pass

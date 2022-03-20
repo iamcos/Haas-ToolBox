@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, Callable
+from typing import Any, Callable, Optional, Type
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
@@ -23,7 +23,7 @@ class BotApiProvider():
     def get_interfaces_by_type(
         self,
         guid: str,
-        t: Interfaces
+        t: Type[Interfaces]
     ) -> tuple[Interfaces]: pass
 
     @abstractmethod
@@ -38,7 +38,11 @@ class BotApiProvider():
     @abstractmethod
     def process_error(
         self,
-        response: HaasomeClientResponse,
-        message: str
+        response: Optional[HaasomeClientResponse] = None,
+        message: str = ""
     ) -> Any: pass
+
+    @abstractmethod
+    def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
+        pass
 
