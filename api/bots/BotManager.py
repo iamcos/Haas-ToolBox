@@ -1,60 +1,103 @@
-from abc import abstractmethod
+from api.bots import bot_managers_factory
+import itertools
 from typing import Type, Any
 
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
+from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
+from api.bots.InterfaceWrapper import InterfaceWrapper
 from api.bots.BacktestsCache import BotRoiData
 
-from api.bots.BotApiProvider import Bot, Interfaces
-from api.model.models import UsedOptionParameters
+from api.bots.BotApiProvider import Bot, BotApiProvider, Interfaces
+from api.bots.BacktestsCache import BacktestsCache, BotRoiData
+from api.bots.BotWrapper import BotWrapper
+from loguru import logger as log
 
 InterfaceGuid = str
 
 
 class BotManager():
-    @abstractmethod
-    def bot_not_selected(self) -> bool: pass
+    def __init__(self, t: Type[Bot]) -> None:
+        self._wbot: BotWrapper = BotWrapper()
+        self.backtests_cache = BacktestsCache()
+        self.provider: BotApiProvider = bot_managers_factory.get_provider(t)
+        self.bot_name_from_class: str = t.__name__
 
-    @abstractmethod
-    def set_bot(self, bot: Bot) -> None: pass
+    def bot_not_selected(self) -> bool:
+        return self._wbot.bot_is_not_set()
 
-    @abstractmethod
-    def get_available_bots(self) -> list[Bot]: pass
+    def set_bot(self, bot: Bot) -> None:
+        self._wbot.bot = bot
 
-    @abstractmethod
-    def get_interfaces_by_type(
-        self,
-        t: Type[Interfaces]
-    ) -> tuple[Interfaces, ...]: pass
+    def get_available_bots(self) -> tuple[Bot]:
+        return self.provider.get_all_bots()
 
-    # TODO: Create basic impl by using get_interfaces_by_type
-    @abstractmethod
-    def get_all_interfaces(self) -> tuple[Interfaces, ...]: pass
+    def get_interfaces_by_type(self, t: Type[Interfaces]) -> tuple[Interfaces]:
+        return self.provider.get_interfaces_by_type(self._wbot.guid, t)
 
-    @abstractmethod
-    def refresh_bot(self) -> None: pass
+    def get_all_interfaces(self) -> tuple[Interfaces, ...]:
+        res: list[Interfaces] = []
+        for i in self.provider.get_available_interface_types():
+            res.extend(self.get_interfaces_by_type(i))
+        return tuple(res)
 
-    @abstractmethod
-    def bot_name(self) -> str: pass
+    def refresh_bot(self) -> None:
+        self._wbot.bot = self.provider.get_refreshed_bot(self._wbot.bot.guid)
 
-    @abstractmethod
+    def bot_name(self) -> str:
+        return self.bot_name_from_class
+
     def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
-        pass
+        return self.provider.get_available_interface_types()
 
-    @abstractmethod
-    def update_option(self, option: IndicatorOption) -> IndicatorOption: pass
+    def update_option(self, option: IndicatorOption) -> IndicatorOption:
+        cmp = lambda o : o.title == option.title
+        res = next(filter(cmp, self._get_all_bot_options()), None)
 
-    @abstractmethod
-    def save_max_result(self, interface: Interfaces, option_num: int): pass
+        self.provider.process_error(res, f"Option {option.title} couldn't be found")
+        return res
 
-    @abstractmethod
-    def edit_interface(self, interface: Interfaces, option_num: int, value: Any): pass
+    def _get_all_bot_options(self) -> tuple[IndicatorOption]:
+        self.refresh_bot()
+        return tuple(itertools.chain(*[
+            InterfaceWrapper(i).options
+            for i in self.provider.get_all_interfaces(self._wbot.guid)
+        ]))
 
-    @abstractmethod
-    def backtest_bot(self, ticks: int) -> None: pass
+    def save_max_result(self, interface: Interfaces, option_num: int) -> None:
+        res = self.backtests_cache.get_best_result(
+            InterfaceWrapper(interface).guid, option_num
+        )
 
-    @abstractmethod
-    def bot_roi(self) -> float: pass
+        log.info(f"Best result: {res}")
+        self.edit_interface(interface, option_num, res.value)
 
-    @abstractmethod
-    def save_roi(self, data: BotRoiData) -> float: pass
+    def edit_interface(self, interface: Interfaces, param_num: int, value: Any):
+        edit_func = self.provider.get_edit_interface_method(interface)
+
+        res: HaasomeClientResponse = edit_func(
+            self._wbot.guid,
+            param_num,
+            value
+        )
+
+        self.provider.process_error(
+            res, "Error while getting edit bot interface settings")
+
+    def backtest_bot(self, interval: int):
+        res: HaasomeClientResponse = self.provider.get_backtest_method()(
+            self._wbot.guid, interval
+        )
+
+        self.provider.process_error(
+            res, "Error while backtesting bot")
+
+    def bot_roi(self) -> float:
+        self.refresh_bot()
+        return self._wbot.roi
+
+    def save_roi(self, data: BotRoiData) -> None:
+        roi: float = self.bot_roi()
+        if roi > 0:
+            data._replace(roi=roi)
+            self.backtests_cache.add_data(data)
 
