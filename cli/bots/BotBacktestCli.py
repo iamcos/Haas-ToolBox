@@ -27,7 +27,7 @@ class BotBacktestCli:
             interface,
             selected_option,
             selected_option.value,
-            selected_option.step
+            str(selected_option.step)
         )
 
         action = self._get_backtest_promt(selected_option, backtest_methods)
@@ -41,7 +41,6 @@ class BotBacktestCli:
             ).execute()
 
         backtest_methods.stop_backtesting()
-        raise NotImplementedError("No instructions for selecting another parameter")
 
 
     def _get_backtest_promt(
