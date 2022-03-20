@@ -10,7 +10,6 @@ from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 from api.bots.BotApiProvider import BotApiProvider
 from api.MainContext import main_context
 from api.bots.BotManager import Interfaces
-from loguru import logger as log
 
 
 class MadHatterApiProvider(BotApiProvider):
@@ -51,7 +50,6 @@ class MadHatterApiProvider(BotApiProvider):
         return interface
 
     def create_indicator(self, d: dict) -> Indicator:
-        log.info(f"Mad indicator as dict: {d=}")
         if "indicatorName" in d.keys():
             indicator_name: str = d["indicatorName"]
         else:
@@ -81,12 +79,17 @@ class MadHatterApiProvider(BotApiProvider):
 
         return indicator
 
-    # TODO: Add support for sma (add to options list)
     def create_option(self, d: dict[str, Any]) -> IndicatorOption:
         option: IndicatorOption = IndicatorOption()
         option.title = d["Title"]
         option.value = d["Value"]
-        option.step = d["Step"]
+        option.options = d["Options"]
+
+        if option.title in ("Buy level", "Sell level"):
+            option.step = 1
+        else:
+            option.step = d["Step"]
+
         return option
 
     def get_interfaces_by_type(
