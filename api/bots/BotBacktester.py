@@ -1,7 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from numpy import double
 
 from api.bots.BacktestsCache import BotRoiData
 from api.bots.InterfaceWrapper import InterfaceWrapper
@@ -45,6 +44,7 @@ class BotBacketster:
 
         self.used_values: set[UsedOptionParameters] = \
             self._generate_used_values()
+
         self.option_num: int = self._get_param_num_of_option()
 
     def _generate_used_values(self) -> set[UsedOptionParameters]:
@@ -56,6 +56,7 @@ class BotBacketster:
             self.step,
             str(self.value)
         )
+
         res.add(current_value)
 
         return res
