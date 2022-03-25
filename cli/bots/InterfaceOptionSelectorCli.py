@@ -1,7 +1,7 @@
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from api.bots.BoostedInterface import InterfaceWrapper
+from api.bots.InterfaceWrapper import InterfaceWrapper
 from api.bots.BotManager import BotManager
-from api.bots.BotApiProvider import Interfaces
+from api.models import Interfaces
 from loguru import logger as log
 from InquirerPy import inquirer
 from cli.bots.config.ignored_options import ignored_options

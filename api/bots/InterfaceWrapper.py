@@ -2,7 +2,7 @@ from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
 from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
-from api.bots.BotManager import Interfaces
+from api.models import Interfaces
 
 
 class InterfaceWrapper:

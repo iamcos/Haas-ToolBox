@@ -4,13 +4,13 @@ from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
 from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
-from api.bots.BotManager import BotManager
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
 from cli.bots.InterfaceOptionSelectorCli import InterfaceOptionSelectorCli
+from api.bots.BotManager import BotManager
 from api.bots.BotApiProvider import Bot
 from api.bots.bot_managers_factory import get_bot_manager
-from api.bots.trade.TradeBotManager import Interfaces
+from api.models import Interfaces
 from loguru import logger as log
 from typing import Callable
 from InquirerPy import inquirer

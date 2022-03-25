@@ -4,9 +4,11 @@ from InquirerPy.separator import Separator
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from api.bots.BotManager import BotManager
 
-from api.bots.trade.TradeBotManager import Interfaces, TradeBotException
+from api.models import Interfaces
 from api.bots.BotBacktester import BotBacketster
 
+
+class BacktestCliException(Exception): pass
 
 
 class BotBacktestCli:
@@ -20,7 +22,7 @@ class BotBacktestCli:
     ) -> None:
 
         if selected_option.step is None:
-            raise TradeBotException("Step must be not None")
+            raise BacktestCliException("Step must be not None")
 
         backtest_methods = BotBacketster(
             self.manager,
