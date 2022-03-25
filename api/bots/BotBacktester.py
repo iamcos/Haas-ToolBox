@@ -48,6 +48,8 @@ class BotBacketster:
         self.option_num: int = self._get_param_num_of_option()
         self.manager.backtests_cache.add_data(self._get_bot_roi_data())
 
+        log.info(f"{self.ticks=}")
+
     def _generate_used_values(self) -> set[UsedOptionParameters]:
         res: set[UsedOptionParameters] = set()
 
