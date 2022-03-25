@@ -2,7 +2,6 @@ from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import Indica
 from api.bots.InterfaceWrapper import InterfaceWrapper
 from api.bots.BotManager import BotManager
 from api.models import Interfaces
-from loguru import logger as log
 from InquirerPy import inquirer
 from cli.bots.config.ignored_options import ignored_options
 
@@ -46,7 +45,7 @@ class InterfaceOptionSelectorCli:
         boosted: InterfaceWrapper = InterfaceWrapper(source)
 
         filtered_options: tuple[IndicatorOption] = tuple([
-            i for i in boosted.options
+            self.manager.update_option(i) for i in boosted.options
             if i.title not in ignored_options[self.bot_name][boosted.name]
         ])
 
