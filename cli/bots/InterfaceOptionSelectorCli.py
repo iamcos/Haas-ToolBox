@@ -45,8 +45,6 @@ class InterfaceOptionSelectorCli:
     ) -> tuple[IndicatorOption]:
         boosted: InterfaceWrapper = InterfaceWrapper(source)
 
-        log.info(str(ignored_options[self.bot_name]))
-
         filtered_options: tuple[IndicatorOption] = tuple([
             i for i in boosted.options
             if i.title not in ignored_options[self.bot_name][boosted.name]
