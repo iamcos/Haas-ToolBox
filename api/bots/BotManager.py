@@ -1,4 +1,3 @@
-from api.bots import bot_managers_factory
 import itertools
 from typing import Type, Any
 
@@ -10,16 +9,15 @@ from api.bots.BacktestsCache import BotRoiData
 from api.bots.BotApiProvider import Bot, BotApiProvider, Interfaces
 from api.bots.BacktestsCache import BacktestsCache, BotRoiData
 from api.bots.BotWrapper import BotWrapper
+from api.bots import bot_provider_factory
 from loguru import logger as log
-
-InterfaceGuid = str
 
 
 class BotManager():
     def __init__(self, t: Type[Bot]) -> None:
         self._wbot: BotWrapper = BotWrapper()
         self.backtests_cache = BacktestsCache()
-        self.provider: BotApiProvider = bot_managers_factory.get_provider(t)
+        self.provider: BotApiProvider = bot_provider_factory.get_provider(t)
         self.bot_name_from_class: str = t.__name__
 
     def bot_not_selected(self) -> bool:
