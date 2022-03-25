@@ -84,7 +84,8 @@ class BotCli:
             interface: Interfaces = self.interface_selector.select_interface()
             return self._process_user_choice(interface)
         else:
-            self.backtester.process_backtest(choice, cast(IndicatorOption, option))
+            self.backtester.process_backtest(choice,
+                                             cast(IndicatorOption, option))
             return self._process_interface(choice)
 
     def _process_keyboard_interrupt(self) -> None:
