@@ -9,6 +9,7 @@ from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientRespo
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from api.bots.BotApiProvider import BotApiProvider, Interfaces
 from api.MainContext import main_context
+from api.bots.InterfaceWrapper import InterfaceWrapper
 
 
 class TradeBotApiProvider(BotApiProvider):
@@ -49,8 +50,18 @@ class TradeBotApiProvider(BotApiProvider):
         response: HaasomeClientResponse = self.tradebot_api.get_trade_bot(guid)
         return self.process_error(response, "Error while refreshing bot")
 
-    def get_edit_interface_method(self, t: Interfaces) -> Callable:
-        return getattr(self.tradebot_api, self.edit_methods[t])
+    def edit_interface(
+        self,
+        t: Interfaces,
+        param_num: int,
+        value: Any,
+        bot_guid: str
+    ) -> None:
+        edit_func = getattr(self.tradebot_api, self.edit_methods[type(t)])
+
+        res = edit_func(bot_guid, InterfaceWrapper(t).guid, param_num, value)
+
+        self.process_error(res, "Error while editing interface")
 
     def get_backtest_method(self) -> Callable:
         return self.tradebot_api.backtest_trade_bot

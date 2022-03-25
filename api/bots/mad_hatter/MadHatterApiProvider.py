@@ -105,8 +105,21 @@ class MadHatterApiProvider(BotApiProvider):
         )
         return self.process_error(response, "Error while refreshing bot")
 
-    def get_edit_interface_method(self, t: Interfaces) -> Callable:
-        return self._inject_interface_type(self._get_indicator_enum_type(t))
+    def edit_interface(
+        self,
+        t: Interfaces,
+        param_num: int,
+        value: Any,
+        bot_guid: str
+    ) -> None:
+
+        edit_func = self._inject_interface_type(
+            self._get_indicator_enum_type(t)
+        )
+
+        res = edit_func(bot_guid, param_num, value)
+
+        self.process_error(res, "Error while editing interface")
 
     def _inject_interface_type(
         self,
