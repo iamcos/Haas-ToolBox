@@ -13,6 +13,7 @@ from api.bots import bot_provider_factory
 from loguru import logger as log
 
 
+
 class BotManager():
     def __init__(self, t: Type[Bot]) -> None:
         self._wbot: BotWrapper = BotWrapper()
@@ -52,6 +53,7 @@ class BotManager():
         res = next(filter(cmp, self._get_all_bot_options()), None)
 
         self.provider.process_error(res, f"Option {option.title} couldn't be found")
+        log.info(f"Update option: {vars(res)}")
         return res
 
     def _get_all_bot_options(self) -> tuple[IndicatorOption]:
@@ -68,6 +70,7 @@ class BotManager():
 
         log.info(f"Best result: {res}")
         self.edit_interface(interface, option_num, res.value)
+        self.refresh_bot()
 
     def edit_interface(self, interface: Interfaces, param_num: int, value: Any):
         edit_func = self.provider.get_edit_interface_method(interface)
@@ -96,6 +99,6 @@ class BotManager():
     def save_roi(self, data: BotRoiData) -> None:
         roi: float = self.bot_roi()
         if roi > 0:
-            data._replace(roi=roi)
+            data = data._replace(roi=roi)
             self.backtests_cache.add_data(data)
 
