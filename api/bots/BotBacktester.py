@@ -1,13 +1,28 @@
 from __future__ import annotations
 from datetime import datetime
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
+from numpy import double
+
 from api.bots.BacktestsCache import BotRoiData
 from api.bots.InterfaceWrapper import InterfaceWrapper
 from api.bots.BotManager import BotManager
-from api.bots.trade.TradeBotManager import Interfaces, TradeBotException
-from loguru import logger as log
+from api.models import Interfaces, UsedOptionParameters
 from api.MainContext import main_context
-from api.model.models import UsedOptionParameters
+from time import monotonic
+
+from loguru import logger as log
+
+
+class BotBacktesterException(Exception): pass
+
+
+def timeit(func):
+    def inner(*args, **kwargs):
+        start: float = monotonic()
+        res = func(*args, **kwargs)
+        log.info("Time passed: {:.2f}s".format((monotonic() - start)))
+        return res
+    return inner
 
 
 class BotBacketster:
@@ -53,6 +68,7 @@ class BotBacketster:
     def stop_backtesting(self) -> None:
         self.manager.save_max_result(self.interface, self.option_num)
 
+    @timeit
     def backtest_up(self) -> None:
         log.info("Backtesting up")
 
@@ -74,6 +90,7 @@ class BotBacketster:
             str(self.value)
         ))
 
+    @timeit
     def backtest_down(self) -> None:
         log.info("Backtesting down")
 
@@ -96,10 +113,12 @@ class BotBacketster:
         self.ticks = self.ticks // 2
         log.info(f"{self.ticks=}")
 
+    @timeit
     def backtest_steps_down(self, steps: int = 10) -> None:
         for _ in range(steps):
             self.backtest_down()
 
+    @timeit
     def backtest_steps_up(self, steps: int = 10) -> None:
         for _ in range(steps):
             self.backtest_up()
@@ -109,7 +128,7 @@ class BotBacketster:
             if option.title == self.option.title:
                 return i
 
-        raise TradeBotException(
+        raise BotBacktesterException(
             f"Can't find option num of {self.option.title} "
             f"in indicator options {self._get_indicator_options()}"
         )
