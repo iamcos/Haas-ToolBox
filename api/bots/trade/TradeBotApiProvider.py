@@ -57,19 +57,23 @@ class TradeBotApiProvider(BotApiProvider):
 
     def process_error(
         self,
-        response: Optional[HaasomeClientResponse] = None,
+        response: Optional[HaasomeClientResponse | Any] = None,
         message: str = "Trade Bot Error"
     ) -> Any:
         if response is None:
             raise TradeBotException(message)
-        elif response.errorCode is not EnumErrorCode.SUCCESS:
-            raise TradeBotException(
-                f"{message}"
-                f" [Error code: {response.errorCode} "
-                f" Error message: {response.errorMessage}]"
-            )
 
-        return response.result
+        if type(response) is HaasomeClientResponse:
+            if response.errorCode is not EnumErrorCode.SUCCESS:
+                raise TradeBotException(
+                    f"{message}"
+                    f" [Error code: {response.errorCode} "
+                    f" Error message: {response.errorMessage}]"
+                )
+
+            return response.result
+
+        return response
 
     def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
         return tuple([Indicator, Safety, Insurance])

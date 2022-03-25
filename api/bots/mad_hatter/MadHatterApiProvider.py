@@ -9,7 +9,7 @@ from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 from api.bots.BotApiProvider import BotApiProvider
 from api.MainContext import main_context
-from api.bots.BotManager import Interfaces
+from api.models import Interfaces
 
 
 class MadHatterApiProvider(BotApiProvider):
@@ -137,19 +137,23 @@ class MadHatterApiProvider(BotApiProvider):
 
     def process_error(
         self,
-        response: Optional[HaasomeClientResponse] = None,
+        response: Optional[HaasomeClientResponse | Any] = None,
         message: str = "Mad Hatter Error"
     ) -> Any:
         if response is None:
             raise MadHatterException(message)
-        elif response.errorCode is not EnumErrorCode.SUCCESS:
-            raise MadHatterException(
-                f"{message}"
-                f" [Error code: {response.errorCode} "
-                f" Error message: {response.errorMessage}]"
-            )
 
-        return response.result
+        if type(response) is HaasomeClientResponse:
+            if response.errorCode is not EnumErrorCode.SUCCESS:
+                raise MadHatterException(
+                    f"{message}"
+                    f" [Error code: {response.errorCode} "
+                    f" Error message: {response.errorMessage}]"
+                )
+
+            return response.result
+
+        return response
 
     def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
         return tuple([Indicator])
