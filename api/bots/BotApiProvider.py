@@ -22,7 +22,13 @@ class BotApiProvider():
     def get_refreshed_bot(self, guid: str) -> Bot: pass
 
     @abstractmethod
-    def get_edit_interface_method(self, t: Interfaces) -> Callable: pass
+    def edit_interface(
+        self,
+        t: Interfaces,
+        param_num: int,
+        value: Any,
+        bot_guid: str
+    ) -> None: pass
 
     @abstractmethod
     def get_backtest_method(self) -> Callable: pass
