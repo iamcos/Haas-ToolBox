@@ -73,16 +73,12 @@ class BotManager():
         self.refresh_bot()
 
     def edit_interface(self, interface: Interfaces, param_num: int, value: Any):
-        edit_func = self.provider.get_edit_interface_method(interface)
-
-        res: HaasomeClientResponse = edit_func(
-            self._wbot.guid,
+        self.provider.edit_interface(
+            interface,
             param_num,
-            value
+            value,
+            self._wbot.guid
         )
-
-        self.provider.process_error(
-            res, "Error while getting edit bot interface settings")
 
     def backtest_bot(self, interval: int):
         res: HaasomeClientResponse = self.provider.get_backtest_method()(
