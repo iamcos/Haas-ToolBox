@@ -24,4 +24,4 @@ output/
 *.xml
 *.obj
 *.xlsx
-
+*.log

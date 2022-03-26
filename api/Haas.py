@@ -7,7 +7,6 @@ from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.HaasomeClient import HaasomeClient
 from pandas.core.frame import DataFrame
 from api.scripts.config_manager import ConfigManager
-from api.bots_creator import BotsCreator
 
 
 # TODO: Rename pass more info
@@ -20,7 +19,6 @@ class Haas:
 
     def __init__(self) -> None:
         self.config_parser: ConfigParser = ConfigParser()
-        self.configs_management: BotsCreator = BotsCreator()
         self.config_manager: ConfigManager = ConfigManager()
 
         self.bot = None

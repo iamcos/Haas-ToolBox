@@ -3,28 +3,24 @@ import functools
 from typing import Any
 from InquirerPy import inquirer
 from InquirerPy.prompts.list import ListPrompt
+from InquirerPy.separator import Separator
 from cli.bots.BotCli import BotCli
 from cli.bots.tradebot.TradeBotCli import TradeBotCli
 from cli.bots.madhatter.MadHatterCli import MadHatterCli
 
 
 class ToolBoxMainMenu:
-    """
-    ToolBox main menu
-    """
-
     def __init__(self) -> None:
         self._start_message: str = "Choose action: "
-        self._bot_chain: dict[str, type[BotCli] | None] = {
+        self._bot_chain: dict[str | Separator, type[BotCli | QuitOption] | None] = {
             # Fully configurable
             "Trade Bots": TradeBotCli,
             "Mad-Hatter Bots": MadHatterCli,
             # Custom
-            "[Not working] Mad-Hatter Bots": None,
-            "[Not working] Scalper Bots": None,
-            "[Not working] Flash-Crash Bots": None,
-            "[Not working] AssistedBT": None,
-            "[Not working] TradingView": None,
+            Separator("[Not working] Scalper Bots"): None,
+            Separator("[Not working] Flash-Crash Bots"): None,
+            Separator("[Not working] AssistedBT"): None,
+            Separator("[Not working] TradingView"): None,
             # Special class with keyboard interrupt
             "Quit": QuitOption
         }
@@ -40,9 +36,11 @@ class ToolBoxMainMenu:
 
     @functools.lru_cache
     def _process_main_menu_response(self, response: str) -> None:
-        return self._bot_chain[response]().menu()
+        bot_cli = self._bot_chain[response]
+        return bot_cli().menu()
 
 
-class QuitOption(BotCli):
+class QuitOption():
     def menu(self):
         KeyboardInterrupt()
+
