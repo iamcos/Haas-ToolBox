@@ -1,3 +1,4 @@
+from api.bots.BotConfigBacktester import BotConfigBacktester
 from api.bots.BotManager import BotManager
 from loguru import logger as log
 from api.MainContext import main_context
@@ -8,29 +9,34 @@ from api.scripts.config_manager import ConfigManager
 
 class BotConfigBacktestCli:
     def __init__(self, manager: BotManager):
-        self.manager: BotManager = manager
-        self.config_manager: ConfigManager = main_context.config_manager
+        self.config: ConfigManager = main_context.config_manager
+        self.backtester: BotConfigBacktester = BotConfigBacktester(manager)
 
     def start(self) -> None:
         log.info("Config backtesting")
-        log.info(f"{self._get_batch_size()=}")
-        log.info(f"{self._get_top_bots_count()=}")
+        batch_size: int = self._get_batch_size()
+        top_bots_count: int = self._get_top_bots_count()
+        log.info(
+            f"{batch_size=}, {top_bots_count=}"
+            f" You can change values in ./api/config/config.ini"
+        )
+        self.backtester.start_backtesting(batch_size, top_bots_count)
+
 
     def _get_batch_size(self) -> int:
-        if self.config_manager.config_backtesting_batch_size != -1:
-            return self.config_manager.config_backtesting_batch_size
+        if self.config.config_backtesting_batch_size != -1:
+            return self.config.config_backtesting_batch_size
         else:
             batch_size: int = self._ask_for_batch_size()
-            self.config_manager.set_config_backtesting_batch_size(batch_size)
+            self.config.set_config_backtesting_batch_size(batch_size)
             return batch_size
 
     def _get_top_bots_count(self) -> int:
-        if self.config_manager.config_backtesting_top_bots_count != -1:
-            return self.config_manager.config_backtesting_top_bots_count
+        if self.config.config_backtesting_top_bots_count != -1:
+            return self.config.config_backtesting_top_bots_count
         else:
             top_bots_count: int = self._ask_for_top_bots_count()
-            self.config_manager.set_config_backtesting_top_bots_count(
-                top_bots_count)
+            self.config.set_config_backtesting_top_bots_count(top_bots_count)
             return top_bots_count
 
     def _ask_for_batch_size(self) -> int:
