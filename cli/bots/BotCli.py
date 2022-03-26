@@ -16,6 +16,7 @@ from typing import Callable
 from InquirerPy import inquirer
 
 from cli.bots.BotBacktestCli import BotBacktestCli
+from cli.bots.BotConfigBacktestCli import BotConfigBacktestCli
 
 
 MainMenuAction = Optional[Bot | Interfaces | KeyboardInterrupt]
@@ -34,11 +35,16 @@ class BotCli:
         self.indictator_option_selector = InterfaceOptionSelectorCli(
             self.manager)
         self.backtester = BotBacktestCli(self.manager)
+        self.config_backtester = BotConfigBacktestCli(self.manager)
 
         self.main_menu = list([
             {
                 "name": "Select interface",
                 "value": self.interface_selector.select_interface
+            },
+            {
+                "name": f"Start backtesting by config",
+                "value": self.config_backtester.start
             },
             {
                 "name": f"Select another {self.manager.bot_name()}",
