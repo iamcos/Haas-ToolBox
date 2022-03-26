@@ -44,3 +44,9 @@ class BotApiProvider():
     def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
         pass
 
+    @abstractmethod
+    def clone_bot_and_save(self, bot: Bot) -> Bot: pass
+
+    @abstractmethod
+    def delete_bot(self, bot_guid: str) -> None: pass
+
