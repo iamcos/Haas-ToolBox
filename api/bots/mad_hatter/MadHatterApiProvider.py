@@ -9,7 +9,7 @@ from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 from api.bots.BotApiProvider import BotApiProvider
 from api.MainContext import main_context
-from api.models import Interfaces
+from api.models import Interfaces, Bot
 
 
 class MadHatterApiProvider(BotApiProvider):
@@ -22,9 +22,9 @@ class MadHatterApiProvider(BotApiProvider):
         )
 
         self.options_names: dict[str, tuple[str, ...]] = dict({
-            "Mad Hatter MACD": ("MACD Fast", "MACD Slow"),
+            "Mad Hatter MACD": ("MACD Fast", "MACD Slow", "MACD Signal"),
             "Mad Hatter RSI": ("Length", "Buy level", "Sell level"),
-            "Mad Hatter BBands": ("Length", "Dev.Up", "Dev.Down"),
+            "Mad Hatter BBands": ("Length", "Dev.Up", "Dev.Down", "MA Type"),
         })
 
     def get_all_bots(self) -> tuple[MadHatterBot]:
@@ -171,6 +171,22 @@ class MadHatterApiProvider(BotApiProvider):
     def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
         return tuple([Indicator])
 
+    def clone_bot_and_save(self, bot: Bot) -> Bot:
+        res = self.api.clone_custom_bot(
+            bot.accountId,
+            bot.guid,
+            EnumCustomBotType.MAD_HATTER_BOT,
+            f"{bot.name} [{self.get_refreshed_bot(bot.guid).roi}]",
+            bot.priceMarket.primaryCurrency,
+            bot.priceMarket.secondaryCurrency,
+            bot.priceMarket.contractName,
+            bot.leverage
+        )
+
+        return self.process_error(res, "Clone bot error")
+
+    def delete_bot(self, bot_guid: str) -> None:
+        self.api.remove_custom_bot(bot_guid)
 
 class MadHatterException(Exception): pass
 

@@ -9,12 +9,13 @@ from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientRespo
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from api.bots.BotApiProvider import BotApiProvider, Interfaces
 from api.MainContext import main_context
+from api.models import Bot
 from api.bots.InterfaceWrapper import InterfaceWrapper
 
 
 class TradeBotApiProvider(BotApiProvider):
     def __init__(self) -> None:
-        self.tradebot_api: TradeBotApi = main_context.trade_bot_api
+        self.api: TradeBotApi = main_context.trade_bot_api
         self.interfaces: dict[Type, str] = {
             Indicator: "indicators",
             Insurance: "insurances",
@@ -27,7 +28,7 @@ class TradeBotApiProvider(BotApiProvider):
         }
 
     def get_all_bots(self) -> tuple[TradeBot, ...]:
-        response: HaasomeClientResponse = self.tradebot_api.get_all_trade_bots()
+        response: HaasomeClientResponse = self.api.get_all_trade_bots()
 
         return tuple(self.process_error(
             response, "Error while getting tradebots list"))
@@ -47,7 +48,7 @@ class TradeBotApiProvider(BotApiProvider):
             self.get_refreshed_bot(guid), self.interfaces[t]).values())
 
     def get_refreshed_bot(self, guid: str) -> TradeBot:
-        response: HaasomeClientResponse = self.tradebot_api.get_trade_bot(guid)
+        response: HaasomeClientResponse = self.api.get_trade_bot(guid)
         return self.process_error(response, "Error while refreshing bot")
 
     def edit_interface(
@@ -57,14 +58,14 @@ class TradeBotApiProvider(BotApiProvider):
         value: Any,
         bot_guid: str
     ) -> None:
-        edit_func = getattr(self.tradebot_api, self.edit_methods[type(t)])
+        edit_func = getattr(self.api, self.edit_methods[type(t)])
 
         res = edit_func(bot_guid, InterfaceWrapper(t).guid, param_num, value)
 
         self.process_error(res, "Error while editing interface")
 
     def get_backtest_method(self) -> Callable:
-        return self.tradebot_api.backtest_trade_bot
+        return self.api.backtest_trade_bot
 
     def process_error(
         self,
@@ -89,6 +90,22 @@ class TradeBotApiProvider(BotApiProvider):
     def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
         return tuple([Indicator, Safety, Insurance])
 
+    def clone_bot_and_save(self, bot: Bot) -> Bot:
+        res = self.api.clone_trade_bot(
+            bot.accountId,
+            bot.guid,
+            f"{bot.name} [{bot.roi}]",
+            bot.priceMarket.primaryCurrency,
+            bot.priceMarket.secondaryCurrency,
+            bot.priceMarket.contractName,
+            bot.leverage,
+            True, True, True, True, True
+        )
+
+        return self.process_error(res, "Clone bot error")
+
+    def delete_bot(self, bot_guid: str) -> None:
+        self.api.remove_trade_bot(bot_guid)
 
 class TradeBotException(Exception): pass
 
