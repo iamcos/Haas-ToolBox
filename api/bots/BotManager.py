@@ -94,7 +94,6 @@ class BotManager():
 
     def save_roi(self, data: BotRoiData) -> None:
         roi: float = self.bot_roi()
-        # if roi > 0:
         data = data._replace(roi=roi)
         self.backtests_cache.add_data(data)
 
