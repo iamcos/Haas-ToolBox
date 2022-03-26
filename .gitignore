@@ -3,7 +3,7 @@
 .vscode
 .DS_Store
 pyrightconfig.json
-api/config/config.ini
+./api/config/config.ini
 
 api/Misc/
 env/
