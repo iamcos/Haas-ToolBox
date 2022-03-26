@@ -1,4 +1,4 @@
-from configparser import NoSectionError, SafeConfigParser
+from configparser import NoOptionError, NoSectionError, SafeConfigParser, DuplicateSectionError
 
 from InquirerPy import inquirer
 from datetime import datetime
@@ -77,6 +77,46 @@ class ConfigManager:
             self.write_date()
             return self.read_ticks()
 
+    @property
+    def config_backtesting_batch_size(self) -> int:
+        try:
+            return int(self.config_parser.get(
+                "CONFIG BACKTESTING", "batch_size"))
+        except (NoSectionError, NoOptionError):
+            log.info("Batch size not set")
+
+        return -1
+
+    def set_config_backtesting_batch_size(self, n: int) -> None:
+        try:
+            self.config_parser.add_section("CONFIG BACKTESTING")
+        except DuplicateSectionError:
+            log.error("Section already exists")
+
+        self.config_parser.set("CONFIG BACKTESTING", "batch_size", str(n))
+        self.write_file()
+
+    @property
+    def config_backtesting_top_bots_count(self) -> int:
+        try:
+            return int(self.config_parser.get(
+                "CONFIG BACKTESTING", "top_bots"))
+        except (NoSectionError, NoOptionError):
+            log.info("Top bots not set")
+
+        return -1
+
+    def set_config_backtesting_top_bots_count(self, n: int) -> None:
+        try:
+            self.config_parser.add_section("CONFIG BACKTESTING")
+        except DuplicateSectionError:
+            log.error("Section already exists")
+
+        self.config_parser.set("CONFIG BACKTESTING", "top_bots", str(n))
+        self.write_file()
+
+
     def write_file(self) -> None:
         with open("./api/config/config.ini", "w") as f:
             self.config_parser.write(f)
+
