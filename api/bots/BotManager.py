@@ -14,6 +14,7 @@ from loguru import logger as log
 
 
 
+# FIXME: made _wbot public
 class BotManager():
     def __init__(self, t: Type[Bot]) -> None:
         self._wbot: BotWrapper = BotWrapper()
@@ -80,9 +81,9 @@ class BotManager():
             self._wbot.guid
         )
 
-    def backtest_bot(self, interval: int):
+    def backtest_bot(self, ticks: int):
         res: HaasomeClientResponse = self.provider.get_backtest_method()(
-            self._wbot.guid, interval
+            self._wbot.guid, ticks
         )
 
         self.provider.process_error(
@@ -96,4 +97,26 @@ class BotManager():
         roi: float = self.bot_roi()
         data = data._replace(roi=roi)
         self.backtests_cache.add_data(data)
+
+    def get_option_num(
+        self,
+        interface_type: Type[Interfaces],
+        option_title: str
+    ) -> int:
+        for i in self.get_interfaces_by_type(interface_type):
+            for j, option in enumerate(InterfaceWrapper(i).options):
+                if option.title == option_title:
+                    return j
+
+        self.provider.process_error(
+            message=f"Option num not found for {option_title}")
+
+    def clone_bot_and_save(self) -> Bot:
+        return self.provider.clone_bot_and_save(self._wbot.bot)
+
+    def delete_bot(self, bot_guid: None | str = None) -> None:
+        if bot_guid is None:
+            self.provider.delete_bot(self._wbot.guid)
+        else:
+            self.provider.delete_bot(bot_guid)
 
