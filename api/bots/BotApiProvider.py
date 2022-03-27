@@ -4,6 +4,9 @@ from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientRespo
 from api.models import Bot, Interfaces
 
 
+class BotException(Exception): pass
+
+
 class BotApiProvider():
     @abstractmethod
     def get_all_bots(self) -> tuple[Bot]: pass
