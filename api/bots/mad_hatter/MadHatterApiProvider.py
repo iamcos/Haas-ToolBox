@@ -29,7 +29,15 @@ class MadHatterApiProvider(BotApiProvider):
         self.options_names: dict[str, tuple[str, ...]] = dict({
             "Mad Hatter MACD": ("MACD Fast", "MACD Slow", "MACD Signal"),
             "Mad Hatter RSI": ("Length", "Buy level", "Sell level"),
-            "Mad Hatter BBands": ("Length", "Dev.Up", "Dev.Down", "MA Type"),
+            "Mad Hatter BBands": (
+                "Length",
+                "Dev.Up",
+                "Dev.Down",
+                "MA Type",
+                "Require FCC",
+                "Reset Middle",
+                "Allow Mid Sells"
+            ),
         })
 
     def get_all_bots(self) -> tuple[MadHatterBot]:
