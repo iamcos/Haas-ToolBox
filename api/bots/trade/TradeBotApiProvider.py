@@ -1,3 +1,6 @@
+from re import sub
+
+
 import itertools
 from typing import Any, Callable, Optional, Type
 from haasomeapi.apis.TradeBotApi import TradeBotApi
@@ -94,10 +97,12 @@ class TradeBotApiProvider(BotApiProvider):
         return tuple([Indicator, Safety, Insurance])
 
     def clone_bot_and_save(self, bot: Bot) -> Bot:
+        name: str = sub(r"\s\[.*\]", "", bot.name)
+
         res = self.api.clone_trade_bot(
             bot.accountId,
             bot.guid,
-            f"{bot.name} [{bot.roi}]",
+            f"{name} [{bot.roi}]",
             bot.priceMarket.primaryCurrency,
             bot.priceMarket.secondaryCurrency,
             bot.priceMarket.contractName,

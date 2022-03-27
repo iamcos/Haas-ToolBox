@@ -1,3 +1,5 @@
+from re import sub
+
 from typing import Any, Callable, Optional, Type
 from haasomeapi.apis.CustomBotApi import CustomBotApi
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
@@ -175,11 +177,13 @@ class MadHatterApiProvider(BotApiProvider):
         return tuple([Indicator])
 
     def clone_bot_and_save(self, bot: Bot) -> Bot:
+        name: str = sub(r"\s\[.*\]", "", bot.name)
+
         res = self.api.clone_custom_bot(
             bot.accountId,
             bot.guid,
             EnumCustomBotType.MAD_HATTER_BOT,
-            f"{bot.name} [{self.get_refreshed_bot(bot.guid).roi}]",
+            f"{name} [{self.get_refreshed_bot(bot.guid).roi}]",
             bot.priceMarket.primaryCurrency,
             bot.priceMarket.secondaryCurrency,
             bot.priceMarket.contractName,
