@@ -7,9 +7,12 @@ from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientRespo
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
-from api.bots.BotApiProvider import BotApiProvider
+from api.bots.BotApiProvider import BotApiProvider, BotException
 from api.MainContext import main_context
 from api.models import Interfaces, Bot
+
+
+class MadHatterException(BotException): pass
 
 
 class MadHatterApiProvider(BotApiProvider):
@@ -187,6 +190,4 @@ class MadHatterApiProvider(BotApiProvider):
 
     def delete_bot(self, bot_guid: str) -> None:
         self.api.remove_custom_bot(bot_guid)
-
-class MadHatterException(Exception): pass
 

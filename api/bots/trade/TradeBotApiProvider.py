@@ -7,10 +7,13 @@ from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from haasomeapi.dataobjects.tradebot.TradeBot import TradeBot
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
-from api.bots.BotApiProvider import BotApiProvider, Interfaces
+from api.bots.BotApiProvider import BotApiProvider, BotException, Interfaces
 from api.MainContext import main_context
 from api.models import Bot
 from api.bots.InterfaceWrapper import InterfaceWrapper
+
+
+class TradeBotException(BotException): pass
 
 
 class TradeBotApiProvider(BotApiProvider):
@@ -106,6 +109,4 @@ class TradeBotApiProvider(BotApiProvider):
 
     def delete_bot(self, bot_guid: str) -> None:
         self.api.remove_trade_bot(bot_guid)
-
-class TradeBotException(Exception): pass
 
