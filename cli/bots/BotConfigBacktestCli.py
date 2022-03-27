@@ -10,7 +10,7 @@ from api.scripts.config_manager import ConfigManager
 class BotConfigBacktestCli:
     def __init__(self, manager: BotManager):
         self.config: ConfigManager = main_context.config_manager
-        self.backtester: BotConfigBacktester = BotConfigBacktester(manager)
+        self.manager: BotManager = manager
 
     def start(self) -> None:
         log.info("Config backtesting")
@@ -20,7 +20,7 @@ class BotConfigBacktestCli:
             f"{batch_size=}, {top_bots_count=}"
             f" You can change values in ./api/config/config.ini"
         )
-        self.backtester.start_backtesting(batch_size, top_bots_count)
+        BotConfigBacktester(self.manager, batch_size, top_bots_count).start()
 
 
     def _get_batch_size(self) -> int:
