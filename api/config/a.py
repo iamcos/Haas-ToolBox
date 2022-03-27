@@ -9,12 +9,9 @@ result_dict = {
 }
 
 for i, row in config.iterrows():
-    bot_config = {
+    modes = {
         "Interval": row.interval,
         "Indicator Signal Consensus": row.signalconsensus,
-        "Require FCC": row.fcc,
-        "Reset Middle": row.resetmiddle,
-        "Allow Mid Sells": row.allowmidsells
     }
 
     indicator = {
@@ -32,14 +29,17 @@ for i, row in config.iterrows():
             "MA Type": row.matype,
             "Length": row.bbl,
             "Dev.Up": int(row.devup),
-            "Dev.Down": int(row.devdn)
+            "Dev.Down": int(row.devdn),
+            "Require FCC": row.fcc,
+            "Reset Middle": row.resetmiddle,
+            "Allow Mid Sells": row.allowmidsells
         }
     }
 
     result_dict["tests"].append(
         {
             i: {
-                "bot_config": bot_config,
+                "modes": modes,
                 "Indicator": indicator
             }
         }
