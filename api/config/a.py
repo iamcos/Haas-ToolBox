@@ -45,7 +45,7 @@ for i, row in config.iterrows():
         }
     )
 
-with open("./api/config/mad_hatter_config.json", "w") as f:
+with open("./api/config/MadHatterBotConfig.json", "w") as f:
     f.write(json.dumps(result_dict, indent=4))
 
 
