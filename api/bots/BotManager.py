@@ -1,5 +1,6 @@
+from contextlib import contextmanager
 import itertools
-from typing import Type, Any
+from typing import Generator, Type, Any
 
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
@@ -18,9 +19,9 @@ from loguru import logger as log
 class BotManager():
     def __init__(self, t: Type[Bot]) -> None:
         self._wbot: BotWrapper = BotWrapper()
-        self.backtests_cache = BacktestsCache()
-        self.provider: BotApiProvider = bot_provider_factory.get_provider(t)
-        self.bot_name_from_class: str = t.__name__
+        self._backtests_cache = BacktestsCache()
+        self._provider: BotApiProvider = bot_provider_factory.get_provider(t)
+        self._bot_name_from_class: str = t.__name__
 
     def bot_not_selected(self) -> bool:
         return self._wbot.bot_is_not_set()
@@ -29,31 +30,31 @@ class BotManager():
         self._wbot.bot = bot
 
     def get_available_bots(self) -> tuple[Bot]:
-        return self.provider.get_all_bots()
+        return self._provider.get_all_bots()
 
     def get_interfaces_by_type(self, t: Type[Interfaces]) -> tuple[Interfaces]:
-        return self.provider.get_interfaces_by_type(self._wbot.guid, t)
+        return self._provider.get_interfaces_by_type(self._wbot.guid, t)
 
     def get_all_interfaces(self) -> tuple[Interfaces, ...]:
         res: list[Interfaces] = []
-        for i in self.provider.get_available_interface_types():
+        for i in self._provider.get_available_interface_types():
             res.extend(self.get_interfaces_by_type(i))
         return tuple(res)
 
     def refresh_bot(self) -> None:
-        self._wbot.bot = self.provider.get_refreshed_bot(self._wbot.bot.guid)
+        self._wbot.bot = self._provider.get_refreshed_bot(self._wbot.bot.guid)
 
     def bot_name(self) -> str:
-        return self.bot_name_from_class
+        return self._bot_name_from_class
 
     def get_available_interface_types(self) -> tuple[Type[Interfaces], ...]:
-        return self.provider.get_available_interface_types()
+        return self._provider.get_available_interface_types()
 
     def update_option(self, option: IndicatorOption) -> IndicatorOption:
         cmp = lambda o : o.title == option.title
         res = next(filter(cmp, self._get_all_bot_options()), None)
 
-        self.provider.process_error(res, f"Option {option.title} couldn't be found")
+        self._provider.process_error(res, f"Option {option.title} couldn't be found")
         log.info(f"Update option: {vars(res)}")
         return res
 
@@ -61,11 +62,11 @@ class BotManager():
         self.refresh_bot()
         return tuple(itertools.chain(*[
             InterfaceWrapper(i).options
-            for i in self.provider.get_all_interfaces(self._wbot.guid)
+            for i in self._provider.get_all_interfaces(self._wbot.guid)
         ]))
 
     def save_max_result(self, interface: Interfaces, option_num: int) -> None:
-        res = self.backtests_cache.get_best_result(
+        res = self._backtests_cache.get_best_result(
             InterfaceWrapper(interface).guid, option_num
         )
 
@@ -74,7 +75,7 @@ class BotManager():
         self.refresh_bot()
 
     def edit_interface(self, interface: Interfaces, param_num: int, value: Any):
-        self.provider.edit_interface(
+        self._provider.edit_interface(
             interface,
             param_num,
             value,
@@ -82,11 +83,11 @@ class BotManager():
         )
 
     def backtest_bot(self, ticks: int):
-        res: HaasomeClientResponse = self.provider.get_backtest_method()(
+        res: HaasomeClientResponse = self._provider.get_backtest_method()(
             self._wbot.guid, ticks
         )
 
-        self.provider.process_error(
+        self._provider.process_error(
             res, "Error while backtesting bot")
 
     def bot_roi(self) -> float:
@@ -96,7 +97,7 @@ class BotManager():
     def save_roi(self, data: BotRoiData) -> None:
         roi: float = self.bot_roi()
         data = data._replace(roi=roi)
-        self.backtests_cache.add_data(data)
+        self._backtests_cache.add_data(data)
 
     def get_option_num(
         self,
@@ -108,15 +109,24 @@ class BotManager():
                 if option.title == option_title:
                     return j
 
-        self.provider.process_error(
+        self._provider.process_error(
             message=f"Option num not found for {option_title}")
 
     def clone_bot_and_save(self) -> Bot:
-        return self.provider.clone_bot_and_save(self._wbot.bot)
+        return self._provider.clone_bot_and_save(self._wbot.bot)
 
     def delete_bot(self, bot_guid: None | str = None) -> None:
         if bot_guid is None:
-            self.provider.delete_bot(self._wbot.guid)
+            self._provider.delete_bot(self._wbot.guid)
         else:
-            self.provider.delete_bot(bot_guid)
+            self._provider.delete_bot(bot_guid)
+
+    @contextmanager
+    def new_bot(self) -> Generator:
+        new_bot = self._wbot.bot
+        clone_bot: Bot = self.clone_bot_and_save()
+        self.set_bot(clone_bot)
+        yield
+        self.delete_bot(clone_bot.guid)
+        self.set_bot(new_bot)
 
