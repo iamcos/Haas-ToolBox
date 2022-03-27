@@ -83,6 +83,7 @@ class BotConfigBacktester:
 
     def _delete_useless_bots(self, backtest_results: dict[ROI, set[GUID]]) -> None:
         roi_to_delete = self._get_roi_to_delete(backtest_results)
+        log.info(f"{roi_to_delete=}")
 
         for roi in roi_to_delete:
             for guid in backtest_results[roi]:
@@ -95,7 +96,8 @@ class BotConfigBacktester:
         try:
             for _ in self._generate_backtested_bots():
                 roi: ROI = self.manager.bot_roi()
-                backtested_bot_guid: GUID = self._get_backtested_bot_guid()
+                backtested_bot_guid: GUID = self.manager.bot_guid()
+
                 results[roi].add(backtested_bot_guid)
 
         except (KeyboardInterrupt, BotException):
@@ -115,11 +117,9 @@ class BotConfigBacktester:
             log.info(
                 "ROI: {}, Time passed: {:.2f}s".format(
                     self.manager.bot_roi(),monotonic() - start))
+            self.manager.set_bot(self.manager.clone_bot_and_save())
 
             yield
-
-    def _get_backtested_bot_guid(self) -> str:
-        return self.manager.clone_bot_and_save().guid
 
     def _delete_all_created_bots(
         self,
@@ -137,10 +137,16 @@ class BotConfigBacktester:
         self,
         backtest_results: dict[ROI, set[GUID]]
     ) -> list[ROI]:
+        log.info(f"{backtest_results=}")
         if not backtest_results:
             return []
-        return sorted(
-            list(backtest_results.keys()), reverse=True)[self.top_bots_count:]
+
+        rois: list[ROI] = list(backtest_results.keys())
+
+        res: set[ROI] = set(sorted(rois, reverse=True)[self.top_bots_count:])
+        res.update([i for i in list(backtest_results.keys()) if i <= 0.0])
+
+        return list(set(res))
 
 
     def _reconfigure_bot(self, sample: dict) -> None:
