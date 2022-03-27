@@ -134,3 +134,4 @@ class BotManager():
 
     def bot_guid(self) -> GUID:
         return self._wbot.guid
+
