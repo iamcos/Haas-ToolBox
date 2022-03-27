@@ -20,3 +20,6 @@ Bot = TradeBot | MadHatterBot
 
 Interfaces = Indicator | Safety | Insurance
 
+ROI = float
+GUID = str
+
