@@ -13,6 +13,8 @@ from api.bots.BotWrapper import BotWrapper
 from api.bots import bot_provider_factory
 from loguru import logger as log
 
+from api.models import GUID
+
 
 
 # FIXME: made _wbot public
@@ -130,3 +132,5 @@ class BotManager():
         self.delete_bot(clone_bot.guid)
         self.set_bot(new_bot)
 
+    def bot_guid(self) -> GUID:
+        return self._wbot.guid
