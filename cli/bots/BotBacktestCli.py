@@ -74,7 +74,7 @@ class BotBacktestCli:
                 "value": backtest_methods.backtesting_length_x2
             },
             {
-                "name": "backtesting length \\/ 2",
+                "name": "backtesting length / 2",
                 "value": backtest_methods.backtesting_length_devide2
             },
         ])

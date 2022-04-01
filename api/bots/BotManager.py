@@ -16,8 +16,6 @@ from loguru import logger as log
 from api.models import GUID
 
 
-
-# FIXME: made _wbot public
 class BotManager():
     def __init__(self, t: Type[Bot]) -> None:
         self._wbot: BotWrapper = BotWrapper()
@@ -57,7 +55,6 @@ class BotManager():
         res = next(filter(cmp, self._get_all_bot_options()), None)
 
         self._provider.process_error(res, f"Option {option.title} couldn't be found")
-        log.info(f"Update option: {vars(res)}")
         return res
 
     def _get_all_bot_options(self) -> tuple[IndicatorOption]:

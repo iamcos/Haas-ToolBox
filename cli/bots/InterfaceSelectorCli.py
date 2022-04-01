@@ -1,6 +1,5 @@
 from api.bots.BotManager import BotManager
 from api.bots.BotApiProvider import Interfaces
-from loguru import logger as log
 from typing import Any, Type
 from InquirerPy.separator import Separator
 from InquirerPy import inquirer
@@ -29,8 +28,6 @@ class InterfaceSelectorCli:
         choices: list[InterfacesForCli] = []
 
         for interface_name in self.manager.get_available_interface_types():
-            log.info(f"Interface name: {interface_name}")
-
             interfaces: tuple[Interfaces] = self.manager.get_interfaces_by_type(
                 interface_name
             )
@@ -41,7 +38,6 @@ class InterfaceSelectorCli:
 
             choices.extend(iterface_selector)
 
-        log.info(f"{choices=}")
         choices.extend([Separator(""), "Refresh", Separator(""), "Back"])
 
         return choices
@@ -53,10 +49,8 @@ class InterfaceSelectorCli:
     ) -> list[InterfacesForCli]:
 
         if interfaces:
-            log.info("Interfaces size more than 0")
             return self._menu_for_choosing_indicator(interfaces)
         else:
-            log.info("Interfaces size less than 0")
             msg: str = f"No {interface_name.__name__} to select"
             return self._get_separated_msg(msg)
 
@@ -65,7 +59,6 @@ class InterfaceSelectorCli:
             interfaces: tuple[Interfaces, ...]
     ) -> list[InterfacesForCli]:
         type_as_name: str = type(interfaces[0]).__name__.lower()
-        log.info(f"{type_as_name=}")
 
         indicators_menu: list[Any] = list([
             Separator(""),
@@ -81,7 +74,6 @@ class InterfaceSelectorCli:
             else:
                 indicators_menu.append(Separator(str(i) + " DISABLED"))
 
-        log.info(f"")
         return indicators_menu
 
     def _get_separated_msg(self, msg: str) -> list[InterfacesForCli]:
