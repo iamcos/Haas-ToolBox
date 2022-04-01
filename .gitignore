@@ -3,7 +3,6 @@
 .vscode
 .DS_Store
 pyrightconfig.json
-./api/config/config.ini
 
 api/Misc/
 env/
@@ -25,3 +24,4 @@ output/
 *.obj
 *.xlsx
 *.log
+api/config/config.ini
