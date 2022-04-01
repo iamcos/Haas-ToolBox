@@ -30,7 +30,7 @@ for i, row in config.iterrows():
             "Length": row.bbl,
             "Dev.Up": int(row.devup),
             "Dev.Down": int(row.devdn),
-            "Require FCC": row.fcc,
+            "Require FCC": 1 if row.fcc else 0,
             "Reset Middle": row.resetmiddle,
             "Allow Mid Sells": row.allowmidsells
         }
