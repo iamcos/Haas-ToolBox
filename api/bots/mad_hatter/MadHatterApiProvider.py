@@ -12,6 +12,7 @@ from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
 from api.bots.BotApiProvider import BotApiProvider, BotException
 from api.MainContext import main_context
 from api.models import Interfaces, Bot
+from loguru import logger as log
 
 
 class MadHatterException(BotException): pass
