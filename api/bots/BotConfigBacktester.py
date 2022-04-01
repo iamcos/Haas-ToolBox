@@ -14,47 +14,31 @@ from loguru import logger as log
 
 
 """
-Sample example:
+Config sample example:
 
     "0": {                                          # 0 is a sample counter
-
-        "bot_config": {                             # Keys in bot_config is
-            "Interval": 5,                          # unique for each bot Type
-            "Indicator Signal Consensus": false,
-            "Require FCC": false,
-            "Reset Middle": true,
-            "Allow Mid Sells": false
+        "bot_config": {
+            "Interval": 5,
+            "Indicator Signal Consensus": false
         },
 
-
-        "Indicator": {                              # Here can be
-                                                    # Indicator/Insurance/Safety
-                                                    # keys
-
+        "Indicator": {
             "Mad Hatter MACD": {                    # Name of interface
-
                 "MACD Fast": 12,                    # Name of option and value
                 "MACD Slow": 24,
                 "MACD Signal": 5
-            },
-
-            "Mad Hatter RSI": {
-                "Length": 6,
-                "Buy level": 34.0,
-                "Sell level": 65.0
-            },
-
-            "Mad Hatter BBands": {
-                "MA Type": 4,
-                "Length": 32,
-                "Dev.Up": 0.5,
-                "Dev.Down": 0.8
             }
-        }
+        },
 
+        "Safety": {
+        },
+
+        "Insurance": {
+        }
     }
 
 """
+
 
 class BotConfigBacktester:
     def __init__(
@@ -83,7 +67,6 @@ class BotConfigBacktester:
 
     def _delete_useless_bots(self, backtest_results: dict[ROI, set[GUID]]) -> None:
         roi_to_delete = self._get_roi_to_delete(backtest_results)
-        log.info(f"{roi_to_delete=}")
 
         for roi in roi_to_delete:
             for guid in backtest_results[roi]:
@@ -100,8 +83,8 @@ class BotConfigBacktester:
 
                 results[roi].add(backtested_bot_guid)
 
-        except (KeyboardInterrupt, BotException):
-            log.warning("Stopping backtesting")
+        except (KeyboardInterrupt, BotException) as e:
+            log.warning(f"Stopping backtesting: {e}")
             self._delete_all_created_bots(results)
 
         return results
@@ -137,7 +120,6 @@ class BotConfigBacktester:
         self,
         backtest_results: dict[ROI, set[GUID]]
     ) -> list[ROI]:
-        log.info(f"{backtest_results=}")
         if not backtest_results:
             return []
 
