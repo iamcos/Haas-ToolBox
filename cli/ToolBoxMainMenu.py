@@ -7,7 +7,7 @@ from InquirerPy.separator import Separator
 from cli.bots.BotCli import BotCli
 from cli.bots.tradebot.TradeBotCli import TradeBotCli
 from cli.bots.madhatter.MadHatterCli import MadHatterCli
-from cli.bots.scalper.SclaperCli import SclaperCli
+from cli.bots.scalper.ScalperCli import ScalperCli
 
 
 class ToolBoxMainMenu:
@@ -18,10 +18,10 @@ class ToolBoxMainMenu:
             "Trade Bots": TradeBotCli,
             # Custom
             "Mad-Hatter Bots": MadHatterCli,
-            "Scalper Bots": ScaperCli,
-            Separator("[Not working] Flash-Crash Bots"): None,
-            Separator("[Not working] AssistedBT"): None,
-            Separator("[Not working] TradingView"): None,
+            "Scalper Bots": ScalperCli,
+            Separator("[Not working] Flash-Crash Bots"): QuitOption,
+            Separator("[Not working] AssistedBT"): QuitOption,
+            Separator("[Not working] TradingView"): QuitOption,
             # Special class with keyboard interrupt
             "Quit": QuitOption
         }
