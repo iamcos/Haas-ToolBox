@@ -8,6 +8,13 @@ class BotException(Exception): pass
 
 
 class BotApiProvider():
+
+    def get_as_dict(self, bot: Bot, indicator_name: str) -> dict:
+        interface = getattr(bot, indicator_name)
+        if type(interface) is not dict:
+            interface = vars(interface)
+        return interface
+
     @abstractmethod
     def get_all_bots(self) -> tuple[Bot]: pass
 
