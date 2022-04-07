@@ -137,16 +137,12 @@ class BotBacketster:
             f"in indicator options {self._get_indicator_options()}"
         )
 
-    def _calculate_next_value_up(self) -> int:
-        current_value: int = int(self._smart_round()) + int(float(self.step))
+    def _calculate_next_value_up(self) -> float:
+        current_value: float = self._smart_round() + float(self.step)
 
-        while current_value in [int(i.parameter_value) for i in self.used_values]:
+        while current_value in [float(i.parameter_value) for i in self.used_values]:
             log.info(f"{current_value=} already used")
-            current_value: int = int(
-                float(current_value)
-            ) + int(
-                float(self.step)
-            )
+            current_value = current_value +float(self.step)
 
         self.value = current_value
 
@@ -159,16 +155,12 @@ class BotBacketster:
 
         return current_value
 
-    def _calculate_next_value_down(self) -> int:
-        current_value: int = int(self._smart_round()) - int(float(self.step))
+    def _calculate_next_value_down(self) -> float:
+        current_value: float = self._smart_round() - float(self.step)
 
-        while current_value in [int(i.parameter_value) for i in self.used_values]:
+        while current_value in [float(i.parameter_value) for i in self.used_values]:
             log.info(f"{current_value=} already used")
-            current_value = int(
-                float(current_value)
-            ) - int(
-                float(self.step)
-            )
+            current_value = float(current_value) - float(self.step)
 
         self.value = current_value
 
