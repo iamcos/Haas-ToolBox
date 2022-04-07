@@ -7,6 +7,7 @@ from InquirerPy.separator import Separator
 from cli.bots.BotCli import BotCli
 from cli.bots.tradebot.TradeBotCli import TradeBotCli
 from cli.bots.madhatter.MadHatterCli import MadHatterCli
+from cli.bots.scalper.SclaperCli import SclaperCli
 
 
 class ToolBoxMainMenu:
@@ -15,9 +16,9 @@ class ToolBoxMainMenu:
         self._bot_chain: dict[str | Separator, type[BotCli | QuitOption] | None] = {
             # Fully configurable
             "Trade Bots": TradeBotCli,
-            "Mad-Hatter Bots": MadHatterCli,
             # Custom
-            Separator("[Not working] Scalper Bots"): None,
+            "Mad-Hatter Bots": MadHatterCli,
+            "Scalper Bots": ScaperCli,
             Separator("[Not working] Flash-Crash Bots"): None,
             Separator("[Not working] AssistedBT"): None,
             Separator("[Not working] TradingView"): None,
