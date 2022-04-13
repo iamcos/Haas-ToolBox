@@ -1,9 +1,6 @@
 from typing import Type, Optional, Any, cast
 
-from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
-from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
 from cli.bots.InterfaceOptionSelectorCli import InterfaceOptionSelectorCli
@@ -16,7 +13,6 @@ from typing import Callable
 from InquirerPy import inquirer
 
 from cli.bots.BotBacktestCli import BotBacktestCli
-from cli.bots.BotConfigBacktestCli import BotConfigBacktestCli
 
 
 MainMenuAction = Optional[Bot | Interfaces | KeyboardInterrupt]
@@ -34,16 +30,11 @@ class BotCli:
         self.interface_selector = InterfaceSelectorCli(self.manager)
         self.indictator_option_selector = InterfaceOptionSelectorCli(
             self.manager)
-        self.backtester = BotBacktestCli(self.manager)
-        self.config_backtester = BotConfigBacktestCli(self.manager)
 
         self.main_menu: dict[str, tuple[Callable[..., Any], ...]] = dict({
             "Select interface": (
                 self.interface_selector.select_interface,
                 self._process_interface
-            ),
-            "Start backtesting by config": (
-                self.config_backtester.start,
             ),
             f"Select another {self.manager.bot_name()}": (
                 self.bot_selector.select_bot,
@@ -53,6 +44,19 @@ class BotCli:
                 self._process_keyboard_interrupt,
             )
         })
+
+    def add_menu_action(
+            self,
+            title: str,
+            methods_chain: tuple[Callable[..., Any], ...]
+        ) -> None:
+
+        quit: tuple[Callable[..., Any], ...] = self.main_menu["Quit"]
+        del self.main_menu["Quit"]
+
+        self.main_menu[title] = methods_chain
+
+        self.main_menu["Quit"] = quit
 
     def menu(self) -> None:
         log.info(f"Starting {self.manager.bot_name()} CLI menu..")
@@ -96,7 +100,7 @@ class BotCli:
         if option == "Back":
             return self._process_user_choice("Select interface")
         else:
-            self.backtester.process_backtest(
+            BotBacktestCli(self.manager).process_backtest(
                     choice,
                     cast(IndicatorOption, option)
             )
