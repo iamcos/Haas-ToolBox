@@ -91,7 +91,7 @@ class ConfigManager:
         try:
             self.config_parser.add_section("CONFIG BACKTESTING")
         except DuplicateSectionError:
-            log.error("Section already exists")
+            pass
 
         self.config_parser.set("CONFIG BACKTESTING", "batch_size", str(n))
         self.write_file()
@@ -110,7 +110,7 @@ class ConfigManager:
         try:
             self.config_parser.add_section("CONFIG BACKTESTING")
         except DuplicateSectionError:
-            log.error("Section already exists")
+            pass
 
         self.config_parser.set("CONFIG BACKTESTING", "top_bots", str(n))
         self.write_file()
