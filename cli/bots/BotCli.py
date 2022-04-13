@@ -1,4 +1,4 @@
-from typing import Type, Optional, cast
+from typing import Type, Optional, Any, cast
 
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
@@ -37,47 +37,49 @@ class BotCli:
         self.backtester = BotBacktestCli(self.manager)
         self.config_backtester = BotConfigBacktestCli(self.manager)
 
-        self.main_menu = list([
-            {
-                "name": "Select interface",
-                "value": self.interface_selector.select_interface
-            },
-            {
-                "name": f"Start backtesting by config",
-                "value": self.config_backtester.start
-            },
-            {
-                "name": f"Select another {self.manager.bot_name()}",
-                "value": self.bot_selector.select_bot
-            },
-            {
-                "name": "Quit",
-                "value": KeyboardInterrupt
-            }
-        ])
+        self.main_menu: dict[str, tuple[Callable[..., Any], ...]] = dict({
+            "Select interface": (
+                self.interface_selector.select_interface,
+                self._process_interface
+            ),
+            "Start backtesting by config": (
+                self.config_backtester.start,
+            ),
+            f"Select another {self.manager.bot_name()}": (
+                self.bot_selector.select_bot,
+                self._process_bot
+            ),
+            "Quit": (
+                self._process_keyboard_interrupt,
+            )
+        })
 
     def menu(self) -> None:
         log.info(f"Starting {self.manager.bot_name()} CLI menu..")
         self.bot_selector.choose_bot()
         self._process_user_choice(self._menu_action())
 
-    def _menu_action(self) -> MainMenuAction:
+    def _menu_action(self) -> str:
         log.info("Starting base bot setting..")
-        choosed_action: Callable = inquirer.select(
+        choosed_action: str = inquirer.select(
             message="Select action:",
-            choices=self.main_menu
+            choices=list(self.main_menu.keys())
         ).execute()
 
-        return choosed_action()
+        return choosed_action
 
-    def _process_user_choice(self, choice: MainMenuAction) -> None:
-        if type(choice) is Bot:
-            self._process_bot(cast(Bot, choice))
-        elif type(choice) in (Insurance, Indicator, Safety):
-            self._process_interface(cast(Interfaces, choice))
-        elif type(choice) is KeyboardInterrupt:
-            self._process_keyboard_interrupt()
-            exit("666")
+    def _process_user_choice(self, choice: str) -> None:
+        method_result: Any = None
+
+        log.info(f"Starting processing {choice=}")
+        for method in self.main_menu[choice]:
+            log.info(f"{method=}, {method_result=}")
+            if method_result is None:
+                method_result = method()
+            else:
+                method_result = method(method_result)
+
+        log.info(f"{method_result=}")
 
         self.menu()
 
@@ -85,15 +87,22 @@ class BotCli:
         self.manager.set_bot(bot)
 
     def _process_interface(self, choice: Interfaces) -> None:
+        if choice == "Back":
+            return self._process_user_choice(self._menu_action())
+
         option = self.indictator_option_selector.select_option(choice)
-        if type(option) is str and option == "Back":
-            interface: Interfaces = self.interface_selector.select_interface()
-            return self._process_user_choice(interface)
+        log.info("Waiting")
+
+        if option == "Back":
+            return self._process_user_choice("Select interface")
         else:
-            self.backtester.process_backtest(choice,
-                                             cast(IndicatorOption, option))
+            self.backtester.process_backtest(
+                    choice,
+                    cast(IndicatorOption, option)
+            )
             return self._process_interface(choice)
 
     def _process_keyboard_interrupt(self) -> None:
         log.info("Bye :)")
+        exit("666")
 
