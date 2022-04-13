@@ -40,14 +40,14 @@ class BotConfigBacktestCli:
             return top_bots_count
 
     def _ask_for_batch_size(self) -> int:
-        return inquirer.text(
+        return int(inquirer.text(
             message="Input batch size for config backtesting",
             default="50"
-        ).execute()
+        ).execute())
 
     def _ask_for_top_bots_count(self) -> int:
-        return inquirer.text(
+        return int(inquirer.text(
             message="Input count of backtested bots to create",
             default="5"
-        ).execute()
+        ).execute())
 
