@@ -1,4 +1,4 @@
-from typing import Type, Optional, Any, cast
+from typing import Type, Any, cast
 
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from cli.bots.BotSelectorCli import BotSelectorCli
@@ -13,9 +13,6 @@ from typing import Callable
 from InquirerPy import inquirer
 
 from cli.bots.BotBacktestCli import BotBacktestCli
-
-
-MainMenuAction = Optional[Bot | Interfaces | KeyboardInterrupt]
 
 
 class BotCli:
