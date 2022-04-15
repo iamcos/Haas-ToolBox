@@ -57,12 +57,6 @@ class MadHatterApiProvider(BotApiProvider):
 
         return tuple(res)
 
-    def get_as_dict(self, bot: MadHatterBot, indicator_name: str) -> dict:
-        interface = getattr(bot, indicator_name)
-        if type(interface) is not dict:
-            interface = vars(interface)
-        return interface
-
     def create_indicator(self, d: dict) -> Indicator:
         if "indicatorName" in d.keys():
             indicator_name: str = d["indicatorName"]

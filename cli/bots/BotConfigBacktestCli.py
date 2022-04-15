@@ -1,10 +1,9 @@
 from api.bots.BotConfigBacktester import BotConfigBacktester
 from api.bots.BotManager import BotManager
-from loguru import logger as log
 from api.MainContext import main_context
-from InquirerPy import inquirer
-
+from api.scripts.inquirer_wrappers import input_int
 from api.scripts.config_manager import ConfigManager
+from loguru import logger as log
 
 
 class BotConfigBacktestCli:
@@ -27,7 +26,11 @@ class BotConfigBacktestCli:
         if self.config.config_backtesting_batch_size != -1:
             return self.config.config_backtesting_batch_size
         else:
-            batch_size: int = self._ask_for_batch_size()
+            batch_size: int = input_int(
+                "Input batch size for config backtesting",
+                50
+            )
+
             self.config.set_config_backtesting_batch_size(batch_size)
             return batch_size
 
@@ -35,19 +38,10 @@ class BotConfigBacktestCli:
         if self.config.config_backtesting_top_bots_count != -1:
             return self.config.config_backtesting_top_bots_count
         else:
-            top_bots_count: int = self._ask_for_top_bots_count()
+            top_bots_count: int = input_int(
+                "Input count of backtested bots to create",
+                5
+            )
             self.config.set_config_backtesting_top_bots_count(top_bots_count)
             return top_bots_count
-
-    def _ask_for_batch_size(self) -> int:
-        return inquirer.text(
-            message="Input batch size for config backtesting",
-            default="50"
-        ).execute()
-
-    def _ask_for_top_bots_count(self) -> int:
-        return inquirer.text(
-            message="Input count of backtested bots to create",
-            default="5"
-        ).execute()
 
