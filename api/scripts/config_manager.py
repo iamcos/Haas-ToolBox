@@ -1,4 +1,6 @@
 from configparser import NoOptionError, NoSectionError, SafeConfigParser, DuplicateSectionError
+from typing import Optional
+from api.bots.scalper.ScalperRangeBacktesterApi import SclaperBacktestSample, BacktestRange
 
 from InquirerPy import inquirer
 from datetime import datetime
@@ -115,8 +117,83 @@ class ConfigManager:
         self.config_parser.set("CONFIG BACKTESTING", "top_bots", str(n))
         self.write_file()
 
+    @property
+    def scalper_range_backtest_sample(self) -> Optional[SclaperBacktestSample]:
+        try:
+            target_percentage: BacktestRange = BacktestRange(
+                    float(self.config_parser.get(
+                        "RANGE BACKTESTING", "target_percentage_start")
+                    ),
+                    float(self.config_parser.get(
+                        "RANGE BACKTESTING", "target_percentage_end")
+                    ),
+                    float(self.config_parser.get(
+                        "RANGE BACKTESTING", "target_percentage_step")
+                    )
+            )
 
+            stop_loss: BacktestRange = BacktestRange(
+                    float(self.config_parser.get(
+                        "RANGE BACKTESTING", "stop_loss_start")
+                    ),
+                    float(self.config_parser.get(
+                        "RANGE BACKTESTING", "stop_loss_end")
+                    ),
+                    float(self.config_parser.get(
+                        "RANGE BACKTESTING", "stop_loss_step")
+                    )
+            )
+
+            return SclaperBacktestSample(target_percentage, stop_loss)
+
+        except (NoSectionError, NoOptionError):
+            log.info("No Scalper range backtesting config found")
+
+    def set_scalper_range_backtest_sample(
+        self,
+        s: SclaperBacktestSample
+    ) -> None:
+
+        try:
+            self.config_parser.add_section("RANGE BACKTESTING")
+        except DuplicateSectionError:
+            pass
+
+        self.config_parser.set(
+                "RANGE BACKTESTING",
+                "target_percentage_start",
+                str(s.target_percentage.start)
+        )
+        self.config_parser.set(
+                "RANGE BACKTESTING",
+                "target_percentage_end",
+                str(s.target_percentage.end)
+        )
+        self.config_parser.set(
+                "RANGE BACKTESTING",
+                "target_percentage_step",
+                str(s.target_percentage.step)
+        )
+
+        self.config_parser.set(
+                "RANGE BACKTESTING",
+                "stop_loss_start",
+                str(s.stop_loss.start)
+        )
+        self.config_parser.set(
+                "RANGE BACKTESTING",
+                "stop_loss_end",
+                str(s.stop_loss.end)
+        )
+        self.config_parser.set(
+                "RANGE BACKTESTING",
+                "stop_loss_step",
+                str(s.stop_loss.step)
+        )
+
+        self.write_file()
     def write_file(self) -> None:
         with open("./api/config/config.ini", "w") as f:
             self.config_parser.write(f)
 
+    
