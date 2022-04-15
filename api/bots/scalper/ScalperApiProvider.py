@@ -107,7 +107,7 @@ class ScalperApiProvider(BotApiProvider):
 
     def edit_interface(
         self,
-        t: Interfaces,
+        interface: Interfaces,
         param_num: int,
         value: Any,
         bot_guid: str
@@ -115,13 +115,13 @@ class ScalperApiProvider(BotApiProvider):
         bot: ScalperBot = self.get_refreshed_bot(bot_guid)
 
         if param_num == 1:
-            bot.maxAllowedReverseChange = value
-        elif param_num == 2:
             bot.minimumTargetChange = value
+        elif param_num == 2:
+            bot.maxAllowedReverseChange = value
         else:
             self.process_error(f"No param with num {param_num}")
 
-        db = self.api.setup_scalper_bot(
+        self.api.setup_scalper_bot(
 			accountguid=bot.accountId,
 			botguid=bot.guid,
 			botname=bot.name,
@@ -132,11 +132,11 @@ class ScalperApiProvider(BotApiProvider):
 			leverage=bot.leverage,
 			amountType=bot.amountType,
 			tradeamount=bot.currentTradeAmount,
-			position=bot.coinPosition,
+			position=str(bot.coinPosition),
 			fee=bot.currentFeePercentage,
-			targetpercentage=bot.maxAllowedReverseChange,
-			safetythreshold=bot.minimumTargetChange,
-			)
+			targetpercentage=bot.minimumTargetChange,
+			safetythreshold=bot.maxAllowedReverseChange,
+		)
 
 
     def get_backtest_method(self) -> Callable:
