@@ -76,7 +76,7 @@ class BotBacketster:
     def backtest_up(self) -> None:
         log.info("Backtesting up")
 
-        new_value: int = self._calculate_next_value_up()
+        new_value: float = self._calculate_next_value_up()
 
         self.manager.edit_interface(self.interface, self.option_num, new_value)
         self.manager.backtest_bot(self.ticks)
