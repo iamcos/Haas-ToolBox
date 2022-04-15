@@ -19,6 +19,8 @@ def get_bot_manager(t: Type) -> BotManager:
         return TradeBotManager(t)
     elif t is MadHatterBot:
         return MadHatterBotManager(t)
+    elif t is ScalperBot:
+        return ScalperBotManager(t)
     else:
         raise BotManagerCreationException(
             f"Passed type {t} is wrong or not implemented"
