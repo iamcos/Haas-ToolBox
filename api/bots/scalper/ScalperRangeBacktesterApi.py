@@ -1,25 +1,11 @@
-from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from api.bots.scalper.ScalperBotManager import ScalperBotManager
 from api.MainContext import main_context
-from typing import NamedTuple, Generator
+from api.models import SclaperBacktestSample
+from typing import Generator
 from loguru import logger as log
-import numpy as np
+from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 
 from api.models import ROI
-
-
-class BacktestRange(NamedTuple):
-    start: float
-    end: float
-    step: float
-
-    def get_range(self) -> np.ndarray:
-        return np.arange(self.start, self.end + self.step, self.step)
-
-
-class SclaperBacktestSample(NamedTuple):
-    target_percentage: BacktestRange
-    stop_loss: BacktestRange
 
 
 class ScalperRangeBacktesterApi:
@@ -31,7 +17,8 @@ class ScalperRangeBacktesterApi:
 
     def backtest(
             self,
-            sample: SclaperBacktestSample
+            sample: SclaperBacktestSample,
+            top_bots_count: int
         ) -> None:
 
         for (target_percentage, stop_loss) in self.perm_generator(sample):

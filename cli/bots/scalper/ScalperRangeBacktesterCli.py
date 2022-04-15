@@ -1,9 +1,11 @@
 from api.bots.BotManager import BotManager
 from api.bots.scalper.ScalperBotManager import ScalperBotManager
-from api.bots.scalper.ScalperRangeBacktesterApi import ScalperRangeBacktesterApi, BacktestRange, SclaperBacktestSample
-from api.scripts.inquirer_wrappers import input_float
-from loguru import logger as log
-from typing import cast
+from api.bots.scalper.ScalperRangeBacktesterApi import ScalperRangeBacktesterApi
+from api.models import BacktestRange, SclaperBacktestSample
+from api.scripts.inquirer_wrappers import input_float, input_int
+from api.scripts.config_manager import ConfigManager
+from api.MainContext import main_context
+from typing import Optional, cast
 
 
 
@@ -12,6 +14,8 @@ class ScalperRangeBacktesterCli:
     def __init__(self, manager: BotManager) -> None:
         self.backtester: ScalperRangeBacktesterApi = \
                 ScalperRangeBacktesterApi(cast(ScalperBotManager, manager))
+
+        self.config: ConfigManager = main_context.config_manager
 
         self.default_target_percentage: BacktestRange = BacktestRange(
             0.4,
@@ -26,14 +30,33 @@ class ScalperRangeBacktesterCli:
         )
 
     def start(self) -> None:
-        target_percentage: BacktestRange = self._get_target_percentage_range()
-        stop_loss: BacktestRange = self._get_stop_loss_range()
-
-        log.info(f"{target_percentage=}, {stop_loss=}")
         self.backtester.backtest(
-            SclaperBacktestSample(target_percentage, stop_loss)
+            self._get_backtesting_sample(),
+            self._get_top_bots_count()
         )
 
+
+    def _get_backtesting_sample(self) -> SclaperBacktestSample:
+        sample: Optional[SclaperBacktestSample] = self.config.scalper_range_backtest_sample
+
+        if sample is None:
+            target_percentage: BacktestRange = self._get_target_percentage_range()
+            stop_loss: BacktestRange = self._get_stop_loss_range()
+
+            sample = SclaperBacktestSample(target_percentage, stop_loss)
+            self.config.set_scalper_range_backtest_sample(sample)
+
+        return sample
+
+    def _get_top_bots_count(self) -> int:
+        top_bots_count: Optional[int] = \
+            self.config.scalper_range_backtesting_top_bots
+
+        if top_bots_count is None:
+            top_bots_count = input_int("Input top bots count to create", 5)
+            self.config.set_scalper_range_backtesting_top_bots(top_bots_count)
+
+        return top_bots_count
 
     def _get_target_percentage_range(self) -> BacktestRange:
         return self._input_backtesting_range(

@@ -1,3 +1,4 @@
+import numpy as np
 from typing import NamedTuple
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
@@ -23,4 +24,18 @@ Interfaces = Indicator | Safety | Insurance
 
 ROI = float
 GUID = str
+
+
+class BacktestRange(NamedTuple):
+    start: float
+    end: float
+    step: float
+
+    def get_range(self) -> np.ndarray:
+        return np.arange(self.start, self.end + self.step, self.step)
+
+
+class SclaperBacktestSample(NamedTuple):
+    target_percentage: BacktestRange
+    stop_loss: BacktestRange
 
