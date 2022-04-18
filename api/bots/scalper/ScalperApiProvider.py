@@ -95,7 +95,7 @@ class ScalperApiProvider(BotApiProvider):
             target_percentage_value: float = bot.minimumTargetChange
             return tuple([
                 self._create_target_percentage(target_percentage_value)])
-        
+
         return self.process_error(f"{t} type is not supported")
 
 
@@ -183,5 +183,4 @@ class ScalperApiProvider(BotApiProvider):
 
     def delete_bot(self, bot_guid: str) -> None:
         self.api.remove_custom_bot(bot_guid)
-
 
