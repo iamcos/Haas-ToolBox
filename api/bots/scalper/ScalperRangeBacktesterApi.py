@@ -20,26 +20,24 @@ class ScalperRangeBacktesterApi:
         self.ticks = main_context.config_manager.read_ticks()
 
     def backtest(
-            self,
-            sample: SclaperBacktestSample,
-            top_bots_count: int
-        ) -> None:
+        self,
+        sample: SclaperBacktestSample
+    ) -> None:
 
-        with self.manager.new_bot():
-            for (target_percentage, stop_loss) in self.perm_generator(sample):
-                log.info(f"{target_percentage=}, {stop_loss=}")
+        for (target_percentage, stop_loss) in self.perm_generator(sample):
+            log.info(f"{target_percentage=}, {stop_loss=}")
 
-                self.manager.edit_interface(Indicator(), 1, target_percentage)
-                self.manager.edit_interface(Safety(), 2, stop_loss)
+            self.manager.edit_interface(Indicator(), 1, target_percentage)
+            self.manager.edit_interface(Safety(), 2, stop_loss)
 
-                self.manager.backtest_bot(self.ticks)
-                
-                log.info(f"Result ROI: {self.manager.bot_roi()}")
-                self.cache[self.manager.bot_roi()].append(
-                    (target_percentage, stop_loss)
-                )
+            self.manager.backtest_bot(self.ticks)
 
-            self._create_result_bots(top_bots_count)
+            log.info(f"Result ROI: {self.manager.bot_roi()}")
+            self.cache[self.manager.bot_roi()].append(
+                (target_percentage, stop_loss)
+            )
+
+        self._create_result_bot()
 
 
     def perm_generator(
@@ -50,29 +48,20 @@ class ScalperRangeBacktesterApi:
             for j in sample.stop_loss.get_range():
                 yield (round(i, 1), round(j, 1))
 
-    def _create_result_bots(self, top_bots_count: int) -> None:
-        res = sorted(list(self.cache.keys()))
-        log.info(f"Top bots info: {res[:top_bots_count]}")
+    def _create_result_bot(self) -> None:
+        top_roi: ROI = max(list(self.cache.keys()))
 
-        def create_bots(res: list, counter: int = 0):
-            for roi in res:
-                if counter == top_bots_count:
-                    return
-                self.manager.edit_interface(
-                    Indicator(),
-                    1,
-                    self.cache[roi][counter // len(res)][0]
-                )
-                self.manager.edit_interface(
-                    Safety(),
-                    2,
-                    self.cache[roi][counter // len(res)][1]
-                )
+        self.manager.edit_interface(
+            Indicator(),
+            1,
+            self.cache[top_roi][0][0]
+        )
+        self.manager.edit_interface(
+            Safety(),
+            2,
+            self.cache[top_roi][0][1]
+        )
 
-                self.manager.clone_bot_and_save()
-                counter += 1
+        self.manager.backtest_bot(self.ticks)
 
-            return create_bots(res, counter)
-
-        create_bots(res[:top_bots_count])
 
