@@ -48,9 +48,9 @@ class BotConfigBacktester:
         top_bots_count: int
     ) -> None:
         self.manager: BotManager = manager
+
         self.batch_size: int = batch_size
         self.top_bots_count: int = top_bots_count
-
         self.config: dict = self._load_config_from_json()
         self.ticks = main_context.config_manager.read_ticks()
 
