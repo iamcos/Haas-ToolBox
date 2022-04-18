@@ -1,6 +1,7 @@
 from typing import Type, Any, cast
 
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
+from cli.bots.BotMultiBacktestingCli import MultiBotSelectedCli
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
 from cli.bots.InterfaceOptionSelectorCli import InterfaceOptionSelectorCli
@@ -34,8 +35,8 @@ class BotCli:
                 self._process_interface
             ),
             f"Select another {self.manager.bot_name()}": (
-                self.bot_selector.select_bot,
-                self._process_bot
+                self.bot_selector.select_bots,
+                self._process_bots
             ),
             "Quit": (
                 self._process_keyboard_interrupt,
@@ -57,8 +58,11 @@ class BotCli:
 
     def menu(self) -> None:
         log.info(f"Starting {self.manager.bot_name()} CLI menu..")
-        self.bot_selector.choose_bot()
-        self._process_user_choice(self._menu_action())
+        bots: list[Bot] = self.bot_selector.select_bots()
+        self._process_bots(bots)
+
+        if len(bots) == 1:
+            self._process_user_choice(self._menu_action())
 
     def _menu_action(self) -> str:
         log.info("Starting base bot setting..")
@@ -82,8 +86,11 @@ class BotCli:
 
         self.menu()
 
-    def _process_bot(self, bot: Bot) -> None:
-        self.manager.set_bot(bot)
+    def _process_bots(self, bots: list[Bot]) -> None:
+        if len(bots) > 1:
+            return MultiBotSelectedCli(bots).start()
+        else:
+            self.manager.set_bot(bots[0])
 
     def _process_interface(self, choice: Interfaces) -> None:
         if choice == "Back":

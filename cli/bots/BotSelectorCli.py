@@ -11,37 +11,45 @@ class BotSelectorCli:
         self.manager: BotManager = manager
         self.bot_name: str = manager.bot_name()
 
-    def select_bot(self) -> Bot:
+    def select_bots(self) -> list[Bot]:
         log.info("Starting processing selecting bot..")
 
         bots_chain: list[dict[str, str | Bot]] = self._get_bots_chain()
 
         if not bots_chain:
             self._wait_bot_creating()
-            return self.select_bot()
+            return self.select_bots()
 
         return self._process_selecting_bot(bots_chain)
 
     def choose_bot(self) -> None:
         if self.manager.bot_not_selected():
             log.info(f"{self.bot_name} isn't selected")
-            self.manager.set_bot(self.select_bot())
+            bots: list[Bot] = self.select_bots()
+
+            if len(bots) > 1:
+                log.error("Select only one bot")
+                return self.choose_bot()
+
+            self.manager.set_bot(bots[0])
         else:
             log.info(f"{self.bot_name} selected")
 
     def _process_selecting_bot(
             self,
             bots_chain: list[dict[str, Bot | str]]
-    ) -> Bot:
-        action: Bot | str = inquirer.select(
+    ) -> list[Bot]:
+        actions: list[Bot | str] = inquirer.select(
             message=f"Select {self.bot_name}:",
             choices=[*bots_chain, "Refresh Botlist"],
+            multiselect=True
         ).execute()
 
-        if type(action) is str:
-            return self.select_bot()
+        for action in actions:
+            if type(action) is str:
+                return self.select_bots()
 
-        return cast(Bot, action)
+        return cast(list[Bot], actions)
 
     def _get_bots_chain(self) -> list[dict[str, Bot | str]]:
         return [
