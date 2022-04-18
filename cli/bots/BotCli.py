@@ -80,8 +80,6 @@ class BotCli:
             else:
                 method_result = method(method_result)
 
-        log.info(f"{method_result=}")
-
         self.menu()
 
     def _process_bot(self, bot: Bot) -> None:
