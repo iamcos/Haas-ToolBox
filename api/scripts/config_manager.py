@@ -193,26 +193,8 @@ class ConfigManager:
 
         self.write_file()
 
-    @property
-    def scalper_range_backtesting_top_bots(self) -> Optional[int]:
-        try:
-            return int(self.config_parser.get(
-                "RANGE BACKTESTING", "top_bots"))
-        except (NoSectionError, NoOptionError):
-            log.info("Top bots not set")
-
-    def set_scalper_range_backtesting_top_bots(self, n: int) -> None:
-        try:
-            self.config_parser.add_section("RANGE BACKTESTING")
-        except DuplicateSectionError:
-            pass
-
-        self.config_parser.set("RANGE BACKTESTING", "top_bots", str(n))
-        self.write_file()
-
 
     def write_file(self) -> None:
         with open("./api/config/config.ini", "w") as f:
             self.config_parser.write(f)
 
-    
