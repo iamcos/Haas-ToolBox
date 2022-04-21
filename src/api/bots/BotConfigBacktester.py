@@ -5,6 +5,7 @@ from api.bots.BotApiProvider import BotException
 
 from api.bots.BotManager import BotManager
 from api.bots.InterfaceWrapper import InterfaceWrapper
+from api.config.config import bots_config_path
 from api.models import Interfaces, ROI, GUID
 from api.MainContext import main_context
 
@@ -55,9 +56,14 @@ class BotConfigBacktester:
         self.ticks = main_context.config_manager.read_ticks()
 
     def _load_config_from_json(self) -> dict:
-        file_name: str = f"./api/config/{self.manager.bot_name()}Config.json"
-        with open(file_name, "r") as f:
-            return json.load(f)["tests"]
+        file_name: str = bots_config_path.format(
+            bot_config_name=self.manager.bot_name())
+        try:
+            with open(file_name, "r") as f:
+                return json.load(f)["tests"]
+        except FileNotFoundError:
+            log.error(f"File not found in {file_name}")
+            raise 
 
 
     def start(self) -> None:
