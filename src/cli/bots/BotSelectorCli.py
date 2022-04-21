@@ -26,11 +26,6 @@ class BotSelectorCli:
         if self.manager.bot_not_selected():
             log.info(f"{self.bot_name} isn't selected")
             bots: list[Bot] = self.select_bots()
-
-            if len(bots) > 1:
-                log.error("Select only one bot")
-                return self.choose_bot()
-
             self.manager.set_bot(bots[0])
         else:
             log.info(f"{self.bot_name} selected")
