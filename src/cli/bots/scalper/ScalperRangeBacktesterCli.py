@@ -2,14 +2,14 @@ from api.bots.BotManager import BotManager
 from api.bots.scalper.ScalperBotManager import ScalperBotManager
 from api.bots.scalper.ScalperRangeBacktesterApi import ScalperRangeBacktesterApi
 from api.models import BacktestRange, SclaperBacktestSample
+from cli.bots.AutoBacktesterCli import AutoBacktesterCli
 from cli.inquirer_wrappers import input_float
 from api.config_manager import ConfigManager
 from api.MainContext import main_context
 from typing import Optional, cast
 
 
-
-class ScalperRangeBacktesterCli:
+class ScalperRangeBacktesterCli(AutoBacktesterCli):
 
     def __init__(self, manager: BotManager) -> None:
         self.backtester: ScalperRangeBacktesterApi = \
@@ -29,17 +29,26 @@ class ScalperRangeBacktesterCli:
             1
         )
 
+    @classmethod
+    def with_manager(cls, manager: BotManager) -> AutoBacktesterCli:
+        return cls(manager)
+
     def start(self) -> None:
         self.backtester.backtest(
             self._get_backtesting_sample()
         )
 
+    @staticmethod
+    def get_name() -> str:
+        return "Backtesting in range"
 
     def _get_backtesting_sample(self) -> SclaperBacktestSample:
-        sample: Optional[SclaperBacktestSample] = self.config.scalper_range_backtest_sample
+        sample: Optional[SclaperBacktestSample] = \
+            self.config.scalper_range_backtest_sample
 
         if sample is None:
-            target_percentage: BacktestRange = self._get_target_percentage_range()
+            target_percentage: BacktestRange = \
+                self._get_target_percentage_range()
             stop_loss: BacktestRange = self._get_stop_loss_range()
 
             sample = SclaperBacktestSample(target_percentage, stop_loss)
@@ -71,12 +80,12 @@ class ScalperRangeBacktesterCli:
             default_values.start
         )
         end: float = input_float(
-            f"Input start for {interface_name}: ",
+            f"Input end for {interface_name}: ",
             default_values.end
         )
 
         step: float = input_float(
-            f"Input start for {interface_name}: ",
+            f"Input step for {interface_name}: ",
             default_values.step
         )
 

@@ -2,14 +2,22 @@ from api.bots.BotConfigBacktester import BotConfigBacktester
 from api.bots.BotManager import BotManager
 from api.MainContext import main_context
 from api.config_manager import ConfigManager
+from cli.bots.AutoBacktesterCli import AutoBacktesterCli
 from cli.inquirer_wrappers import input_int
 from loguru import logger as log
+from api.config.config import toolbox_settings_path
 
 
-class BotConfigBacktestCli:
+class BotConfigBacktestCli(AutoBacktesterCli):
     def __init__(self, manager: BotManager):
         self.config: ConfigManager = main_context.config_manager
         self.manager: BotManager = manager
+
+
+    @classmethod
+    def with_manager(cls, manager: BotManager) -> AutoBacktesterCli:
+        return cls(manager)
+
 
     def start(self) -> None:
         log.info("Config backtesting")
@@ -17,10 +25,16 @@ class BotConfigBacktestCli:
         top_bots_count: int = self._get_top_bots_count()
         log.info(
             f"{batch_size=}, {top_bots_count=}"
-            f" You can change values in ./api/config/config.ini"
+            f" You can change values in {toolbox_settings_path}"
         )
-        BotConfigBacktester(self.manager, batch_size, top_bots_count).start()
+        try:
+            BotConfigBacktester(self.manager, batch_size, top_bots_count).start()
+        except FileNotFoundError:
+            log.warning("Add your own config or wait until we create it")
 
+    @staticmethod
+    def get_name() -> str:
+        return "Backtesing by config"
 
     def _get_batch_size(self) -> int:
         if self.config.config_backtesting_batch_size != -1:
