@@ -12,7 +12,6 @@
 3. Set the same token in toolbox_settings.ini.
 
 ## Dependencies
-
 * Python^3.10
 * Poetry
 
