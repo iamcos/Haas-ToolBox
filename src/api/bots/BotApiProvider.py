@@ -1,7 +1,7 @@
 from abc import abstractmethod
+from api.models import Bot, Interfaces
 from typing import Any, Callable, Optional, Type
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
-from api.models import Bot, Interfaces
 
 
 class BotApiProvider():
