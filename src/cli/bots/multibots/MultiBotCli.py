@@ -1,12 +1,12 @@
-from api.bots.bot_multiple_backtester import start_multiple_backtesting
 from api.models import Bot
 from InquirerPy import inquirer
 from typing import Callable, Any
 from loguru import logger as log
+from cli.bots.multibots.multi_backtester_cli import start_multiple_backtesting
 
 
-class MultiBotSelectedCli:
 
+class MultiBotCli:
     def __init__(self, bots: list[Bot]) -> None:
         self.bots = bots
         self.menu: dict[str, tuple[Callable[..., Any], ...]] = dict({
@@ -19,7 +19,7 @@ class MultiBotSelectedCli:
         log.info("Starting processing multiple bots")
         action: str = self._menu_action()
 
-        buf: Any = self.bots
+        buf = self.bots
         for method in self.menu[action]:
             buf = method(buf)
 
