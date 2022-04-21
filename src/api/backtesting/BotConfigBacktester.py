@@ -1,10 +1,10 @@
 from collections import defaultdict
 import json
 from typing import Generator
-from api.bots.BotApiProvider import BotException
+from api.exceptions import BotException
 
 from api.bots.BotManager import BotManager
-from api.bots.InterfaceWrapper import InterfaceWrapper
+from api.wrappers.InterfaceWrapper import InterfaceWrapper
 from api.config import bots_config_path
 from api.models import Interfaces, ROI, GUID
 from api.MainContext import main_context
