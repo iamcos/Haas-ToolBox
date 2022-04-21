@@ -1,8 +1,8 @@
 from InquirerPy import inquirer
-from api.bots.bot_multiple_backtester import get_bot_type, get_autobacktesters_types
+from api.backtesting.bot_multiple_backtester import get_bot_type, get_autobacktesters_types
 from api.models import Bot
 from api.bots.BotManager import BotManager
-from api.bots.bot_managers_factory import get_bot_manager
+from api.factories.bot_managers_factory import get_bot_manager
 from typing import Type
 from loguru import logger as log
 

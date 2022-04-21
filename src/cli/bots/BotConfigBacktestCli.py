@@ -1,4 +1,4 @@
-from api.bots.BotConfigBacktester import BotConfigBacktester
+from api.backtesting.BotConfigBacktester import BotConfigBacktester
 from api.bots.BotManager import BotManager
 from api.MainContext import main_context
 from api.config_manager import ConfigManager

@@ -1,8 +1,8 @@
-from re import sub
-
-
 import itertools
-from typing import Any, Callable, Optional, Type
+from api.bots.BotApiProvider import BotApiProvider, BotException, Interfaces
+from api.MainContext import main_context
+from api.models import Bot
+from api.wrappers.InterfaceWrapper import InterfaceWrapper
 from haasomeapi.apis.TradeBotApi import TradeBotApi
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
@@ -10,10 +10,8 @@ from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from haasomeapi.dataobjects.tradebot.TradeBot import TradeBot
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
-from api.bots.BotApiProvider import BotApiProvider, BotException, Interfaces
-from api.MainContext import main_context
-from api.models import Bot
-from api.bots.InterfaceWrapper import InterfaceWrapper
+from re import sub
+from typing import Any, Callable, Optional, Type
 
 
 class TradeBotException(BotException): pass

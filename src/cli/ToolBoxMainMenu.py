@@ -1,4 +1,3 @@
-"""https://github.com/tmbo/questionary - inquirer analog"""
 import functools
 from typing import Any
 from InquirerPy import inquirer
@@ -14,7 +13,6 @@ class ToolBoxMainMenu:
     def __init__(self) -> None:
         self._start_message: str = "Choose action: "
         self._bot_chain: dict[str | Separator, type[BotCli | QuitOption] | None] = {
-            # Fully configurable
             "Trade Bots": TradeBotCli,
             # Custom
             "Mad-Hatter Bots": MadHatterCli,

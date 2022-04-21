@@ -1,5 +1,5 @@
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from api.bots.InterfaceWrapper import InterfaceWrapper
+from api.wrappers.InterfaceWrapper import InterfaceWrapper
 from api.bots.BotManager import BotManager
 from api.models import Interfaces
 from InquirerPy import inquirer

@@ -5,7 +5,7 @@ from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import Indica
 from api.bots.BotManager import BotManager
 
 from api.models import Interfaces
-from api.bots.BotBacktester import BotBacketster
+from api.backtesting.BotBacktester import BotBacketster
 
 
 class BacktestCliException(Exception): pass

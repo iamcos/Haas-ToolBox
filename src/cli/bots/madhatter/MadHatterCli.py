@@ -11,4 +11,4 @@ class MadHatterCli(BotCli):
             "Start backtesting by config",
             tuple([BotConfigBacktestCli(self.manager).start])
         )
-    
+

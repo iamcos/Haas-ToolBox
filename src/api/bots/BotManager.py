@@ -1,19 +1,16 @@
+from api.backtesting.BacktestsCache import BacktestsCache, BotRoiData
+from api.backtesting.BacktestsCache import BotRoiData
+from api.bots.BotApiProvider import Bot, BotApiProvider, Interfaces
+from api.models import GUID
+from api.wrappers.InterfaceWrapper import InterfaceWrapper
+from api.wrappers.BotWrapper import BotWrapper
+from api.factories import bot_provider_factory
 from contextlib import contextmanager
-import itertools
-from typing import Generator, Type, Any
-
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
-from api.bots.InterfaceWrapper import InterfaceWrapper
-from api.bots.BacktestsCache import BotRoiData
-
-from api.bots.BotApiProvider import Bot, BotApiProvider, Interfaces
-from api.bots.BacktestsCache import BacktestsCache, BotRoiData
-from api.bots.BotWrapper import BotWrapper
-from api.bots import bot_provider_factory
+import itertools
+from typing import Generator, Type, Any
 from loguru import logger as log
-
-from api.models import GUID
 
 
 class BotManager():

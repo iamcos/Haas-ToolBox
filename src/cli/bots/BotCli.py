@@ -1,19 +1,17 @@
-from typing import Type, Any, cast
-
-from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
+from api.bots.BotManager import BotManager
+from api.bots.BotApiProvider import Bot
+from api.factories.bot_managers_factory import get_bot_manager
+from api.models import Interfaces
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
 from cli.bots.InterfaceOptionSelectorCli import InterfaceOptionSelectorCli
-from api.bots.BotManager import BotManager
-from api.bots.BotApiProvider import Bot
-from api.bots.bot_managers_factory import get_bot_manager
-from api.models import Interfaces
-from loguru import logger as log
-from typing import Callable
-from InquirerPy import inquirer
-
 from cli.bots.BotBacktestCli import BotBacktestCli
 from cli.bots.multibots.MultiBotCli import MultiBotCli
+from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
+from typing import Type, Any, cast
+from typing import Callable
+from loguru import logger as log
+from InquirerPy import inquirer
 
 
 class BotCli:
@@ -43,22 +41,10 @@ class BotCli:
             )
         })
 
-    def add_menu_action(
-            self,
-            title: str,
-            methods_chain: tuple[Callable[..., Any], ...]
-        ) -> None:
-
-        quit: tuple[Callable[..., Any], ...] = self.main_menu["Quit"]
-        del self.main_menu["Quit"]
-
-        self.main_menu[title] = methods_chain
-
-        self.main_menu["Quit"] = quit
-
     def menu(self) -> None:
         log.info(f"Starting {self.manager.bot_name()} CLI menu..")
         bots: list[Bot] = self.bot_selector.select_bots()
+
         self._process_bots(bots)
 
         if len(bots) == 1:
@@ -111,4 +97,19 @@ class BotCli:
     def _process_keyboard_interrupt(self) -> None:
         log.info("Bye :)")
         exit("666")
+
+
+    def add_menu_action(
+            self,
+            title: str,
+            methods_chain: tuple[Callable[..., Any], ...]
+        ) -> None:
+
+        quit: tuple[Callable[..., Any], ...] = self.main_menu["Quit"]
+        del self.main_menu["Quit"]
+
+        self.main_menu[title] = methods_chain
+
+        self.main_menu["Quit"] = quit
+
 
