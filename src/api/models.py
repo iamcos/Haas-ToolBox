@@ -1,5 +1,5 @@
 import numpy as np
-from typing import NamedTuple, Type
+from typing import NamedTuple
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
@@ -15,6 +15,7 @@ Bot = TradeBot | MadHatterBot | ScalperBot
 Interfaces = Indicator | Safety | Insurance
 
 ROI = float
+
 GUID = str
 
 
