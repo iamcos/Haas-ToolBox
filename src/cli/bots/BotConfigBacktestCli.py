@@ -1,8 +1,8 @@
 from api.bots.BotConfigBacktester import BotConfigBacktester
 from api.bots.BotManager import BotManager
 from api.MainContext import main_context
-from api.scripts.inquirer_wrappers import input_int
-from api.scripts.config_manager import ConfigManager
+from api.config_manager import ConfigManager
+from cli.inquirer_wrappers import input_int
 from loguru import logger as log
 
 

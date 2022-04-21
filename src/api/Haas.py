@@ -6,7 +6,7 @@ from InquirerPy import inquirer
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.HaasomeClient import HaasomeClient
 from pandas.core.frame import DataFrame
-from api.scripts.config_manager import ConfigManager
+from api.config_manager import ConfigManager
 
 
 # TODO: Rename pass more info

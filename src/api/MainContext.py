@@ -3,7 +3,7 @@ from haasomeapi.HaasomeClient import HaasomeClient
 from haasomeapi.apis.TradeBotApi import TradeBotApi
 # from api.bots.flash_crash.FlashCrashConfigManager import FlashCrashConfigManager
 from api.Haas import Haas
-from api.scripts.config_manager import ConfigManager
+from api.config_manager import ConfigManager
 from loguru import logger as log
 import time
 

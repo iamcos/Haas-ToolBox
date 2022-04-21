@@ -2,8 +2,8 @@ from api.bots.BotManager import BotManager
 from api.bots.scalper.ScalperBotManager import ScalperBotManager
 from api.bots.scalper.ScalperRangeBacktesterApi import ScalperRangeBacktesterApi
 from api.models import BacktestRange, SclaperBacktestSample
-from api.scripts.inquirer_wrappers import input_float
-from api.scripts.config_manager import ConfigManager
+from cli.inquirer_wrappers import input_float
+from api.config_manager import ConfigManager
 from api.MainContext import main_context
 from typing import Optional, cast
 
