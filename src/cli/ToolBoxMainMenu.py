@@ -3,10 +3,12 @@ from typing import Any
 from InquirerPy import inquirer
 from InquirerPy.prompts.list import ListPrompt
 from InquirerPy.separator import Separator
+from api.exceptions import HaasToolBoxException
 from cli.bots.BotCli import BotCli
 from cli.bots.tradebot.TradeBotCli import TradeBotCli
 from cli.bots.madhatter.MadHatterCli import MadHatterCli
 from cli.bots.scalper.ScalperCli import ScalperCli
+from loguru import logger as log
 
 
 class ToolBoxMainMenu:
@@ -36,7 +38,11 @@ class ToolBoxMainMenu:
     @functools.lru_cache
     def _process_main_menu_response(self, response: str) -> None:
         bot_cli = self._bot_chain[response]
-        return bot_cli().menu()
+        try:
+            bot_cli().menu()
+        except HaasToolBoxException as e:
+            log.error(e)
+            self.start_session()
 
 
 class QuitOption():

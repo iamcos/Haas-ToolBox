@@ -27,10 +27,7 @@ class BotConfigBacktestCli(AutoBacktesterCli):
             f"{batch_size=}, {top_bots_count=}"
             f" You can change values in {toolbox_settings_path}"
         )
-        try:
-            BotConfigBacktester(self.manager, batch_size, top_bots_count).start()
-        except FileNotFoundError:
-            log.warning("Add your own config or wait until we create it")
+        BotConfigBacktester(self.manager, batch_size, top_bots_count).start()
 
     @staticmethod
     def get_name() -> str:

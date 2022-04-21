@@ -1,5 +1,6 @@
 from InquirerPy import inquirer
-from api.backtesting.bot_multiple_backtester import get_bot_type, get_autobacktesters_types
+from api.type_specifiers import get_bot_type
+from cli.factories.autobacktester_types_factory import get_autobacktesters_types
 from api.models import Bot
 from api.bots.BotManager import BotManager
 from api.factories.bot_managers_factory import get_bot_manager

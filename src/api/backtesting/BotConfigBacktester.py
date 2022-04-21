@@ -1,7 +1,7 @@
 from collections import defaultdict
 import json
 from typing import Generator
-from api.exceptions import BotException
+from api.exceptions import BotBacktesterException, BotException
 
 from api.bots.BotManager import BotManager
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
@@ -62,8 +62,7 @@ class BotConfigBacktester:
             with open(file_name, "r") as f:
                 return json.load(f)["tests"]
         except FileNotFoundError:
-            log.error(f"File not found in {file_name}")
-            raise 
+            raise BotBacktesterException(f"File not found in {file_name}")
 
 
     def start(self) -> None:
