@@ -5,7 +5,7 @@ from api.bots.BotApiProvider import BotException
 
 from api.bots.BotManager import BotManager
 from api.bots.InterfaceWrapper import InterfaceWrapper
-from api.config.config import bots_config_path
+from api.config import bots_config_path
 from api.models import Interfaces, ROI, GUID
 from api.MainContext import main_context
 

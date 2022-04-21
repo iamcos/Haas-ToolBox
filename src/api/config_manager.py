@@ -1,7 +1,7 @@
 from configparser import NoOptionError, NoSectionError, SafeConfigParser, DuplicateSectionError
 from typing import Optional
 from api.models import SclaperBacktestSample, BacktestRange
-from api.config.config import toolbox_settings_path
+from api.config import toolbox_settings_path
 
 from InquirerPy import inquirer
 from datetime import datetime

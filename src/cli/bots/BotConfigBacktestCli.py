@@ -5,7 +5,7 @@ from api.config_manager import ConfigManager
 from cli.bots.AutoBacktesterCli import AutoBacktesterCli
 from cli.inquirer_wrappers import input_int
 from loguru import logger as log
-from api.config.config import toolbox_settings_path
+from api.config import toolbox_settings_path
 
 
 class BotConfigBacktestCli(AutoBacktesterCli):
