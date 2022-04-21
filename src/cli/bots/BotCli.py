@@ -77,6 +77,7 @@ class BotCli:
             return MultiBotCli(bots).start()
         else:
             self.manager.set_bot(bots[0])
+            self._process_user_choice(self._menu_action())
 
     def _process_interface(self, choice: Interfaces) -> None:
         if choice == "Back":
