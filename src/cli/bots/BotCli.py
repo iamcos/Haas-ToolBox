@@ -1,7 +1,6 @@
 from typing import Type, Any, cast
 
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from cli.bots.BotMultiBacktestingCli import MultiBotSelectedCli
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
 from cli.bots.InterfaceOptionSelectorCli import InterfaceOptionSelectorCli
@@ -14,6 +13,7 @@ from typing import Callable
 from InquirerPy import inquirer
 
 from cli.bots.BotBacktestCli import BotBacktestCli
+from cli.bots.multibots.MultiBotCli import MultiBotCli
 
 
 class BotCli:
@@ -88,7 +88,7 @@ class BotCli:
 
     def _process_bots(self, bots: list[Bot]) -> None:
         if len(bots) > 1:
-            return MultiBotSelectedCli(bots).start()
+            return MultiBotCli(bots).start()
         else:
             self.manager.set_bot(bots[0])
 
