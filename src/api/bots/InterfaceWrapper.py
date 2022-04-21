@@ -5,6 +5,9 @@ from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from api.models import Interfaces
 
 
+class BoostedInterfaceException(Exception): pass
+
+
 class InterfaceWrapper:
     def __init__(self, interface: Interfaces) -> None:
         self.interface: Interfaces = interface
@@ -19,7 +22,7 @@ class InterfaceWrapper:
             case Indicator():
                 return tuple(self.interface.indicatorInterface)
         raise BoostedInterfaceException(
-            f"Passes not an interface: {self.interface}")
+            f"Passed not an interface: {self.interface}")
 
     @property
     def name(self) -> str:
@@ -31,12 +34,10 @@ class InterfaceWrapper:
             case Indicator():
                 return self.interface.indicatorName
         raise BoostedInterfaceException(
-            f"Passes not an interface: {self.interface}")
+            f"Passed not an interface: {self.interface}")
 
     @property
     def guid(self) -> str:
         return self.interface.guid
 
 
-class BoostedInterfaceException(Exception):
-    pass
