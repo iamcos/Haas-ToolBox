@@ -24,4 +24,4 @@ output/
 *.obj
 *.xlsx
 *.log
-api/config/config.ini
+toobox_settings.ini

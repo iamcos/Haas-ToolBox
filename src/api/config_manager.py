@@ -1,6 +1,7 @@
 from configparser import NoOptionError, NoSectionError, SafeConfigParser, DuplicateSectionError
 from typing import Optional
 from api.models import SclaperBacktestSample, BacktestRange
+from api.config.config import toolbox_settings_path
 
 from InquirerPy import inquirer
 from datetime import datetime
@@ -11,7 +12,7 @@ class ConfigManager:
 
     def __init__(self):
         self.config_parser: SafeConfigParser = SafeConfigParser()
-        self.config_parser.read('./api/config/config.ini')
+        self.config_parser.read(toolbox_settings_path)
         self.url, self.secret = self._get_ip_and_secret()
 
     def _get_ip_and_secret(self) -> tuple[str, str]:
@@ -195,6 +196,6 @@ class ConfigManager:
 
 
     def write_file(self) -> None:
-        with open("./api/config/config.ini", "w") as f:
+        with open(toolbox_settings_path, "w") as f:
             self.config_parser.write(f)
 
