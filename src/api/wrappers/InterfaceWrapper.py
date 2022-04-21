@@ -3,9 +3,7 @@ from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import Indica
 from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
 from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from api.models import Interfaces
-
-
-class BoostedInterfaceException(Exception): pass
+from api.exceptions import BoostedInterfaceException
 
 
 class InterfaceWrapper:

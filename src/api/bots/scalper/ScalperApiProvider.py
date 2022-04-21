@@ -9,13 +9,12 @@ from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
-from api.bots.BotApiProvider import BotApiProvider, BotException
+from api.bots.BotApiProvider import BotApiProvider
 from api.MainContext import main_context
 from api.models import Interfaces, Bot
+from api.exceptions import ScalperException
 from loguru import logger as log
 
-
-class ScalperException(BotException): pass
 
 
 class ScalperApiProvider(BotApiProvider):

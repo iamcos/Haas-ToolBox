@@ -3,6 +3,7 @@ from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
 from api.models import Bot
 from api.config import custom_bot_types
+from api.exceptions import AutobacktesterTypesFactryException
 
 from cli.bots.AutoBacktesterCli import AutoBacktesterCli
 from cli.bots.BotConfigBacktestCli import BotConfigBacktestCli
@@ -27,15 +28,12 @@ def get_bot_type(bot: Bot) -> Type:
     return bot_type
 
 
-class AutbacktesterTypesFactryException(Exception): pass
-
-
 def get_autobacktesters_types(
     bot_type: Type[Bot]
 ) -> tuple[Type[AutoBacktesterCli], ...]:
 
     if bot_type not in bot_auto_backtesters:
-        raise AutbacktesterTypesFactryException(
+        raise AutobacktesterTypesFactryException(
             f"There are no implemented auto backtesters for {bot_type.__name__}")
 
     return bot_auto_backtesters[bot_type]

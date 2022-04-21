@@ -9,13 +9,11 @@ from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientRespo
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
-from api.bots.BotApiProvider import BotApiProvider, BotException
+from api.bots.BotApiProvider import BotApiProvider
 from api.MainContext import main_context
 from api.models import Interfaces, Bot
+from api.exceptions import MadHatterException
 from loguru import logger as log
-
-
-class MadHatterException(BotException): pass
 
 
 class MadHatterApiProvider(BotApiProvider):

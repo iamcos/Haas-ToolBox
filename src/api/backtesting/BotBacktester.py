@@ -2,17 +2,16 @@ from __future__ import annotations
 from datetime import datetime
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 
-from api.bots.BacktestsCache import BotRoiData
-from api.bots.InterfaceWrapper import InterfaceWrapper
+from api.backtesting.BacktestsCache import BotRoiData
+from api.wrappers.InterfaceWrapper import InterfaceWrapper
 from api.bots.BotManager import BotManager
 from api.models import Interfaces, UsedOptionParameters
 from api.MainContext import main_context
+from api.exceptions import BotBacktesterException
 from time import monotonic
 
 from loguru import logger as log
 
-
-class BotBacktesterException(Exception): pass
 
 
 def timeit(func):

@@ -4,9 +4,6 @@ from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientRespo
 from api.models import Bot, Interfaces
 
 
-class BotException(Exception): pass
-
-
 class BotApiProvider():
     def get_as_dict(self, bot: Bot, indicator_name: str) -> dict:
         interface = getattr(bot, indicator_name)

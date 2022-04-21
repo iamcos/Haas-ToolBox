@@ -1,8 +1,6 @@
 from typing import Optional
 from api.bots.BotApiProvider import Bot
-
-
-class BotWrapperException(Exception): pass
+from api.exceptions import BotWrapperException
 
 
 class BotWrapper:

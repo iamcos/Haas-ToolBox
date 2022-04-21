@@ -1,7 +1,8 @@
 import itertools
-from api.bots.BotApiProvider import BotApiProvider, BotException, Interfaces
+from api.bots.BotApiProvider import BotApiProvider, Interfaces
 from api.MainContext import main_context
 from api.models import Bot
+from api.exceptions import TradeBotException
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
 from haasomeapi.apis.TradeBotApi import TradeBotApi
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
@@ -13,8 +14,6 @@ from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from re import sub
 from typing import Any, Callable, Optional, Type
 
-
-class TradeBotException(BotException): pass
 
 
 class TradeBotApiProvider(BotApiProvider):

@@ -9,9 +9,7 @@ from api.bots.scalper.ScalperApiProvider import ScalperApiProvider
 from api.bots.trade.TradeBotApiProvider import TradeBotApiProvider
 from api.bots.mad_hatter.MadHatterApiProvider import MadHatterApiProvider
 from api.models import Bot
-
-
-class BotApiProviderCreationException(Exception): pass
+from api.exceptions import BotApiProviderCreationException
 
 
 def get_provider(t: Type[Bot]) -> BotApiProvider:

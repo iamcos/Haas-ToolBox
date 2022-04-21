@@ -8,9 +8,7 @@ from api.bots.BotManager import BotManager
 from api.bots.mad_hatter.MadHatterBotManager import MadHatterBotManager
 from api.bots.trade.TradeBotManager import TradeBotManager
 from api.bots.scalper.ScalperBotManager import ScalperBotManager
-
-
-class BotManagerCreationException(Exception): pass
+from api.exceptions import BotManagerCreationException
 
 
 def get_bot_manager(t: Type) -> BotManager:
