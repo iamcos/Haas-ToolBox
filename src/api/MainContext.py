@@ -1,7 +1,6 @@
 from typing import Union
 from haasomeapi.HaasomeClient import HaasomeClient
 from haasomeapi.apis.TradeBotApi import TradeBotApi
-# from api.bots.flash_crash.FlashCrashConfigManager import FlashCrashConfigManager
 from api.Haas import Haas
 from api.config_manager import ConfigManager
 from loguru import logger as log
@@ -28,7 +27,6 @@ class MainContext:
             self.config_manager.url,
             self.config_manager.secret
         )
-        # self.flash_crash_config_manager: FlashCrashConfigManager = FlashCrashConfigManager()
 
 
     def _check_config(self) -> None:

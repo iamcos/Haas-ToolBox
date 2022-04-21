@@ -27,7 +27,6 @@ class Haas:
 
         self.client: HaasomeClient = self.generate_client()
         self.ticks: int = self.config_manager.read_ticks()
-        # self.config_manager._check_config()
 
     def get_accounts_with_details(self) -> list:
         accounts = self.client.accountDataApi.get_all_account_details().result
@@ -137,6 +136,3 @@ class Haas:
 
         self.bot_type = selected_type
 
-
-if __name__ == "__main__":
-    Haas()
