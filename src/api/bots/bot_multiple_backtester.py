@@ -1,35 +1,42 @@
-from typing import Type
-from haasomeapi.dataobjects.custombots.BaseCustomBot import BaseCustomBot
-from api.bots.bot_managers_factory import get_bot_manager
-from api.bots.BotManager import BotManager
+from typing import Type, cast
+from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
+from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
 from api.models import Bot
-from api.MainContext import main_context
 from api.config import custom_bot_types
-from loguru import logger as log
+
+from cli.bots.AutoBacktesterCli import AutoBacktesterCli
+from cli.bots.BotConfigBacktestCli import BotConfigBacktestCli
+from cli.bots.scalper.ScalperRangeBacktesterCli import ScalperRangeBacktesterCli
 
 
-def start_multiple_backtesting(bots: list[Bot]) -> None:
-    if not bots:
-        log.error("Must select at least 1 bot")
-        return
-
-    log.info(f"Starting multiple backtesting for {len(bots)} bots")
-    ticks: int = main_context.config_manager.read_ticks()
-    bot_type: Type = type(bots[0])
-
-    if bot_type is BaseCustomBot:
-        bot_type = _get_custom_bot_type(bots[0])
-
-    manager: BotManager = get_bot_manager(bot_type)
-
-    for bot in bots:
-        manager.set_bot(bot)
-        manager.backtest_bot(ticks)
-
-    log.info("Multiple backtesting finished")
+AutoBacktesresDict = dict[Type[Bot], tuple[Type[AutoBacktesterCli], ...]]
 
 
-def _get_custom_bot_type(bot: Bot) -> Type:
+bot_auto_backtesters: AutoBacktesresDict = dict({
+    ScalperBot: tuple([ScalperRangeBacktesterCli, BotConfigBacktestCli]),
+    MadHatterBot: tuple([BotConfigBacktestCli])
+})
+
+
+def get_bot_type(bot: Bot) -> Type:
+    bot_type: Type = type(bot)
+
     if bot.botType in custom_bot_types:
-        return custom_bot_types[bot.botType.value]
+        return custom_bot_types[cast(int, bot.botType)]
+
+    return bot_type
+
+
+class AutbacktesterTypesFactryException(Exception): pass
+
+
+def get_autobacktesters_types(
+    bot_type: Type[Bot]
+) -> tuple[Type[AutoBacktesterCli], ...]:
+
+    if bot_type not in bot_auto_backtesters:
+        raise AutbacktesterTypesFactryException(
+            f"There are no implemented auto backtesters for {bot_type.__name__}")
+
+    return bot_auto_backtesters[bot_type]
 
