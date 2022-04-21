@@ -2,6 +2,9 @@ from typing import Optional
 from api.bots.BotApiProvider import Bot
 
 
+class BotWrapperException(Exception): pass
+
+
 class BotWrapper:
     def __init__(self, bot: Optional[Bot] = None) -> None:
         self._bot: Optional[Bot] = bot
@@ -32,7 +35,4 @@ class BotWrapper:
 
     def bot_is_not_set(self) -> bool:
         return self._bot is None
-
-class BotWrapperException(Exception):
-    pass
 
