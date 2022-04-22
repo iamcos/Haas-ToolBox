@@ -1,7 +1,8 @@
 from collections import defaultdict
 import json
+import threading
 from typing import Generator
-from api.exceptions import BotBacktesterException, BotException
+from api.exceptions import BotBacktesterException
 
 from api.bots.BotManager import BotManager
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
@@ -11,8 +12,9 @@ from api.MainContext import main_context
 
 from time import monotonic
 
-from loguru import logger as log
 
+from loguru import logger as log
+from api.exceptions import BotException
 
 """
 Config sample example:
@@ -39,6 +41,18 @@ Config sample example:
     }
 
 """
+
+# finish: bool = False
+
+# def signal_handler(signal, frame):
+#     global finish
+#     log.debug("Catching keyboard interrupt")
+#     a = input("Do you really wnat to stop ?")
+#     print(a)
+#     print(f"{signal=}, {frame=}")
+#     finish = True
+
+# signal.signal(signal.SIGINT, signal_handler)
 
 
 class BotConfigBacktester:
@@ -79,20 +93,32 @@ class BotConfigBacktester:
 
 
     def _process_backtesting(self) -> defaultdict[ROI, set[GUID]]:
+        finish: bool = False
         results: defaultdict[ROI, set[GUID]] = defaultdict(lambda: set())
+        results[self.manager.bot_roi()].add(self.manager.bot_guid())
 
-        try:
+        def target():
             for _ in self._generate_backtested_bots():
                 roi: ROI = self.manager.bot_roi()
                 backtested_bot_guid: GUID = self.manager.bot_guid()
-
                 results[roi].add(backtested_bot_guid)
 
-        except (KeyboardInterrupt, BotException) as e:
-            log.warning(f"Stopping backtesting: {e}")
-            self._delete_all_created_bots(results)
+                if finish:
+                    self._delete_all_created_bots(results)
+                    break
 
-        return results
+        t = threading.Thread(target=target)
+
+        try:
+            t.start()
+            t.join()
+            return results
+        except (KeyboardInterrupt, BotException):
+            finish = True
+            t.join()
+            raise BotBacktesterException(
+                "Stopping backtesting, created bots will be deleted soon.")
+
 
 
     def _generate_backtested_bots(self) -> Generator[None, None, None]:
@@ -100,13 +126,14 @@ class BotConfigBacktester:
             self._reconfigure_bot(sample)
 
             start: float = monotonic()
+
             self.manager.backtest_bot(self.ticks)
 
             log.info(
                 "ROI: {}, Time passed: {:.2f}s".format(
                     self.manager.bot_roi(),monotonic() - start))
-            self.manager.set_bot(self.manager.clone_bot_and_save())
 
+            self.manager.set_bot(self.manager.clone_bot_and_save())
             yield
 
     def _delete_all_created_bots(
@@ -116,6 +143,7 @@ class BotConfigBacktester:
         for guids in list(results.values()):
             for guid in guids:
                 self.manager.delete_bot(guid)
+        log.debug("Bots deleted")
 
 
     def _get_bot_samples(self) -> list[dict]:
