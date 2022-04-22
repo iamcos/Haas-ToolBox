@@ -42,18 +42,6 @@ Config sample example:
 
 """
 
-# finish: bool = False
-
-# def signal_handler(signal, frame):
-#     global finish
-#     log.debug("Catching keyboard interrupt")
-#     a = input("Do you really wnat to stop ?")
-#     print(a)
-#     print(f"{signal=}, {frame=}")
-#     finish = True
-
-# signal.signal(signal.SIGINT, signal_handler)
-
 
 class BotConfigBacktester:
     def __init__(
