@@ -11,6 +11,16 @@ from cli.bots.scalper.ScalperCli import ScalperCli
 from loguru import logger as log
 
 
+def sigint_catcher(func):
+    def inner(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except KeyboardInterrupt:
+            log.info("Shutting up...")
+            exit()
+    return inner
+
+
 class ToolBoxMainMenu:
     def __init__(self) -> None:
         self._start_message: str = "Choose action: "
@@ -26,6 +36,7 @@ class ToolBoxMainMenu:
             "Quit": QuitOption
         }
 
+    @sigint_catcher
     def start_session(self) -> None:
         menu_promt: ListPrompt = inquirer.select(
             message=self._start_message,
@@ -41,8 +52,11 @@ class ToolBoxMainMenu:
         try:
             bot_cli().menu()
         except HaasToolBoxException as e:
-            log.error(e)
-            self.start_session()
+            log.warning(e)
+        except KeyboardInterrupt:
+            pass
+
+        self.start_session()
 
 
 class QuitOption():
