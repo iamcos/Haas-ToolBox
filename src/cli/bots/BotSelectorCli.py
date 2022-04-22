@@ -35,7 +35,8 @@ class BotSelectorCli:
             bots_chain: list[dict[str, Bot | str]]
     ) -> list[Bot]:
         actions: list[Bot | str] = inquirer.select(
-            message=f"Select {self.bot_name}:",
+                message=f"Select {self.bot_name}. "
+                        + "You can choose multiple bots with pressing space",
             choices=[*bots_chain, "Refresh Botlist"],
             multiselect=True
         ).execute()
@@ -62,7 +63,8 @@ class BotSelectorCli:
         while not self.manager.get_available_bots():
             log.warning(msg)
             inquirer.select(
-                message=f"Select {self.bot_name}",
+                message=f"Select {self.bot_name}. "
+                        + "You can choose multiple bots with pressing space",
                 choices=[
                     Separator(msg),
                     "Refresh bots list",
