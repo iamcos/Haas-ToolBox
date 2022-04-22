@@ -12,7 +12,7 @@ AutoBacktesresDict = dict[Type[Bot], tuple[Type[AutoBacktesterCli], ...]]
 
 
 bot_auto_backtesters: AutoBacktesresDict = dict({
-    ScalperBot: tuple([ScalperRangeBacktesterCli, BotConfigBacktestCli]),
+    ScalperBot: tuple([ScalperRangeBacktesterCli]),
     MadHatterBot: tuple([BotConfigBacktestCli])
 })
 
