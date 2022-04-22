@@ -51,7 +51,6 @@ class BotCli:
             self._process_user_choice(self._menu_action())
 
     def _menu_action(self) -> str:
-        log.info("Starting base bot setting..")
         choosed_action: str = inquirer.select(
             message="Select action:",
             choices=list(self.main_menu.keys())
@@ -62,9 +61,7 @@ class BotCli:
     def _process_user_choice(self, choice: str) -> None:
         method_result: Any = None
 
-        log.info(f"Starting processing {choice=}")
         for method in self.main_menu[choice]:
-            log.info(f"{method=}, {method_result=}")
             if method_result is None:
                 method_result = method()
             else:
