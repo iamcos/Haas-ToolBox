@@ -37,7 +37,7 @@ class ScalperRangeBacktesterApi:
 
             log.info(
                 f"Result ROI: {self.manager.bot_roi()}. "
-                f"Time passed: {start - monotonic()} s"
+                f"Time passed: {monotonic() - start} s"
             )
             self.cache[self.manager.bot_roi()].append(
                 (target_percentage, stop_loss)
