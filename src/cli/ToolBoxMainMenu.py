@@ -61,5 +61,5 @@ class ToolBoxMainMenu:
 
 class QuitOption():
     def menu(self):
-        KeyboardInterrupt()
+        exit()
 
