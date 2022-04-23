@@ -73,4 +73,3 @@ class ScalperRangeBacktesterApi:
 
         self.manager.backtest_bot(self.ticks)
 
-
