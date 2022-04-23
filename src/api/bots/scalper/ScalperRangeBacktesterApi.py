@@ -79,5 +79,6 @@ class ScalperRangeBacktesterApi:
         log.debug("Backtesting")
 
         self.manager.backtest_bot(self.ticks)
+        self.manager.clone_bot_and_save()
 
 
