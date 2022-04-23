@@ -63,9 +63,13 @@ class TradeBotApiProvider(BotApiProvider):
     ) -> None:
         edit_func = getattr(self.api, self.edit_methods[type(t)])
 
-        res = edit_func(bot_guid, InterfaceWrapper(t).guid, param_num, value)
+        try:
+            res = edit_func(bot_guid, InterfaceWrapper(t).guid, param_num, float(value))
+            self.process_error(res, "Error while editing interface")
+        except TradeBotException:
+            res = edit_func(bot_guid, InterfaceWrapper(t).guid, param_num, int(value))
+            self.process_error(res, "Error while editing interface")
 
-        self.process_error(res, "Error while editing interface")
 
     def get_backtest_method(self) -> Callable:
         return self.api.backtest_trade_bot

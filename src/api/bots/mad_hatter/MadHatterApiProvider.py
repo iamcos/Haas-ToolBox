@@ -123,9 +123,13 @@ class MadHatterApiProvider(BotApiProvider):
             self._get_indicator_enum_type(t)
         )
 
-        res = edit_func(bot_guid, param_num, value)
+        try:
+            res = edit_func(bot_guid, param_num, float(value))
+            self.process_error(res, "Error while editing interface")
+        except MadHatterException:
+            res = edit_func(bot_guid, param_num, int(value))
+            self.process_error(res, "Error while editing interface")
 
-        self.process_error(res, "Error while editing interface")
 
     def _inject_interface_type(
         self,
