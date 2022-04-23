@@ -80,5 +80,6 @@ class ScalperRangeBacktesterApi:
 
         self.manager.backtest_bot(self.ticks)
         self.manager.clone_bot_and_save()
+        self.manager.backtest_bot(self.ticks)
 
 
