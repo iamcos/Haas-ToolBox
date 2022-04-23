@@ -24,8 +24,8 @@ class ScalperRangeBacktesterCli(AutoBacktesterCli):
         )
 
         self.default_stop_loss: BacktestRange = BacktestRange(
-            96,
-            99,
+            0.5,
+            1.5,
             1
         )
 
