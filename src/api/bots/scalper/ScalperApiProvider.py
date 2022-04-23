@@ -120,7 +120,7 @@ class ScalperApiProvider(BotApiProvider):
         else:
             self.process_error(f"No param with num {param_num}")
 
-        self.api.setup_scalper_bot(
+        res = self.api.setup_scalper_bot(
 			accountguid=bot.accountId,
 			botguid=bot.guid,
 			botname=bot.name,
@@ -136,6 +136,8 @@ class ScalperApiProvider(BotApiProvider):
 			targetpercentage=bot.minimumTargetChange,
 			safetythreshold=bot.maxAllowedReverseChange,
 		)
+
+        self.process_error(res, "Error in editing bot")
 
 
     def get_backtest_method(self) -> Callable:
