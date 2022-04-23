@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "haas-tool-box"
-version = "0.1.0"
+version = "1.0.0"
 description = "Project for auto backtesting HaasOnline crypto trading bots"
 authors = ["idevtier <idevtier@gmail.com>"]
 
