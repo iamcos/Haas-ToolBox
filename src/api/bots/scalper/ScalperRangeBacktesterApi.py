@@ -1,4 +1,6 @@
 from collections import defaultdict
+from datetime import time
+from time import monotonic
 
 from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from api.bots.scalper.ScalperBotManager import ScalperBotManager
@@ -30,9 +32,13 @@ class ScalperRangeBacktesterApi:
             self.manager.edit_interface(Indicator(), 1, target_percentage)
             self.manager.edit_interface(Safety(), 2, stop_loss)
 
+            start = monotonic()
             self.manager.backtest_bot(self.ticks)
 
-            log.info(f"Result ROI: {self.manager.bot_roi()}")
+            log.info(
+                f"Result ROI: {self.manager.bot_roi()}. "
+                f"Time passed: {start - monotonic()} s"
+            )
             self.cache[self.manager.bot_roi()].append(
                 (target_percentage, stop_loss)
             )
