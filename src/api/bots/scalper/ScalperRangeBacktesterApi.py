@@ -56,6 +56,8 @@ class ScalperRangeBacktesterApi:
 
     def _create_result_bot(self) -> None:
         top_roi: ROI = max(list(self.cache.keys()))
+        log.debug(f"All rois {list(self.cache.keys())}")
+        log.debug(f"Top roi {top_roi}")
 
         self.manager.edit_interface(
             Indicator(),
