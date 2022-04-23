@@ -92,7 +92,6 @@ class BotConfigBacktester:
                 results[roi].add(backtested_bot_guid)
 
                 if finish:
-                    self._delete_all_created_bots(results)
                     break
 
         t = threading.Thread(target=target)
@@ -100,12 +99,12 @@ class BotConfigBacktester:
         try:
             t.start()
             t.join()
-            return results
         except (KeyboardInterrupt, BotException):
             finish = True
             t.join()
-            raise BotBacktesterException(
-                "Stopping backtesting, created bots will be deleted soon.")
+            log.warning("Stopping backtesting...")
+
+        return results
 
 
 
