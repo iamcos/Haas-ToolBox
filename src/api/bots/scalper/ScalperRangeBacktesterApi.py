@@ -11,6 +11,7 @@ from loguru import logger as log
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 
 from api.models import ROI
+from time import sleep
 
 
 class ScalperRangeBacktesterApi:
@@ -58,6 +59,9 @@ class ScalperRangeBacktesterApi:
         top_roi: ROI = max(list(self.cache.keys()))
         log.debug(f"All rois {list(self.cache.keys())}")
         log.debug(f"Top roi {top_roi}, stop_loss = {self.cache[top_roi][0][1]}, target_percentage = {self.cache[top_roi][0][0]}")
+        log.debug("sleeeep")
+        sleep(5)
+        log.debug("Reconfiguring")
 
         self.manager.edit_interface(
             Indicator(),
@@ -69,6 +73,10 @@ class ScalperRangeBacktesterApi:
             2,
             self.cache[top_roi][0][1]
         )
+
+        log.debug("sleep")
+        sleep(5)
+        log.debug("Backtesting")
 
         self.manager.backtest_bot(self.ticks)
 
