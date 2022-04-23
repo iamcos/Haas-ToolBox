@@ -39,6 +39,6 @@ curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poet
 
 ## First run
 ```
-poetry install
+poetry install --no-dev
 poetry run cli
 ```
