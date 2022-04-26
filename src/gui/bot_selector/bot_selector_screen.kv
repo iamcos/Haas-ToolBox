@@ -1,56 +1,50 @@
 #: import TitleLabel gui.default_widgets.TitleLabel
 
 
+<BotTypeButton>:
+    id: trade
+    background_color: 0, 0, 0
+    font_size: 30
+    halign: "left"
+    padding: 0, 0
+    size: self.texture_size
+    size_hint: None, None
+
+
 <BotselectorScreen>:
-    BoxLayout:
-        orientation: "vertical"
-        padding: 20
+    MainWindow:
         TitleLabel:
             text: "Select bot type"
-        BoxLayout:
-            padding: 10
-            orientation: "vertical"
+
+        ScrollView:
+            do_scroll_y: True
+            do_scroll_x: False
+
             GridLayout:
                 cols: 1
-                BoxLayout:
-                    orientation: "vertical"
-                    SubtitleLabel:
-                        text: "Trade:"
-                    GridLayout:
-                        cols: 1
-                        size_hint: 0.4, 0.05
-                        Button:
-                            text: "test"
-                        Button:
-                            text: "test"
-                        Button:
-                            text: "test"
-                        Button:
-                            text: "test"
-                        Button:
-                            text: "test"
-                        Button:
-                            text: "test"
-                BoxLayout:
-                    orientation: "vertical"
-                    SubtitleLabel:
-                        text: "Mad-Hatter:"
-                BoxLayout:
-                    orientation: "vertical"
-                    SubtitleLabel:
-                        text: "Scaler:"
-                BoxLayout:
-                    orientation: "vertical"
-                    SubtitleLabel:
-                        text: "Flash-Crash:"
-                BoxLayout:
-                    orientation: "vertical"
-                    SubtitleLabel:
-                        text: "Assisted:"
+                padding: 50
+                row_default_height: 60
+                row_force_default: True
+
+                BotTypeButton:
+                    text: "Trade"
+                    on_release: root.choose_bot("trade")
+
+                BotTypeButton:
+                    text: "Mad-Hatter"
+                    on_release: root.choose_bot("mad_hatter")
+
+                BotTypeButton:
+                    text: "Scalper"
+                    on_release: root.choose_bot("scalper")
+
+                BotTypeButton:
+                    text: "Flash-Crash"
+                    on_release: root.choose_bot("flash_crash")
+
         BoxLayout:
             size_hint_y: 0.1
             Button:
                 text: 'Back to menu'
                 on_press: root.manager.current = 'menu'
-
 
