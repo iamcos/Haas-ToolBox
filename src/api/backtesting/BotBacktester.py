@@ -187,4 +187,3 @@ class BotBacketster:
             self.interface.guid
         )
 
-

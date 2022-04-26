@@ -99,7 +99,7 @@ class BotManager():
         self,
         interface_type: Type[Interfaces],
         option_title: str
-    ) -> int:
+    ) -> int: # type: ignore
         for i in self.get_interfaces_by_type(interface_type):
             for j, option in enumerate(InterfaceWrapper(i).options):
                 if option.title == option_title:

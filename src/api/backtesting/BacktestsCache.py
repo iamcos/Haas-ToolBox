@@ -6,7 +6,7 @@ InterfaceGuid = str
 
 
 class BotRoiData(NamedTuple):
-    value: str | int
+    value: str | int | float
     ticks: int
     option_num: int
     intreface_guid: str

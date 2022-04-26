@@ -13,7 +13,6 @@ from api.bots.BotApiProvider import BotApiProvider
 from api.MainContext import main_context
 from api.models import Interfaces, Bot
 from api.exceptions import ScalperException
-from loguru import logger as log
 
 
 
@@ -74,8 +73,8 @@ class ScalperApiProvider(BotApiProvider):
 
         start: IndicatorOption = IndicatorOption()
         start.title = "Value"
-        start.value = start_value
-        start.step = step_value
+        start.value = start_value # type: ignore
+        start.step = step_value # type: ignore
 
         return [start]
 

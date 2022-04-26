@@ -50,7 +50,7 @@ class ToolBoxMainMenu:
     def _process_main_menu_response(self, response: str) -> None:
         bot_cli = self._bot_chain[response]
         try:
-            bot_cli().menu()
+            bot_cli().menu() # type: ignore
         except HaasToolBoxException as e:
             log.warning(e)
         except KeyboardInterrupt:
