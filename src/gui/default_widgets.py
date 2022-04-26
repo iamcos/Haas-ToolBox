@@ -2,6 +2,8 @@ import re
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.textinput import TextInput
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 
 
 class Title(Widget):
@@ -57,4 +59,12 @@ class FloatInput(TextInput):
                 for s in substring.split('.', 1)
             )
         return super().insert_text(s, from_undo=from_undo)
+
+
+class MainWindow(BoxLayout):
+    pass
+
+
+class ScrollingGridLayout(GridLayout):
+    pass
 

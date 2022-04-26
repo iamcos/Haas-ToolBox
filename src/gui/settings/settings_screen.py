@@ -24,13 +24,6 @@ class SettingsScreen(Screen):
         print("Saving config...")
         print(my_config)
 
-    def set_server(self, server: str) -> None:
-        if len(server.split(".")) == 4:
-            self.config.server = server
-            print(f"Config updated: {my_config}")
-        else:
-            print("Bad format")
-
     def set_property(self, value: str, name: str, type: Type) -> None:
         try:
             setattr(self.config, name, type(value))

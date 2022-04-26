@@ -5,6 +5,7 @@
 #: import TitleLabel gui.default_widgets.TitleLabel
 #: import SubtitleLabel gui.default_widgets.SubtitleLabel
 #: import TextLabel gui.default_widgets.TextLabel
+#: import MainWindow gui.default_widgets.MainWindow
 
 
 <Title>:
@@ -25,4 +26,15 @@
 <BaseLabel>:
     text_size: self.size
     size_hint: 1, 0.1
+
+<MainWindow>:
+    orientation: "vertical"
+    padding: 20
+
+<ScrollingGridLayout>:
+    padding: 20
+    size_hint_y: None
+    cols: 1
+    spacing: 30
+    height: self.minimum_height
 

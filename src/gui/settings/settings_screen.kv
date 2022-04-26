@@ -1,6 +1,4 @@
 #: import uri api.models.uri
-#: import IntegerInput gui.default_widgets.IntegerInput
-#: import FloatInput gui.default_widgets.FloatInput
 
 
 <SettingsSection>:
@@ -13,10 +11,7 @@
 
 
 <SettingsScreen>:
-    BoxLayout:
-        orientation: "vertical"
-        padding: 50
-
+    MainWindow:
         TitleLabel:
             text: "Settings page"
 
@@ -24,15 +19,10 @@
             do_scroll_y: True
             do_scroll_x: False
 
-            GridLayout:
-                padding: 20
-                size_hint_y: None
-                cols: 1
-                spacing: 30
-                height: self.minimum_height
-
+            ScrollingGridLayout:
                 SubtitleLabel:
                     text: "API"
+
                 SettingsSection:
                     TextLabel:
                         text: "Server"
@@ -56,7 +46,7 @@
                 SettingsSection:
                     TextLabel:
                         text: "Year:"
-                    TextInput:
+                    IntegerInput:
                         id: year
                         text: str(root.config.year)
                         on_text_validate: root.set_property(self.text, "year", int) 
@@ -64,7 +54,7 @@
 
                     TextLabel:
                         text: "Month:"
-                    TextInput:
+                    IntegerInput:
                         id: month
                         text: str(root.config.month)
                         on_text_validate: root.set_property(self.text, "year", int) 
@@ -72,7 +62,7 @@
 
                     TextLabel:
                         text: "Day:"
-                    TextInput:
+                    IntegerInput:
                         id: day
                         text: str(root.config.day)
                         on_text_validate: root.set_property(self.text, "day", int) 
@@ -80,7 +70,7 @@
 
                     TextLabel:
                         text: "Hour:"
-                    TextInput:
+                    IntegerInput:
                         id: hour
                         text: str(root.config.hour)
                         on_text_validate: root.set_property(self.text, "hour", int) 
@@ -88,7 +78,7 @@
 
                     TextLabel:
                         text: "Min:"
-                    TextInput:
+                    IntegerInput:
                         text: str(root.config.min)
                         id: min
                         on_text_validate: root.set_property(self.text, "min", int) 
