@@ -1,0 +1,28 @@
+<MenuScreen>:
+    AnchorLayout:
+        anchor_x: "center"
+        anchor_y: "center"
+        BoxLayout:
+            center: self.parent.center
+            size_hint_x: 0.4
+            size_hint_y: 0.2
+            canvas:
+                Color:
+                    rgba: 1, 0, 0, 0.5
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            BoxLayout:
+                padding: 10, 10
+                orientation: "vertical"
+                Button:
+                    text: 'Goto settings'
+                    on_press: root.manager.current = 'settings'
+                Button:
+                    text: 'Goto bot type selecting'
+                    on_press: root.manager.current = 'bot_selector'
+                Button:
+                    text: 'Quit'
+                    on_press: exit()
+
