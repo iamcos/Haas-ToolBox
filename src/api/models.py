@@ -46,7 +46,7 @@ class uri:
     pattern = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
     def __init__(self, uri: str) -> None:
         if not re.search(self.pattern, uri):
-            raise ValueError
+            raise ValueError(f"Wrong uri forman {uri}")
         self.uri = uri
 
     def __str__(self) -> str:
