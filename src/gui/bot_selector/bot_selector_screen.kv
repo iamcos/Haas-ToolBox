@@ -1,10 +1,56 @@
+#: import TitleLabel gui.default_widgets.TitleLabel
+
+
 <BotselectorScreen>:
     BoxLayout:
         orientation: "vertical"
-        Button:
-            text: 'Select bot type'
-        Button:
-            text: 'Back to menu'
-            on_press: root.manager.current = 'menu'
+        padding: 20
+        TitleLabel:
+            text: "Select bot type"
+        BoxLayout:
+            padding: 10
+            orientation: "vertical"
+            GridLayout:
+                cols: 1
+                BoxLayout:
+                    orientation: "vertical"
+                    SubtitleLabel:
+                        text: "Trade:"
+                    GridLayout:
+                        cols: 1
+                        size_hint: 0.4, 0.05
+                        Button:
+                            text: "test"
+                        Button:
+                            text: "test"
+                        Button:
+                            text: "test"
+                        Button:
+                            text: "test"
+                        Button:
+                            text: "test"
+                        Button:
+                            text: "test"
+                BoxLayout:
+                    orientation: "vertical"
+                    SubtitleLabel:
+                        text: "Mad-Hatter:"
+                BoxLayout:
+                    orientation: "vertical"
+                    SubtitleLabel:
+                        text: "Scaler:"
+                BoxLayout:
+                    orientation: "vertical"
+                    SubtitleLabel:
+                        text: "Flash-Crash:"
+                BoxLayout:
+                    orientation: "vertical"
+                    SubtitleLabel:
+                        text: "Assisted:"
+        BoxLayout:
+            size_hint_y: 0.1
+            Button:
+                text: 'Back to menu'
+                on_press: root.manager.current = 'menu'
 
 
