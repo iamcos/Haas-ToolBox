@@ -1,50 +1,15 @@
-#: import TitleLabel gui.default_widgets.TitleLabel
-
-
-<BotTypeButton>:
-    id: trade
-    background_color: 0, 0, 0
-    font_size: 30
-    halign: "left"
-    padding: 0, 0
-    size: self.texture_size
-    size_hint: None, None
-
-
-<BotselectorScreen>:
+<BotSelectorScreen>:
     MainWindow:
         TitleLabel:
-            text: "Select bot type"
+            text: "Select bot"
 
         ScrollView:
-            do_scroll_y: True
-            do_scroll_x: False
-
-            GridLayout:
-                cols: 1
-                padding: 50
-                row_default_height: 60
-                row_force_default: True
-
-                BotTypeButton:
-                    text: "Trade"
-                    on_release: root.choose_bot("trade")
-
-                BotTypeButton:
-                    text: "Mad-Hatter"
-                    on_release: root.choose_bot("mad_hatter")
-
-                BotTypeButton:
-                    text: "Scalper"
-                    on_release: root.choose_bot("scalper")
-
-                BotTypeButton:
-                    text: "Flash-Crash"
-                    on_release: root.choose_bot("flash_crash")
-
+            ScrollingGridLayout:
+                id: bots_grid
+            
         BoxLayout:
             size_hint_y: 0.1
             Button:
                 text: 'Back to menu'
-                on_press: root.manager.current = 'menu'
+                on_release: root.manager.current = 'menu'
 
