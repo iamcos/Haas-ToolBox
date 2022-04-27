@@ -1,0 +1,15 @@
+<SingleBotMenuScreen>:
+    MainWindow:
+        TitleLabel:
+            text: "Choose action for bot"
+
+        ScrollView:
+            ScrollingGridLayout:
+                id: bot_actions
+
+        BoxLayout:
+            size_hint_y: 0.1
+            Button:
+                text: 'Back to menu'
+                on_release: root.manager.current = 'menu'
+
