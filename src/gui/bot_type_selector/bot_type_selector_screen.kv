@@ -1,0 +1,25 @@
+#: import TitleLabel gui.default_widgets.TitleLabel
+
+
+<BotTypeSelectorScreen>:
+    MainWindow:
+        TitleLabel:
+            text: "Select bot type"
+
+        ScrollView:
+            do_scroll_y: True
+            do_scroll_x: False
+
+            GridLayout:
+                id: bot_types_grid
+                cols: 1
+                padding: 50
+                row_default_height: 60
+                row_force_default: True
+
+        BoxLayout:
+            size_hint_y: 0.1
+            Button:
+                text: 'Back to menu'
+                on_press: root.manager.current = 'menu'
+
