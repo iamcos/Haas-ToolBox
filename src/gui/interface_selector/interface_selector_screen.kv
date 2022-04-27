@@ -1,0 +1,15 @@
+<InterfaceSelectorScreen>:
+    MainWindow:
+        TitleLabel:
+            text: "Select interface"
+
+        ScrollView:
+            id: scroll_view
+    
+        BoxLayout:
+            size_hint_y: 0.2
+            orientation: "vertical"
+            Button:
+                text: 'Back to menu'
+                on_press: root.manager.current = 'menu'
+        

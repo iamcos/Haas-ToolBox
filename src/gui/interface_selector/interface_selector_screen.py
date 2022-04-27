@@ -1,6 +1,7 @@
-from typing import Type
 from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
+
+from api.bots.BotManager import BotManager
 
 
 Builder.load_file("./src/gui/interface_selector/interface_selector_screen.kv")
@@ -8,6 +9,14 @@ Builder.load_file("./src/gui/interface_selector/interface_selector_screen.kv")
 
 class InterfaceSelectorScreen(Screen):
 
-    def update_bot_type(self, bot_type: Type) -> None:
-        print(f"Bot type is {bot_type}")
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.bot_manager: BotManager
+
+    def setup(self, bot_manager: BotManager) -> None:
+        self.bot_manager = bot_manager
+        self.update_buttons()
+
+    def update_buttons(self) -> None:
+        pass
 
