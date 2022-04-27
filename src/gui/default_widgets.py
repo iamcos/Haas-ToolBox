@@ -4,6 +4,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.button import Button
 
 
 class Title(Widget):
@@ -66,5 +67,9 @@ class MainWindow(BoxLayout):
 
 
 class ScrollingGridLayout(GridLayout):
+    pass
+
+
+class LabelButton(Button):
     pass
 
