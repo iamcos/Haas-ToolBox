@@ -1,4 +1,4 @@
-from gui.bot_menu.bot_menu_screen import BotMenuScreen
+from gui.bot_menu.single_bot_menu_screen import SingleBotMenuScreen
 from gui.bot_selector.bot_selector_screen import BotSelectorScreen
 from gui.bot_type_selector.bot_type_selector_screen import BotTypeSelectorScreen
 from gui.interface_selector.interface_selector_screen import InterfaceSelectorScreen
@@ -18,7 +18,7 @@ class HaasToolBoxApp(App):
         sm.add_widget(BotTypeSelectorScreen(name="bot_type_selector"))
         sm.add_widget(BotSelectorScreen(name="bot_selector"))
         sm.add_widget(InterfaceSelectorScreen(name="interface_selector"))
-        sm.add_widget(BotMenuScreen(name="bot_menu"))
+        sm.add_widget(SingleBotMenuScreen(name="single_bot_menu"))
 
         return sm
 
