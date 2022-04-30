@@ -5,6 +5,7 @@ from api.models import GUID
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
 from api.wrappers.BotWrapper import BotWrapper
 from api.factories import bot_provider_factory
+from api.config import ignored_options
 from contextlib import contextmanager
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
@@ -129,3 +130,16 @@ class BotManager():
     def bot_guid(self) -> GUID:
         return self._wbot.guid
 
+
+    def interface_options(
+            self,
+            source: Interfaces
+    ) -> tuple[IndicatorOption]:
+        boosted: InterfaceWrapper = InterfaceWrapper(source)
+
+        filtered_options: tuple[IndicatorOption] = tuple([
+            self.update_option(i) for i in boosted.options
+            if i.title not in ignored_options[self.bot_name()][boosted.name]
+        ])
+
+        return filtered_options
