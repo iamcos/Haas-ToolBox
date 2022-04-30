@@ -1,0 +1,130 @@
+<ActionTextLabel>:
+    size_hint: None, None
+    font_size: 25
+    halign: "left"
+    size: self.texture_size
+
+
+<ActionHotkeyLabel>:
+    size_hint: None, None
+    font_size: 20
+    halign: "right"
+    size: self.texture_size
+
+
+
+<SingleBacktesterScreen>:
+    MainWindow:
+        TitleLabel:
+            text: "Backtesting"
+
+        GridLayout:
+            cols: 2
+            spacing: 20, 0
+
+            GridLayout:
+                size_hint_x: 700
+                pos_hint: {"right": 0.6}
+                minimum_width: 0.8
+                cols: 1
+                spacing: 0, 20
+
+                BoxLayout:
+                    size_hint_y: 50
+                    size_hint_y: None
+                    canvas.before:
+                        Color:
+                            rgba: .5, .5, .5, 1
+                        Line:
+                            width: 2
+                            rectangle: self.x, self.y, self.width, self.height
+                    Label:
+                        height: self.texture_size[1]
+                        font_size: 30
+                        text: "IndicatorOption"
+                    Label:
+                        height: self.texture_size[1]
+                        font_size: 30
+                        text: "Current value: 20"
+                    Label:
+                        height: self.texture_size[1]
+                        font_size: 30
+                        text: "Curent ROI: 5.32%"
+
+                BoxLayout:
+                    size_hint_y: 425
+                    canvas.before:
+                        Color:
+                            rgba: .5, .5, .5, 1
+                        Line:
+                            width: 2
+                            rectangle: self.x, self.y, self.width, self.height
+
+                ScrollView:
+                    size_hint_y: 425
+                    canvas.before:
+                        Color:
+                            rgba: .5, .5, .5, 1
+                        Line:
+                            width: 4
+                            rectangle: self.x, self.y, self.width, self.height
+                    Label:
+                        size_hint_y: None
+                        font_size: 20
+                        height: self.texture_size[1]
+                        text_size: self.width, None
+                        text: "Some log info...\n" * 100
+
+            BoxLayout:
+                size_hint_x: 300
+
+                GridLayout:
+                    padding: 20
+                    cols: 2
+                    spacing: 10, 20
+
+                    canvas.before:
+                        Color:
+                            rgba: .5, .5, .5, 1
+                        Line:
+                            width: 2
+                            rectangle: self.x, self.y, self.width, self.height
+
+                    ActionTextLabel:
+                        text: "Backtest up"
+                    ActionHotkeyLabel:
+                        text: "[ k ]"
+
+                    ActionTextLabel:
+                        text: "Backtest down"
+                    ActionHotkeyLabel:
+                        text: "[ j ]"
+
+                    ActionTextLabel:
+                        text: "Length x2"
+                    ActionHotkeyLabel:
+                        text: "[ l ]"
+
+                    ActionTextLabel:
+                        text: "Length /2"
+                    ActionHotkeyLabel:
+                        text: "[ h ]"
+
+                    ActionTextLabel:
+                        text: "Backtest up x10"
+                    ActionHotkeyLabel:
+                        text: "[ Shift + k ]"
+
+                    ActionTextLabel:
+                        text: "Backtest down x10"
+                    ActionHotkeyLabel:
+                        text: "[ Shift + j ]"
+                    
+        BoxLayout:
+            size_hint_y: 0.05
+            padding: 0, 10
+            Button:
+                text: 'Back to menu'
+                on_release: root.manager.current = 'menu'
+
+
