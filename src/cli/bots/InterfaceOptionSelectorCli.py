@@ -1,9 +1,7 @@
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from api.wrappers.InterfaceWrapper import InterfaceWrapper
 from api.bots.BotManager import BotManager
 from api.models import Interfaces
 from InquirerPy import inquirer
-from cli.bots.config.ignored_options import ignored_options
 
 
 class InterfaceOptionSelectorCli:
@@ -13,7 +11,7 @@ class InterfaceOptionSelectorCli:
 
     def select_option(self, interface: Interfaces) -> IndicatorOption | str:
         return self._parameter_selector(
-            self._indicator_options(interface)
+            self.manager.interface_options(interface)
         )
 
     def _parameter_selector(
@@ -37,17 +35,4 @@ class InterfaceOptionSelectorCli:
         ).execute()
 
         return selected_option
-
-    def _indicator_options(
-            self,
-            source: Interfaces
-    ) -> tuple[IndicatorOption]:
-        boosted: InterfaceWrapper = InterfaceWrapper(source)
-
-        filtered_options: tuple[IndicatorOption] = tuple([
-            self.manager.update_option(i) for i in boosted.options
-            if i.title not in ignored_options[self.bot_name][boosted.name]
-        ])
-
-        return filtered_options
 
