@@ -56,6 +56,9 @@ class InterfaceSelectorScreen(Screen):
     def process_interface(self, interface):
         def inner(_):
             print(f"Choosed {interface}")
-            print(f"Hello from innter")
+            (self.manager
+                    .get_screen("interface_option_selector")
+                    .setup(self.bot_manager, interface))
+            self.manager.current = "interface_option_selector"
         return inner
 
