@@ -12,18 +12,15 @@
     size: self.texture_size
 
 
-
 <SingleBacktesterScreen>:
     MainWindow:
         TitleLabel:
             text: "Backtesting"
 
-        GridLayout:
-            cols: 2
-            spacing: 20, 0
+        BoxLayout:
+            spacing: 20
 
             GridLayout:
-                size_hint_x: 700
                 pos_hint: {"right": 0.6}
                 minimum_width: 0.8
                 cols: 1
@@ -75,50 +72,50 @@
                         text_size: self.width, None
                         text: "Some log info...\n" * 100
 
-            BoxLayout:
-                size_hint_x: 300
+            GridLayout:
+                id: hotkeys_grid
+                padding: 20
+                cols: 2
+                spacing: 10, 20
+                size: self.minimum_size
+                size_hint_x: None
 
-                GridLayout:
-                    padding: 20
-                    cols: 2
-                    spacing: 10, 20
+                canvas.before:
+                    Color:
+                        rgba: .5, .5, .5, 1
+                    Line:
+                        width: 2
+                        rectangle: self.x, self.y, self.width, self.height
 
-                    canvas.before:
-                        Color:
-                            rgba: .5, .5, .5, 1
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
+                ActionTextLabel:
+                    text: "Backtest up"
+                ActionHotkeyLabel:
+                    text: "[ k ]"
 
-                    ActionTextLabel:
-                        text: "Backtest up"
-                    ActionHotkeyLabel:
-                        text: "[ k ]"
+                ActionTextLabel:
+                    text: "Backtest down"
+                ActionHotkeyLabel:
+                    text: "[ j ]"
 
-                    ActionTextLabel:
-                        text: "Backtest down"
-                    ActionHotkeyLabel:
-                        text: "[ j ]"
+                ActionTextLabel:
+                    text: "Length x2"
+                ActionHotkeyLabel:
+                    text: "[ l ]"
 
-                    ActionTextLabel:
-                        text: "Length x2"
-                    ActionHotkeyLabel:
-                        text: "[ l ]"
+                ActionTextLabel:
+                    text: "Length /2"
+                ActionHotkeyLabel:
+                    text: "[ h ]"
 
-                    ActionTextLabel:
-                        text: "Length /2"
-                    ActionHotkeyLabel:
-                        text: "[ h ]"
+                ActionTextLabel:
+                    text: "Backtest up x10"
+                ActionHotkeyLabel:
+                    text: "[ Shift + k ]"
 
-                    ActionTextLabel:
-                        text: "Backtest up x10"
-                    ActionHotkeyLabel:
-                        text: "[ Shift + k ]"
-
-                    ActionTextLabel:
-                        text: "Backtest down x10"
-                    ActionHotkeyLabel:
-                        text: "[ Shift + j ]"
+                ActionTextLabel:
+                    text: "Backtest down x10"
+                ActionHotkeyLabel:
+                    text: "[ Shift + j ]"
                     
         BoxLayout:
             size_hint_y: 0.05
