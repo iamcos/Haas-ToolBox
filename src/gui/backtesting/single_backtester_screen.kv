@@ -1,3 +1,54 @@
+<BorderWidget>:
+    canvas.before:
+        Color:
+            rgba: .5, .5, .5, 1
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
+
+
+<BacktestingInfoLayout>:
+    size_hint_y: 50
+    size_hint_y: None
+
+
+<BacktestingInfoLabel>:
+    height: self.texture_size[1]
+    font_size: 30
+
+
+<PlotLayout>:
+    size_hint_y: 425
+
+
+<LogsLayout>:
+    size_hint_y: 425
+    canvas.before:
+        Color:
+            rgba: .5, .5, .5, 1
+        Line:
+            width: 4
+            rectangle: self.x, self.y, self.width, self.height
+
+
+<LogsText>:
+    padding: 10, 10
+    size_hint_y: None
+    font_size: 20
+    height: self.texture_size[1]
+    text_size: self.width, None
+    text: "Some log info...\n" * 100
+
+
+<HotKeysLayout>:
+    id: hotkeys_grid
+    padding: 20
+    cols: 2
+    spacing: 10, 20
+    size: self.minimum_size
+    size_hint_x: None
+
+
 <ActionTextLabel>:
     size_hint: None, None
     font_size: 25
@@ -18,76 +69,28 @@
             text: "Backtesting"
 
         BoxLayout:
+            id: info_box_layout
             spacing: 20
 
             GridLayout:
-                pos_hint: {"right": 0.6}
-                minimum_width: 0.8
                 cols: 1
                 spacing: 0, 20
 
-                BoxLayout:
-                    size_hint_y: 50
-                    size_hint_y: None
-                    canvas.before:
-                        Color:
-                            rgba: .5, .5, .5, 1
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
-                    Label:
-                        height: self.texture_size[1]
-                        font_size: 30
+                BacktestingInfoLayout:
+                    BacktestingInfoLabel:
                         text: "IndicatorOption"
-                    Label:
-                        height: self.texture_size[1]
-                        font_size: 30
+                    BacktestingInfoLabel:
                         text: "Current value: 20"
-                    Label:
-                        height: self.texture_size[1]
-                        font_size: 30
+                    BacktestingInfoLabel:
                         text: "Curent ROI: 5.32%"
 
-                BoxLayout:
-                    size_hint_y: 425
-                    canvas.before:
-                        Color:
-                            rgba: .5, .5, .5, 1
-                        Line:
-                            width: 2
-                            rectangle: self.x, self.y, self.width, self.height
+                PlotLayout:
 
-                ScrollView:
-                    size_hint_y: 425
-                    canvas.before:
-                        Color:
-                            rgba: .5, .5, .5, 1
-                        Line:
-                            width: 4
-                            rectangle: self.x, self.y, self.width, self.height
-                    Label:
-                        padding: 10, 10
-                        size_hint_y: None
-                        font_size: 20
-                        height: self.texture_size[1]
-                        text_size: self.width, None
-                        text: "Some log info...\n" * 100
+                LogsLayout:
+                    LogsText:
 
-            GridLayout:
-                id: hotkeys_grid
-                padding: 20
-                cols: 2
-                spacing: 10, 20
-                size: self.minimum_size
-                size_hint_x: None
 
-                canvas.before:
-                    Color:
-                        rgba: .5, .5, .5, 1
-                    Line:
-                        width: 2
-                        rectangle: self.x, self.y, self.width, self.height
-
+            HotKeysLayout:
                 ActionTextLabel:
                     text: "Backtest up"
                 ActionHotkeyLabel:
