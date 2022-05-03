@@ -27,9 +27,7 @@ class BotBacktestCli:
         backtest_methods = BotBacketster(
             self.manager,
             interface,
-            selected_option,
-            selected_option.value,
-            str(selected_option.step)
+            selected_option
         )
 
         action = self._get_backtest_promt(selected_option, backtest_methods)
