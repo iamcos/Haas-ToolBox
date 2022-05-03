@@ -34,10 +34,9 @@
 <LogsText>:
     padding: 10, 10
     size_hint_y: None
-    font_size: 20
+    font_size: 25
     height: self.texture_size[1]
     text_size: self.width, None
-    text: "Some log info...\n" * 100
 
 
 <HotKeysLayout>:
@@ -49,11 +48,12 @@
     size_hint_x: None
 
 
-<ActionTextLabel>:
+<ActionButtonLabel>:
     size_hint: None, None
     font_size: 25
     halign: "left"
     size: self.texture_size
+    background_color: 0, 0, 0
 
 
 <ActionHotkeyLabel>:
@@ -69,58 +69,17 @@
             text: "Backtesting"
 
         BoxLayout:
-            id: info_box_layout
             spacing: 20
 
             GridLayout:
+                id: info_grid_layout
                 cols: 1
                 spacing: 0, 20
 
-                BacktestingInfoLayout:
-                    BacktestingInfoLabel:
-                        text: "IndicatorOption"
-                    BacktestingInfoLabel:
-                        text: "Current value: 20"
-                    BacktestingInfoLabel:
-                        text: "Curent ROI: 5.32%"
-
-                PlotLayout:
-
-                LogsLayout:
-                    LogsText:
-
-
             HotKeysLayout:
-                ActionTextLabel:
-                    text: "Backtest up"
-                ActionHotkeyLabel:
-                    text: "[ k ]"
-
-                ActionTextLabel:
-                    text: "Backtest down"
-                ActionHotkeyLabel:
-                    text: "[ j ]"
-
-                ActionTextLabel:
-                    text: "Length x2"
-                ActionHotkeyLabel:
-                    text: "[ l ]"
-
-                ActionTextLabel:
-                    text: "Length /2"
-                ActionHotkeyLabel:
-                    text: "[ h ]"
-
-                ActionTextLabel:
-                    text: "Backtest up x10"
-                ActionHotkeyLabel:
-                    text: "[ Shift + k ]"
-
-                ActionTextLabel:
-                    text: "Backtest down x10"
-                ActionHotkeyLabel:
-                    text: "[ Shift + j ]"
+                id: hotkeys_layout
                     
+
         BoxLayout:
             size_hint_y: 0.05
             padding: 0, 10
