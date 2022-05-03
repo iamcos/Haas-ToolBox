@@ -17,11 +17,13 @@ class InterfaceOptionSelectorScreen(Screen):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.bot_manager: BotManager
+        self.interface: Interfaces
         self.grid: ScrollingGridLayout = ScrollingGridLayout()
         self.ids.scroll_view.add_widget(self.grid)
 
     def setup(self, bot_manager: BotManager, interface: Interfaces) -> None:
         self.bot_manager = bot_manager
+        self.interface = interface
         self.clear_buttons()
         self.generate_buttons(interface)
 
@@ -43,4 +45,10 @@ class InterfaceOptionSelectorScreen(Screen):
     def process_option(self, option: IndicatorOption) -> Callable[[Any], None]:
         def inner(_):
             print(f"Choosed {option.title}: {option.value}")
+            self.manager.get_screen("single_backtester").setup(
+                self.bot_manager,
+                self.interface,
+                option
+            )
+            self.manager.current = "single_backtester"
         return inner
