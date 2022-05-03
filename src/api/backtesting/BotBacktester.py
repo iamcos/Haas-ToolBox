@@ -18,7 +18,8 @@ def timeit(func):
     def inner(*args, **kwargs):
         start: float = monotonic()
         res = func(*args, **kwargs)
-        log.info("Time passed: {:.2f}s".format((monotonic() - start)))
+        time = "Time passed: {:.2f}s".format((monotonic() - start))
+        log.info(time)
         return res
     return inner
 
@@ -30,15 +31,12 @@ class BotBacketster:
             manager: BotManager,
             interface: Interfaces,
             option: IndicatorOption,
-            # TODO: Is value and step needed here ? (interface option containes them)
-            value: str,
-            step: str
     ) -> None:
         self.manager = manager
         self.interface = interface
         self.option = option
-        self.value = value
-        self.step = step
+        self.value = option.value
+        self.step = option.step
         self.ticks = main_context.config_manager.read_ticks()
 
         self.used_values: set[UsedOptionParameters] = \
@@ -72,9 +70,8 @@ class BotBacketster:
         self.manager.save_max_result(self.interface, self.option_num)
 
     @timeit
-    def backtest_up(self) -> None:
+    def backtest_up(self) -> tuple[str, float]:
         log.info("Backtesting up")
-
         new_value: float = self._calculate_next_value_up()
 
         self.manager.edit_interface(self.interface, self.option_num, new_value)
@@ -85,16 +82,13 @@ class BotBacketster:
             f" : {self.value} ROI:{self.manager.bot_roi()}%")
 
         self.manager.save_roi(self._get_bot_roi_data())
+        roi: float = self.manager.bot_roi()
+        str_value: str = str(self.value)
 
-        self.used_values.add(UsedOptionParameters(
-            self.manager.bot_roi(),
-            self.ticks,
-            self.step,
-            str(self.value)
-        ))
+        return str_value, roi
 
     @timeit
-    def backtest_down(self) -> None:
+    def backtest_down(self) -> tuple[str, float]:
         log.info("Backtesting down")
 
         self._calculate_next_value_down()
@@ -107,6 +101,10 @@ class BotBacketster:
             f" : {self.value} ROI:{self.manager.bot_roi()}%")
 
         self.manager.save_roi(self._get_bot_roi_data())
+        roi: float = self.manager.bot_roi()
+        str_value: str = str(self.value)
+
+        return str_value, roi
 
     def backtesting_length_x2(self) -> None:
         self.ticks = self.ticks * 2
@@ -185,5 +183,5 @@ class BotBacketster:
             self.ticks,
             self.option_num,
             self.interface.guid
-        )
+       )
 
