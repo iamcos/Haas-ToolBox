@@ -52,3 +52,8 @@ class InterfaceOptionSelectorScreen(Screen):
             )
             self.manager.current = "single_backtester"
         return inner
+
+    def update_data(self) -> None:
+        self.bot_manager.refresh_bot()
+        self.clear_buttons()
+        self.generate_buttons(self.interface)
