@@ -8,6 +8,7 @@ from api.models import Bot
 from gui.default_widgets import LabelButton, ScrollingGridLayout
 
 from loguru import logger as log
+import gui.colors as colors
 
 
 Builder.load_file("./src/gui/bot_selector/bot_selector_screen.kv")
@@ -55,12 +56,13 @@ class BotSelectorScreen(Screen):
 
     def choose_bot(self, instance: LabelButton) -> None:
         bot: Bot = self.bots_map[instance.text]
+
         if bot in self.selected_bots:
             self.selected_bots.remove(bot)
-            instance.color = (1, 1, 1, 1)
+            instance.color = colors.white
         else:
             self.selected_bots.add(bot)
-            instance.color = (0, 1, 0, 1)
+            instance.color = colors.green
 
     def confirm_selected_bots(self) -> None:
         if len(self.selected_bots) == 1:
