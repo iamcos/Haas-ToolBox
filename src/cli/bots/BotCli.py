@@ -1,6 +1,6 @@
 from api.bots.BotManager import BotManager
 from api.bots.BotApiProvider import Bot
-from api.factories.bot_managers_factory import get_bot_manager
+from api.factories.bot_managers_factory import get_bot_manager_by_type
 from api.models import Interfaces
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
@@ -20,7 +20,7 @@ class BotCli:
     """
 
     def __init__(self, t: Type) -> None:
-        self.manager: BotManager = get_bot_manager(t)
+        self.manager: BotManager = get_bot_manager_by_type(t)
 
         self.bot_selector = BotSelectorCli(self.manager)
         self.interface_selector = InterfaceSelectorCli(self.manager)
