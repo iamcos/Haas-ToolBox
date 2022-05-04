@@ -210,6 +210,5 @@ class BacktestingRunner:
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.futures = []
 
-
     def run_task(self, task: Callable, *args) -> None:
         self.futures.append(self.executor.submit(task, *args))
