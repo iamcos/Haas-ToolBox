@@ -17,6 +17,7 @@ from typing import Callable
 
 from api.models import ROI, Interfaces
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
+from loguru import logger as log
 
 
 Builder.load_file("./src/gui/backtesting/single_backtester_screen.kv")
@@ -78,6 +79,7 @@ class SingleBacktesterScreen(Screen):
         self.backtesting_actions: dict[tuple[str, str], Callable]
         self.logs_text: LogsText
         self.task_runner = BacktestingRunner()
+        self.hotkeys: set[str] = {key[1] for key in list(self.backtesting_actions)}
 
         keyboard = Window.request_keyboard(self._keyboard_released, self) # type: ignore
         keyboard.bind(on_key_down=self._keyboard_on_key_down)
@@ -179,22 +181,28 @@ class SingleBacktesterScreen(Screen):
         self.focus = False
 
     def _keyboard_on_key_down(self, window, keycode, text, modifiers):
+        # TODO: Find better option for setting hotkeys
         if self.manager.current != "single_backtester":
             return
 
         if "shift" in modifiers:
             text = f"Shift + {text}"
 
-        if text in {key[1] for key in list(self.backtesting_actions)}:
+        if text in self.hotkeys:
             self.process_hotkey_release(text)
 
     def log(self, text: str) -> None:
         self.logs_text. text += f"{text}\n"
 
     def draw_plot(self, roi: ROI) -> None:
-        pass
-            
+        print(f"Drawing plot for {roi=}")
 
+    def back_to_option_selector(self) -> None:
+        self.manager.current = "interface_option_selector"
+        log.debug("Going to interface option selection")
+
+
+# FIXME: Move to separeta module
 class BacktestingRunner:
     def __init__(self) -> None:
         self.executor = ThreadPoolExecutor(max_workers=1)
@@ -203,4 +211,3 @@ class BacktestingRunner:
 
     def run_task(self, task: Callable, *args) -> None:
         self.futures.append(self.executor.submit(task, *args))
-
