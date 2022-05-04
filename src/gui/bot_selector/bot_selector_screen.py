@@ -7,6 +7,8 @@ from api.factories.bot_managers_factory import get_bot_manager
 from api.models import Bot
 from gui.default_widgets import LabelButton, ScrollingGridLayout
 
+from loguru import logger as log
+
 
 Builder.load_file("./src/gui/bot_selector/bot_selector_screen.kv")
 bot_name = (
@@ -24,10 +26,9 @@ class BotSelectorScreen(Screen):
         self.bots_map: dict[str, Bot] = {}
         self.bots_grid = ScrollingGridLayout()
         self.ids.scroll_view.add_widget(self.bots_grid)
+        self.selected_bots: set[Bot] = set()
 
     def prepare(self, bot_type: Type) -> None:
-        print(f"Hello from prepare: {bot_type=}")
-
         self.bot_manager = get_bot_manager(bot_type)
         self.update_bots_map()
         self.update_bots_buttons()
@@ -53,8 +54,23 @@ class BotSelectorScreen(Screen):
         self.ids.scroll_view.add_widget(self.bots_grid)
 
     def choose_bot(self, instance: LabelButton) -> None:
-        print(f"Choosing bot: {instance.text}")
-        self.bot_manager.set_bot(self.bots_map[instance.text])
-        self.manager.get_screen("single_bot_menu").prepare(self.bot_manager)
-        self.manager.current = "single_bot_menu"
+        bot: Bot = self.bots_map[instance.text]
+        if bot in self.selected_bots:
+            self.selected_bots.remove(bot)
+            instance.color = (1, 1, 1, 1)
+        else:
+            self.selected_bots.add(bot)
+            instance.color = (0, 1, 0, 1)
 
+    def confirm_selected_bots(self) -> None:
+        if len(self.selected_bots) == 1:
+            self.bot_manager.set_bot(self.selected_bots.pop())
+            self.manager.get_screen("single_bot_menu").prepare(self.bot_manager)
+            self.manager.current = "single_bot_menu"
+        else:
+            (self
+                .manager.get_screen("multiple_bot_menu")
+                .prepare(self.selected_bots)
+             )
+            self.manager.current = "multiple_bot_menu"
+            self.selected_bots.clear()
