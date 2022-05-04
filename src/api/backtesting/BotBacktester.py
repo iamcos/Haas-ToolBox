@@ -106,13 +106,15 @@ class BotBacketster:
 
         return str_value, roi
 
-    def backtesting_length_x2(self) -> None:
+    def backtesting_length_x2(self) -> int:
         self.ticks = self.ticks * 2
         log.info(f"{self.ticks=}")
+        return self.ticks
 
-    def backtesting_length_devide2(self) -> None:
+    def backtesting_length_devide2(self) -> int:
         self.ticks = self.ticks // 2
         log.info(f"{self.ticks=}")
+        return self.ticks
 
     @timeit
     def backtest_steps_down(self, steps: int = 10) -> None:
