@@ -13,7 +13,7 @@ from kivy.uix.widget import Widget
 from api.backtesting.BotBacktester import BotBacketster
 
 from api.bots.BotManager import BotManager
-from typing import Callable
+from typing import Callable, Optional
 
 from api.models import ROI, Interfaces
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
@@ -84,6 +84,10 @@ class SingleBacktesterScreen(Screen):
         keyboard = Window.request_keyboard(self._keyboard_released, self) # type: ignore
         keyboard.bind(on_key_down=self._keyboard_on_key_down)
 
+        self.backtesting_info_layout: Optional[BacktestingInfoLayout] = None
+        self.plot_layout: Optional[PlotLayout] = None
+        self.logs_layout: Optional[LogsLayout] = None
+
     def setup(
         self,
         bot_manager: BotManager,
@@ -101,8 +105,10 @@ class SingleBacktesterScreen(Screen):
             ("Backtest down", "j"): self.backtester.backtest_down,
             ("Length x2", "l"): self.backtester.backtesting_length_x2,
             ("Length /2", "h"): self.backtester.backtesting_length_devide2,
-            ("Backtest up x10", "Shift + k"): self.backtester.backtest_up,
-            ("Backtest down x10", "Shift + j"): self.backtester.backtest_up,
+            ("Backtest up x10", "Shift + k"): self.run_in_range(
+                self.backtester.backtest_up),
+            ("Backtest down x10", "Shift + j"): self.run_in_range(
+                self.backtester.backtest_down),
         }
 
         self.hotkeys = {key[1] for key in list(self.backtesting_actions)}
@@ -112,34 +118,61 @@ class SingleBacktesterScreen(Screen):
         self.setup_logs()
         self.setup_backtesting_actions()
 
+    # TODO: Move default value to config
+    def run_in_range(self, action: Callable, range_: int = 10) -> Callable:
+        def inner():
+            for _ in range(range_):
+                self.task(action)
+        return inner
+
     def setup_backtesting_info(self) -> None:
+        if self.backtesting_info_layout:
+            log.debug("Dublicate layout found")
+            self.ids.info_grid_layout.remove_widget(self.backtesting_info_layout)
+
         layout: BacktestingInfoLayout = BacktestingInfoLayout()
 
         layout.add_widget(BacktestingInfoLabel(
             text=InterfaceWrapper(self.interface).name))
+
         self.current_value = BacktestingInfoLabel(
             text=f"Value: {self.interface_option.value}")
         self.current_roi = BacktestingInfoLabel(
             text=f"ROI: {self.bot_manager.bot_roi()}%")
+
         layout.add_widget(self.current_value)
         layout.add_widget(self.current_roi)
 
         self.ids.info_grid_layout.add_widget(layout)
+        self.backtesting_info_layout = layout
 
     def setup_plot(self) -> None:
+        if self.plot_layout:
+            log.debug("Dublicate layout found")
+            self.ids.info_grid_layout.remove_widget(self.plot_layout)
+
         layout: PlotLayout = PlotLayout()
         self.graph = layout
         self.ids.info_grid_layout.add_widget(layout)
+        self.plot_layout = layout
 
     def setup_logs(self) -> None:
+        if self.logs_layout:
+            log.debug("Dublicate layout found")
+            self.ids.info_grid_layout.remove_widget(self.logs_layout)
+
         layout: LogsLayout = LogsLayout()
         text:LogsText = LogsText(text="")
         layout.add_widget(text)
 
         self.logs_text = text
         self.ids.info_grid_layout.add_widget(layout)
+        self.logs_layout = layout
 
     def setup_backtesting_actions(self) -> None:
+        if self.ids.hotkeys_layout.children:
+            return
+
         for text, hotkey in list(self.backtesting_actions):
             self.ids.hotkeys_layout.add_widget(ActionButtonLabel(
                 text=text, on_release=self.process_button_release))
@@ -153,20 +186,26 @@ class SingleBacktesterScreen(Screen):
                 self.task_runner.run_task(self.task, value)
 
     def process_hotkey_release(self, hotkey: str) -> None:
-        for key, value in self.backtesting_actions.items():
+        for key, action in self.backtesting_actions.items():
             if key[1] == hotkey:
                 self.log(key[0])
-                self.task_runner.run_task(self.task, value)
+                self.task_runner.run_task(self.task, action)
 
     def task(self, action: Callable):
         start: float = monotonic()
-        value, roi = action()
+        res = action()
+        log.debug(f"{res}")
         end = monotonic() - start
 
-        self.log(f"ROI: [{roi}]; Value: [{value}]; Time: [{end:.2f}s]")
-        self.current_value.text = f"Value: {value}"
-        self.current_roi.text = f"ROI: {roi}"
-
+        match res:
+            case None:
+                return
+            case value, roi:
+                self.log(f"ROI: [{roi}]; Value: [{value}]; Time: [{end:.2f}s]")
+                self.current_value.text = f"Value: {value}"
+                self.current_roi.text = f"ROI: {roi}"
+            case ticks:
+                self.log(f"Ticks: {ticks}")
 
     def backtesting_range_action_wrapper(
         self,
@@ -200,6 +239,8 @@ class SingleBacktesterScreen(Screen):
         print(f"Drawing plot for {roi=}")
 
     def back_to_option_selector(self) -> None:
+        self.backtester.stop_backtesting()
+        self.manager.get_screen("interface_option_selector").update_data()
         self.manager.current = "interface_option_selector"
         log.debug("Going to interface option selection")
 
