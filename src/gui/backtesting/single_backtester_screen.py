@@ -79,7 +79,7 @@ class SingleBacktesterScreen(Screen):
         self.backtesting_actions: dict[tuple[str, str], Callable]
         self.logs_text: LogsText
         self.task_runner = BacktestingRunner()
-        self.hotkeys: set[str] = {key[1] for key in list(self.backtesting_actions)}
+        self.hotkeys: set[str]
 
         keyboard = Window.request_keyboard(self._keyboard_released, self) # type: ignore
         keyboard.bind(on_key_down=self._keyboard_on_key_down)
@@ -104,6 +104,8 @@ class SingleBacktesterScreen(Screen):
             ("Backtest up x10", "Shift + k"): self.backtester.backtest_up,
             ("Backtest down x10", "Shift + j"): self.backtester.backtest_up,
         }
+
+        self.hotkeys = {key[1] for key in list(self.backtesting_actions)}
 
         self.setup_backtesting_info()
         self.setup_plot()
