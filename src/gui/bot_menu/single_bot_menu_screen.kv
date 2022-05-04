@@ -1,14 +1,1 @@
-<SingleBotMenuScreen>:
-    MainWindow:
-        TitleLabel:
-            text: "Choose action for bot"
-
-        ScrollView:
-            id: scroll_view
-
-        BoxLayout:
-            size_hint_y: 0.1
-            Button:
-                text: 'Back to menu'
-                on_release: root.manager.current = 'menu'
-
+<SingleBotMenuScreen@BaseBotMenuScreen>:
