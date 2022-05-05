@@ -1,13 +1,13 @@
 from typing import Type
-from kivy.lang import Builder
-from api.bots.BotManager import BotManager
-from api.factories import bot_managers_factory
-from api.models import Bot
 
-from gui.bot_menu.base_bot_menu_screen import BaseBotMenuScreen
+from api.bots.BotManager import BotManager
 from api.bots.mad_hatter.MadHatterBotManager import MadHatterBotManager
 from api.bots.scalper.ScalperBotManager import ScalperBotManager
+from api.factories import bot_managers_factory
+from api.models import Bot
+from gui.bot_menu.base_bot_menu_screen import BaseBotMenuScreen
 from gui.default_widgets import LabelButton
+from kivy.lang import Builder
 from loguru import logger as log
 
 
