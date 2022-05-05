@@ -1,22 +1,24 @@
 from concurrent.futures import ThreadPoolExecutor
 from time import monotonic
-from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from kivy.core.window import Window
-from kivy.uix.label import Label
-from kivy.uix.screenmanager import Screen
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.button import Button
-from kivy.lang import Builder
-from kivy.uix.widget import Widget
-from api.backtesting.BotBacktester import BotBacketster
-
-from api.bots.BotManager import BotManager
 from typing import Callable, Optional
 
+import gui.colors as colors
+from api.backtesting.BotBacktester import BotBacketster
+from api.bots.BotManager import BotManager
 from api.models import ROI, Interfaces
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
+from gui.default_widgets import ScrollingGridLayout, TextLabel
+from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import \
+    IndicatorOption
+from kivy.core.window import Window
+from kivy.lang import Builder
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
+from kivy.uix.screenmanager import Screen
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.widget import Widget
 from loguru import logger as log
 
 
@@ -114,7 +116,7 @@ class SingleBacktesterScreen(Screen):
         self.hotkeys = {key[1] for key in list(self.backtesting_actions)}
 
         self.setup_backtesting_info()
-        self.setup_plot()
+        # self.setup_plot()
         self.setup_logs()
         self.setup_backtesting_actions()
 
@@ -161,13 +163,11 @@ class SingleBacktesterScreen(Screen):
             log.debug("Dublicate layout found")
             self.ids.info_grid_layout.remove_widget(self.logs_layout)
 
-        layout: LogsLayout = LogsLayout()
-        text:LogsText = LogsText(text="")
-        layout.add_widget(text)
-
-        self.logs_text = text
-        self.ids.info_grid_layout.add_widget(layout)
-        self.logs_layout = layout
+        self.logs_layout = LogsLayout()
+        self.logs_layout.scroll_y = 0 # type: ignore
+        self.logs_grid = ScrollingGridLayout()
+        self.logs_layout.add_widget(self.logs_grid)
+        self.ids.info_grid_layout.add_widget(self.logs_layout)
 
     def setup_backtesting_actions(self) -> None:
         if self.ids.hotkeys_layout.children:
@@ -180,32 +180,35 @@ class SingleBacktesterScreen(Screen):
                 text=f"[ {hotkey} ]"))
 
     def process_button_release(self, instanse) -> None:
-        for key, value in self.backtesting_actions.items():
+        for key, action in self.backtesting_actions.items():
             if key[0] == instanse.text:
                 self.log(key[0])
-                self.task_runner.run_task(self.task, value)
+                self.task_runner.run_task(self.task, action)
 
     def process_hotkey_release(self, hotkey: str) -> None:
         for key, action in self.backtesting_actions.items():
             if key[1] == hotkey:
-                self.log(key[0])
-                self.task_runner.run_task(self.task, action)
+                log_row: TextLabel = self.log(key[0])
+                self.task_runner.run_task(self.task, action, log_row)
 
-    def task(self, action: Callable):
+    def task(self, action: Callable, log_row: Optional[TextLabel] = None):
         start: float = monotonic()
         res = action()
-        log.debug(f"{res}")
         end = monotonic() - start
+
+        log.debug(f"{res}")
 
         match res:
             case None:
                 return
             case value, roi:
-                self.log(f"ROI: [{roi}]; Value: [{value}]; Time: [{end:.2f}s]")
+                self.log(
+                    f"ROI: [{roi}]; Value: [{value}]; Time: [{end:.2f}s]",
+                    log_row)
                 self.current_value.text = f"Value: {value}"
                 self.current_roi.text = f"ROI: {roi}"
             case ticks:
-                self.log(f"Ticks: {ticks}")
+                self.log(f"Ticks: {ticks}", log_row)
 
     def backtesting_range_action_wrapper(
         self,
@@ -232,8 +235,20 @@ class SingleBacktesterScreen(Screen):
         if text in self.hotkeys:
             self.process_hotkey_release(text)
 
-    def log(self, text: str) -> None:
-        self.logs_text. text += f"{text}\n"
+    def log(self, text: str, log_row: Optional[TextLabel] = None) -> TextLabel:
+        if log_row is not None:
+            log_row.text += f" | {text}"
+            log_row.color = colors.green
+            return log_row
+        else:
+            label: TextLabel = TextLabel(text=text)
+            self.logs_grid.add_widget(label)
+
+            if self.logs_layout.scroll_y != 0: # type: ignore
+                self.logs_layout.scroll_y = 0 # type: ignore
+                self.logs_layout.scroll_to(label) # type: ignore
+
+            return label
 
     def draw_plot(self, roi: ROI) -> None:
         print(f"Drawing plot for {roi=}")
