@@ -1,4 +1,4 @@
-from typing import Type, overload
+from typing import Type
 from haasomeapi.dataobjects.custombots.BaseCustomBot import BaseCustomBot
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
