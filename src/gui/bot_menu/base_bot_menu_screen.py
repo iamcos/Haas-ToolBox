@@ -32,6 +32,7 @@ class BaseBotMenuScreen(Screen):
     def add_main_option(self, title: str, action: Callable) -> None:
         self.main_options[title] = action
 
+    # FIXME: use bot type, not manager
     def add_additional_option(
         self,
         type: Type[BotManager],
