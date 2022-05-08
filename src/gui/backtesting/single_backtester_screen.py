@@ -2,106 +2,52 @@ from concurrent.futures import ThreadPoolExecutor
 from time import monotonic
 from typing import Callable, Optional
 
-import gui.colors as colors
 from api.backtesting.BotBacktester import BotBacketster
 from api.bots.BotManager import BotManager
-from api.models import ROI, Interfaces
+from api.models import Interfaces
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
-from gui.default_widgets import ScrollingGridLayout, TextLabel
+from gui.default_widgets import TextLabel
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import \
     IndicatorOption
 from kivy.core.window import Window
 from kivy.lang import Builder
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
-from kivy.uix.screenmanager import Screen
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.widget import Widget
 from loguru import logger as log
+from kivy.uix.screenmanager import Screen
+from gui.backtesting.widgets import LogsLayout, BacktestingInfoLayout
 
 
 Builder.load_file("./src/gui/backtesting/single_backtester_screen.kv")
 
 
-class BorderWidget(Widget):
-    """Class for drawing borders around window"""
-    pass
+# FIXME: Move to separeta module
+class TaskRunner:
+    def __init__(self) -> None:
+        self.executor = ThreadPoolExecutor(max_workers=1)
+        self.futures = []
+
+    def run_task(self, task: Callable, *args) -> None:
+        self.futures.append(self.executor.submit(task, *args))
 
 
-class BacktestingInfoLayout(BoxLayout, BorderWidget):
-    """Class for backtesting info layout"""
-    pass
-
-
-class BacktestingInfoLabel(Label):
-    """Class for text in backtesting info"""
-    pass
-
-
-class PlotLayout(BoxLayout, BorderWidget):
-    """Class for showing plot of backtesting"""
-    pass
-
-
-class LogsLayout(ScrollView, BorderWidget):
-    """Class for showing logs of backtesting"""
-    pass
-
-
-class LogsText(Label):
-    """Class for logs text"""
-    pass
-
-
-class HotKeysLayout(GridLayout, BorderWidget):
-    """Class for showing buttons and hotkeys"""
-    pass
-
-
-class ActionButtonLabel(Button):
-    """Class for backtesting button"""
-    pass
-
-
-class ActionHotkeyLabel(Label):
-    """Class for backtesting hotkey"""
-    pass
-
-
-class SingleBacktesterScreen(Screen):
-
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.bot_manager: BotManager
-        self.interface: Interfaces
-        self.interface_option: IndicatorOption
-        self.backtester: BotBacketster
-        self.backtesting_actions: dict[tuple[str, str], Callable]
-        self.logs_text: LogsText
-        self.task_runner = BacktestingRunner()
-        self.hotkeys: set[str]
-
-        keyboard = Window.request_keyboard(self._keyboard_released, self) # type: ignore
-        keyboard.bind(on_key_down=self._keyboard_on_key_down)
-
-        self.backtesting_info_layout: Optional[BacktestingInfoLayout] = None
-        self.plot_layout: Optional[PlotLayout] = None
-        self.logs_layout: Optional[LogsLayout] = None
-
-    def setup(
+class GuiBacktester:
+    def __init__(
         self,
-        bot_manager: BotManager,
-        interface: Interfaces,
-        interface_option: IndicatorOption
+        backtester: BotBacketster,
+        logger: LogsLayout,
+        backtesting_info: BacktestingInfoLayout
     ) -> None:
-        self.bot_manager = bot_manager
-        self.interface = interface
-        self.interface_option = interface_option
-        self.backtester = BotBacketster(
-                bot_manager, interface, interface_option)
+        self.backtester: BotBacketster = backtester
+        self.logger: LogsLayout = logger
+        self.backtesting_info: BacktestingInfoLayout = backtesting_info
 
+        self.backtesting_actions: dict[tuple[str, str], Callable]
+        self.hotkeys: set[str]
+        self.task_runner = TaskRunner()
+
+        self._init_backtesting_actions_dict()
+        self._setup_backtesting_hotkeys()
+
+    def _init_backtesting_actions_dict(self) -> None:
         self.backtesting_actions = {
             ("Backtest up", "k"): self.backtester.backtest_up,
             ("Backtest down", "j"): self.backtester.backtest_down,
@@ -112,119 +58,106 @@ class SingleBacktesterScreen(Screen):
             ("Backtest down x10", "Shift + j"): self.run_in_range(
                 self.backtester.backtest_down),
         }
-
-        self.hotkeys = {key[1] for key in list(self.backtesting_actions)}
-
-        self.setup_backtesting_info()
-        # self.setup_plot()
-        self.setup_logs()
-        self.setup_backtesting_actions()
-
+    
     # TODO: Move default value to config
     def run_in_range(self, action: Callable, range_: int = 10) -> Callable:
         def inner():
             for _ in range(range_):
-                self.task(action)
+                self._task(action)
         return inner
 
-    def setup_backtesting_info(self) -> None:
-        if self.backtesting_info_layout:
-            log.debug("Dublicate layout found")
-            self.ids.info_grid_layout.remove_widget(self.backtesting_info_layout)
-
-        layout: BacktestingInfoLayout = BacktestingInfoLayout()
-
-        layout.add_widget(BacktestingInfoLabel(
-            text=InterfaceWrapper(self.interface).name))
-
-        self.current_value = BacktestingInfoLabel(
-            text=f"Value: {self.interface_option.value}")
-        self.current_roi = BacktestingInfoLabel(
-            text=f"ROI: {self.bot_manager.bot_roi()}%")
-
-        layout.add_widget(self.current_value)
-        layout.add_widget(self.current_roi)
-
-        self.ids.info_grid_layout.add_widget(layout)
-        self.backtesting_info_layout = layout
-
-    def setup_plot(self) -> None:
-        if self.plot_layout:
-            log.debug("Dublicate layout found")
-            self.ids.info_grid_layout.remove_widget(self.plot_layout)
-
-        layout: PlotLayout = PlotLayout()
-        self.graph = layout
-        self.ids.info_grid_layout.add_widget(layout)
-        self.plot_layout = layout
-
-    def setup_logs(self) -> None:
-        if self.logs_layout:
-            log.debug("Dublicate layout found")
-            self.ids.info_grid_layout.remove_widget(self.logs_layout)
-
-        self.logs_layout = LogsLayout()
-        self.logs_layout.scroll_y = 0 # type: ignore
-        self.logs_grid = ScrollingGridLayout()
-        self.logs_layout.add_widget(self.logs_grid)
-        self.ids.info_grid_layout.add_widget(self.logs_layout)
-
-    def setup_backtesting_actions(self) -> None:
-        if self.ids.hotkeys_layout.children:
-            return
-
-        for text, hotkey in list(self.backtesting_actions):
-            self.ids.hotkeys_layout.add_widget(ActionButtonLabel(
-                text=text, on_release=self.process_button_release))
-            self.ids.hotkeys_layout.add_widget(ActionHotkeyLabel(
-                text=f"[ {hotkey} ]"))
-
-    def process_button_release(self, instanse) -> None:
-        for key, action in self.backtesting_actions.items():
-            if key[0] == instanse.text:
-                self.log(key[0])
-                self.task_runner.run_task(self.task, action)
-
-    def process_hotkey_release(self, hotkey: str) -> None:
-        for key, action in self.backtesting_actions.items():
-            if key[1] == hotkey:
-                log_row: TextLabel = self.log(key[0])
-                self.task_runner.run_task(self.task, action, log_row)
-
-    def task(self, action: Callable, log_row: Optional[TextLabel] = None):
+    def _task(self, action: Callable, log_row: Optional[TextLabel] = None):
         start: float = monotonic()
         res = action()
         end = monotonic() - start
 
-        log.debug(f"{res}")
+        log.debug(f"{res=}")
 
         match res:
             case None:
                 return
             case value, roi:
-                self.log(
+                self.logger.info(
                     f"ROI: [{roi}]; Value: [{value}]; Time: [{end:.2f}s]",
                     log_row)
-                self.current_value.text = f"Value: {value}"
-                self.current_roi.text = f"ROI: {roi}"
+                self.backtesting_info.update(value, roi)
             case ticks:
-                self.log(f"Ticks: {ticks}", log_row)
+                self.logger.info(f"Ticks: {ticks}", log_row)
+
+    def _setup_backtesting_hotkeys(self) -> None:
+        self.hotkeys = {key[1] for key in list(self.backtesting_actions)}
+
+    def process_button_release(self, instanse) -> None:
+        for key, action in self.backtesting_actions.items():
+            if key[0] == instanse.text:
+                self.logger.info(key[0])
+                self.task_runner.run_task(self._task, action)
+
+    def process_hotkey_release(self, hotkey: str) -> None:
+        if hotkey in self.hotkeys:
+            for key, action in self.backtesting_actions.items():
+                if key[1] == hotkey:
+                    log_row: TextLabel = self.logger.info(key[0])
+                    self.task_runner.run_task(self._task, action, log_row)
 
     def backtesting_range_action_wrapper(
         self,
         action: Callable,
         range_: int = 10
     ) -> Callable:
-        def inner(_) -> None:
-            for _ in range(range_):
-                roi, value = action()
-                print(f"{roi=}, {value=}")
-        return inner
+        return lambda: [action() for _ in range(range_)]
+
+    def stop_backtesting(self) -> None:
+        self.backtester.stop_backtesting()
             
+
+
+
+class SingleBacktesterScreen(Screen):
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.gui_backtester: GuiBacktester
+
+        self.backtesting_info: BacktestingInfoLayout = BacktestingInfoLayout()
+        self.logs_layout: LogsLayout = LogsLayout()
+
+        self.ids.info_grid_layout.add_widget(self.backtesting_info)
+        self.ids.info_grid_layout.add_widget(self.logs_layout)
+
+        (Window
+            .request_keyboard(self._keyboard_released, self) # type: ignore
+            .bind(on_key_down=self._backtesting_shortcuts))
+
+    def setup(
+        self,
+        bot_manager: BotManager,
+        interface: Interfaces,
+        option: IndicatorOption
+    ) -> None:
+        backtester = BotBacketster(bot_manager, interface, option)
+        self.gui_backtester = GuiBacktester(
+                backtester, self.logs_layout, self.backtesting_info)
+
+        self._setup_backtesting_actions()
+
+        self.logs_layout.clear()
+        self.backtesting_info.update(
+            option.value,
+            bot_manager.bot_roi(),
+            InterfaceWrapper(interface).name)
+
+    def _setup_backtesting_actions(self) -> None:
+        actions = {
+            k: self.gui_backtester.process_button_release
+            for k, _ in self.gui_backtester.backtesting_actions.items()
+        }
+        self.ids.hotkeys_layout.add_actions(actions)
+
     def _keyboard_released(self):
         self.focus = False
 
-    def _keyboard_on_key_down(self, window, keycode, text, modifiers):
+    def _backtesting_shortcuts(self, window, keycode, text, modifiers):
         # TODO: Find better option for setting hotkeys
         if self.manager.current != "single_backtester":
             return
@@ -232,39 +165,12 @@ class SingleBacktesterScreen(Screen):
         if "shift" in modifiers:
             text = f"Shift + {text}"
 
-        if text in self.hotkeys:
-            self.process_hotkey_release(text)
-
-    def log(self, text: str, log_row: Optional[TextLabel] = None) -> TextLabel:
-        if log_row is not None:
-            log_row.text += f" | {text}"
-            log_row.color = colors.green
-            return log_row
-        else:
-            label: TextLabel = TextLabel(text=text)
-            self.logs_grid.add_widget(label)
-
-            if self.logs_layout.scroll_y != 0: # type: ignore
-                self.logs_layout.scroll_y = 0 # type: ignore
-                self.logs_layout.scroll_to(label) # type: ignore
-
-            return label
-
-    def draw_plot(self, roi: ROI) -> None:
-        print(f"Drawing plot for {roi=}")
+        self.gui_backtester.process_hotkey_release(text)
 
     def back_to_option_selector(self) -> None:
-        self.backtester.stop_backtesting()
+        log.debug("Going to interface option selection")
+        self.gui_backtester.stop_backtesting()
         self.manager.get_screen("interface_option_selector").update_data()
         self.manager.current = "interface_option_selector"
-        log.debug("Going to interface option selection")
 
 
-# FIXME: Move to separeta module
-class BacktestingRunner:
-    def __init__(self) -> None:
-        self.executor = ThreadPoolExecutor(max_workers=1)
-        self.futures = []
-
-    def run_task(self, task: Callable, *args) -> None:
-        self.futures.append(self.executor.submit(task, *args))
