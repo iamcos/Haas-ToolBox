@@ -1,0 +1,64 @@
+<BorderWidget>:
+    canvas.before:
+        Color:
+            rgba: .5, .5, .5, 1
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
+
+
+<BacktestingInfoLayout>:
+    size_hint_y: 50
+    size_hint_y: None
+
+
+<BacktestingInfoLabel>:
+    height: self.texture_size[1]
+    font_size: 30
+
+
+<PlotLayout>:
+    size_hint_y: 425
+
+
+<LogsLayout>:
+    size_hint_y: 425
+    canvas.before:
+        Color:
+            rgba: .5, .5, .5, 1
+        Line:
+            width: 4
+            rectangle: self.x, self.y, self.width, self.height
+
+
+<LogsText>:
+    padding: 10, 10
+    size_hint_y: None
+    font_size: 25
+    height: self.texture_size[1]
+    text_size: self.width, None
+
+
+<HotKeysLayout>:
+    id: hotkeys_grid
+    padding: 20
+    cols: 2
+    spacing: 10, 20
+    size: self.minimum_size
+    size_hint_x: None
+
+
+<ActionButtonLabel>:
+    size_hint: None, None
+    font_size: 25
+    halign: "left"
+    size: self.texture_size
+    background_color: 0, 0, 0
+
+
+<ActionHotkeyLabel>:
+    size_hint: None, None
+    font_size: 20
+    halign: "right"
+    size: self.texture_size
+
