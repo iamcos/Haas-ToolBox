@@ -46,9 +46,6 @@ class PlotLayout(BoxLayout, BorderWidget):
     pass
 
 
-    
-
-
 class HotKeysLayout(GridLayout, BorderWidget):
     """Class for showing buttons and hotkeys"""
     def add_actions(self, actions: dict[tuple[str, str], Callable]) -> None:
@@ -57,7 +54,6 @@ class HotKeysLayout(GridLayout, BorderWidget):
                 text=text, on_release=action))
             self.add_widget(ActionHotkeyLabel(
                 text=f"[ {hotkey} ]"))
-
 
 
 class ActionButtonLabel(Button):
