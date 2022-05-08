@@ -6,6 +6,9 @@
 #: import SubtitleLabel gui.default_widgets.SubtitleLabel
 #: import TextLabel gui.default_widgets.TextLabel
 #: import MainWindow gui.default_widgets.MainWindow
+#: import BorderWidget gui.default_widgets.BorderWidget
+#: import LogsText gui.default_widgets.LogsText
+#: import LogsLayout gui.default_widgets.LogsLayout
 
 
 <Title>:
@@ -46,4 +49,29 @@
     padding: 0, 0
     size: self.texture_size
     size_hint: None, None
+
+<BorderWidget>:
+    canvas.before:
+        Color:
+            rgba: .5, .5, .5, 1
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
+
+<LogsLayout>:
+    size_hint_y: 425
+    canvas.before:
+        Color:
+            rgba: .5, .5, .5, 1
+        Line:
+            width: 4
+            rectangle: self.x, self.y, self.width, self.height
+
+<LogsText>:
+    padding: 10, 10
+    size_hint_y: None
+    font_size: 25
+    height: self.texture_size[1]
+    text_size: self.width, None
+
 
