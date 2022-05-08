@@ -65,7 +65,10 @@ class BotSelectorScreen(Screen):
             instance.color = colors.green
 
     def confirm_selected_bots(self) -> None:
-        if len(self.selected_bots) == 1:
+        if not self.selected_bots:
+            # TODO: Add popup error logging
+            log.error("Select at least one bot!")
+        elif len(self.selected_bots) == 1:
             self.bot_manager.set_bot(self.selected_bots.pop())
             self.manager.get_screen("single_bot_menu").prepare(self.bot_manager)
             self.manager.current = "single_bot_menu"
