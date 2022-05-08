@@ -5,7 +5,6 @@ from loguru import logger as log
 from cli.bots.multibots.multi_backtester_cli import start_multiple_backtesting
 
 
-
 class MultiBotCli:
     def __init__(self, bots: list[Bot]) -> None:
         self.bots = bots
