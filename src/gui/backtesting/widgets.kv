@@ -1,12 +1,3 @@
-<BorderWidget>:
-    canvas.before:
-        Color:
-            rgba: .5, .5, .5, 1
-        Line:
-            width: 2
-            rectangle: self.x, self.y, self.width, self.height
-
-
 <BacktestingInfoLayout>:
     size_hint_y: 50
     size_hint_y: None
@@ -19,24 +10,6 @@
 
 <PlotLayout>:
     size_hint_y: 425
-
-
-<LogsLayout>:
-    size_hint_y: 425
-    canvas.before:
-        Color:
-            rgba: .5, .5, .5, 1
-        Line:
-            width: 4
-            rectangle: self.x, self.y, self.width, self.height
-
-
-<LogsText>:
-    padding: 10, 10
-    size_hint_y: None
-    font_size: 25
-    height: self.texture_size[1]
-    text_size: self.width, None
 
 
 <HotKeysLayout>:

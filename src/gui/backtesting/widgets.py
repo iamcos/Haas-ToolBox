@@ -1,22 +1,14 @@
 from api.models import ROI
-import gui.colors as colors
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.widget import Widget
 from kivy.lang import Builder
-from gui.default_widgets import ScrollingGridLayout, TextLabel
 from typing import Callable, Optional
+from gui.default_widgets import BorderWidget
 
 
 Builder.load_file("./src/gui/backtesting/widgets.kv")
-
-
-class BorderWidget(Widget):
-    """Class for drawing borders around window"""
-    pass
 
 
 class BacktestingInfoLayout(BoxLayout, BorderWidget):
@@ -54,40 +46,6 @@ class PlotLayout(BoxLayout, BorderWidget):
     pass
 
 
-class LogsLayout(ScrollView, BorderWidget):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.scroll_y = 0
-        self.logs_grid = ScrollingGridLayout()
-        self.add_widget(self.logs_grid)
-
-    def info(self, text: str, *args) -> TextLabel:
-        if len(args) == 1:
-            return self.update_old_log(text, *args)
-        else:
-            label: TextLabel = TextLabel(text=text)
-            self.logs_grid.add_widget(label)
-
-            if self.scroll_y != 0:
-                self.scroll_y = 0
-                self.scroll_to(label)
-
-            return label
-
-    def update_old_log(self, text: str, log_row: TextLabel) -> TextLabel:
-        log_row.text += f" | {text}"
-        log_row.color = colors.green
-        return log_row
-        
-
-    def clear(self) -> None:
-        for c in self.logs_grid.children:
-            self.logs_grid.remove_widget(c)
-
-
-class LogsText(Label):
-    """Class for logs text"""
-    pass
     
 
 

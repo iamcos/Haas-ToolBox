@@ -13,7 +13,8 @@ from kivy.core.window import Window
 from kivy.lang import Builder
 from loguru import logger as log
 from kivy.uix.screenmanager import Screen
-from gui.backtesting.widgets import LogsLayout, BacktestingInfoLayout
+from gui.backtesting.widgets import BacktestingInfoLayout
+from gui.default_widgets import LogsLayout
 
 
 Builder.load_file("./src/gui/backtesting/single_backtester_screen.kv")
