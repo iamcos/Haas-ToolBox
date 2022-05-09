@@ -55,6 +55,9 @@ class HotKeysLayout(GridLayout, BorderWidget):
             self.add_widget(ActionHotkeyLabel(
                 text=f"[ {hotkey} ]"))
 
+    def has_hotkeys(self) -> bool:
+        return len(self.children) > 0
+
 
 class ActionButtonLabel(Button):
     """Class for backtesting button"""
