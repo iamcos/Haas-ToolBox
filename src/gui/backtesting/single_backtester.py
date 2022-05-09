@@ -23,7 +23,7 @@ class SingleBacktester:
         self.executor = ThreadPoolExecutor(max_workers=1)
 
         self._init_backtesting_actions_dict()
-        self._setup_backtesting_hotkeys()
+        self._init_backtesting_hotkeys()
 
     def process_button_release(self, instanse) -> None:
         for key, actions in self.backtesting_actions.items():
@@ -43,6 +43,7 @@ class SingleBacktester:
     def stop_backtesting(self) -> None:
         self.backtester.stop_backtesting()
             
+
     def _init_backtesting_actions_dict(self) -> None:
         self.backtesting_actions = {
             ("Backtest up", "k"): [self.backtester.backtest_up],
@@ -55,7 +56,7 @@ class SingleBacktester:
                 self.backtester.backtest_down),
         }
 
-    def _setup_backtesting_hotkeys(self) -> None:
+    def _init_backtesting_hotkeys(self) -> None:
         self.hotkeys = {key[1] for key in list(self.backtesting_actions)}
     
     # TODO: Move default value to config
