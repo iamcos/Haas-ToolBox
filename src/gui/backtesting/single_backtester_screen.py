@@ -58,11 +58,12 @@ class SingleBacktesterScreen(Screen):
 
 
     def _setup_backtesting_actions(self) -> None:
-        actions = {
-            k: self.gui_backtester.process_button_release
-            for k, _ in self.gui_backtester.backtesting_actions.items()
-        }
-        self.ids.hotkeys_layout.add_actions(actions)
+        if not self.ids.hotkeys_layout.has_hotkeys():
+            actions = {
+                k: self.gui_backtester.process_button_release
+                for k, _ in self.gui_backtester.backtesting_actions.items()
+            }
+            self.ids.hotkeys_layout.add_actions(actions)
 
 
     def _keyboard_released(self):
