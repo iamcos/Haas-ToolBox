@@ -22,12 +22,6 @@ class SingleBacktesterScreen(Screen):
         super().__init__(**kwargs)
         self.gui_backtester: SingleBacktester
 
-        self.backtesting_info: BacktestingInfoLayout = BacktestingInfoLayout()
-        self.logs_layout: LogsLayout = LogsLayout()
-
-        self.ids.info_grid_layout.add_widget(self.backtesting_info)
-        self.ids.info_grid_layout.add_widget(self.logs_layout)
-
         (Window
             .request_keyboard(self._keyboard_released, self) # type: ignore
             .bind(on_key_down=self._process_shortcut))
@@ -40,12 +34,12 @@ class SingleBacktesterScreen(Screen):
     ) -> None:
         backtester = BotBacketster(bot_manager, interface, option)
         self.gui_backtester = SingleBacktester(
-                backtester, self.logs_layout, self.backtesting_info)
+                backtester, self.ids.logs_layout, self.ids.backtesting_info)
 
         self._setup_backtesting_actions()
 
-        self.logs_layout.clear()
-        self.backtesting_info.update(
+        self.ids.logs_layout.clear()
+        self.ids.backtesting_info.update(
             option.value,
             bot_manager.bot_roi(),
             InterfaceWrapper(interface).name)
