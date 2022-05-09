@@ -2,6 +2,8 @@ from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 
 from api.bots.BotManager import BotManager
+from api.factories.bot_managers_factory import get_bot_manager_by_bot
+from api.models import Bot
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
 from gui.default_widgets import LabelButton, ScrollingGridLayout, SubtitleLabel
 
@@ -18,8 +20,9 @@ class InterfaceSelectorScreen(Screen):
         self.interface_list = self.create_buttons_grid()
         self.ids.scroll_view.add_widget(self.interface_list)
 
-    def setup(self, bot_manager: BotManager) -> None:
-        self.bot_manager = bot_manager
+    def setup(self, bot: Bot) -> None:
+        self.bot_manager = get_bot_manager_by_bot(bot)
+        self.bot_manager.set_bot(bot)
         self.update_buttons()
 
     def update_buttons(self) -> None:
