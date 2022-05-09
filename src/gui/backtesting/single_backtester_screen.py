@@ -8,8 +8,6 @@ from kivy.core.window import Window
 from kivy.lang import Builder
 from loguru import logger as log
 from kivy.uix.screenmanager import Screen
-from gui.backtesting.widgets import BacktestingInfoLayout
-from gui.default_widgets import LogsLayout
 from gui.backtesting.single_backtester import SingleBacktester
 
 
