@@ -1,7 +1,8 @@
 from collections import defaultdict
 from kivy.lang.builder import Builder
 from kivy.uix.screenmanager import Screen
-from api.bots.BotManager import BotManager
+from api.models import Bot
+from api.type_specifiers import get_bot_type
 from gui.default_widgets import ScrollingGridLayout, LabelButton
 from typing import Callable, Type
 
@@ -9,7 +10,7 @@ from typing import Callable, Type
 Builder.load_file("./src/gui/bot_menu/base_bot_menu_screen.kv")
 
 
-AdditionalOptions = defaultdict[Type[BotManager], dict[str, Callable]]
+AdditionalOptions = defaultdict[Type[Bot], dict[str, Callable]]
 MainOptions = dict[str, Callable]
 
 
@@ -35,15 +36,16 @@ class BaseBotMenuScreen(Screen):
     # FIXME: use bot type, not manager
     def add_additional_option(
         self,
-        type: Type[BotManager],
+        type: Type[Bot],
         actions: dict[str, Callable]
     ) -> None:
         for title, action in actions.items():
             self.additional_options[type][title] = action
 
-    def generate_buttons(self, bot_manager_type: Type[BotManager]) -> None:
+    def generate_buttons(self, bot: Bot) -> None:
         self._clear_buttons()
-        additional_options = self.additional_options[bot_manager_type]
+        bot_type = get_bot_type(bot)
+        additional_options = self.additional_options[bot_type]
 
         for label, action in additional_options.items():
             self.bot_actions.add_widget(
@@ -60,3 +62,4 @@ class BaseBotMenuScreen(Screen):
     def _clear_buttons(self) -> None:
         self.ids.scroll_view.remove_widget(self.bot_actions)
         self.bot_actions = ScrollingGridLayout()
+

@@ -1,8 +1,8 @@
-from typing import Type
+from api.type_specifiers import get_bot_type
+from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 
-from api.bots.BotManager import BotManager
-from api.bots.mad_hatter.MadHatterBotManager import MadHatterBotManager
-from api.bots.scalper.ScalperBotManager import ScalperBotManager
+from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
+
 from api.factories import bot_managers_factory
 from api.models import Bot
 from gui.bot_menu.base_bot_menu_screen import BaseBotMenuScreen
@@ -22,12 +22,12 @@ class MultipleBotMenuScreen(BaseBotMenuScreen):
         self.bots: set[Bot] = set()
 
         self.add_additional_option(
-            MadHatterBotManager,
+            MadHatterBot,
             {"Config backtesting": self.config_backtesting}
         )
 
         self.add_additional_option(
-            ScalperBotManager,
+            ScalperBot,
             {"Range backtesting": self.range_backtesting}
         )
 
@@ -36,10 +36,7 @@ class MultipleBotMenuScreen(BaseBotMenuScreen):
         bot: Bot = bots.pop()
         bots.add(bot)
 
-        self.bot_manager = bot_managers_factory.get_bot_manager_by_bot(bot)
-        bot_manager_type: Type[BotManager] = type(self.bot_manager)
-
-        self.generate_buttons(bot_manager_type)
+        self.generate_buttons(bot)
 
     def config_backtesting(self, _: LabelButton) -> None:
         log.debug(f"Config backtesting")
