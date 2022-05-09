@@ -1,9 +1,10 @@
+from api.backtesting.BotBacktester import BotBacketster
+from api.bots.BotManager import BotManager
+from api.models import Interfaces
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 
-from api.models import Interfaces
-from api.bots.BotManager import BotManager
 from gui.default_widgets import LabelButton, ScrollingGridLayout
 from typing import Callable, Any
 
@@ -46,9 +47,7 @@ class InterfaceOptionSelectorScreen(Screen):
         def inner(_):
             print(f"Choosed {option.title}: {option.value}")
             self.manager.get_screen("single_backtester").setup(
-                self.bot_manager,
-                self.interface,
-                option
+                BotBacketster(self.bot_manager, self.interface, option)
             )
             self.manager.current = "single_backtester"
         return inner
