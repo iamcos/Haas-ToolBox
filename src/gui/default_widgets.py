@@ -112,7 +112,9 @@ class LogsLayout(ScrollView, BorderWidget):
         
 
     def clear(self) -> None:
-        for c in self.logs_grid.children:
-            self.logs_grid.remove_widget(c)
+        self.remove_widget(self.logs_grid)
+        self.logs_grid = ScrollingGridLayout()
+        self.add_widget(self.logs_grid)
+        self.scroll_y = 0
 
 
