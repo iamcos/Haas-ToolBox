@@ -10,7 +10,7 @@ from loguru import logger as log
 from kivy.uix.screenmanager import Screen
 from gui.backtesting.widgets import BacktestingInfoLayout
 from gui.default_widgets import LogsLayout
-from gui.backtesting.gui_backtester import SingleBacktester
+from gui.backtesting.single_backtester import SingleBacktester
 
 
 Builder.load_file("./src/gui/backtesting/single_backtester_screen.kv")
@@ -30,7 +30,7 @@ class SingleBacktesterScreen(Screen):
 
         (Window
             .request_keyboard(self._keyboard_released, self) # type: ignore
-            .bind(on_key_down=self._backtesting_shortcuts))
+            .bind(on_key_down=self._process_shortcut))
 
     def setup(
         self,
@@ -68,7 +68,7 @@ class SingleBacktesterScreen(Screen):
     def _keyboard_released(self):
         self.focus = False
 
-    def _backtesting_shortcuts(self, window, keycode, text, modifiers):
+    def _process_shortcut(self, window, keycode, text, modifiers):
         # TODO: Find better option for setting hotkeys
         if self.manager.current != "single_backtester":
             return
