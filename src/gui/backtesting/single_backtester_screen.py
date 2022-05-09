@@ -1,9 +1,5 @@
 from api.backtesting.BotBacktester import BotBacketster
-from api.bots.BotManager import BotManager
-from api.models import Interfaces
 from api.wrappers.InterfaceWrapper import InterfaceWrapper
-from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import \
-    IndicatorOption
 from kivy.core.window import Window
 from kivy.lang import Builder
 from loguru import logger as log
@@ -24,13 +20,7 @@ class SingleBacktesterScreen(Screen):
             .request_keyboard(self._keyboard_released, self) # type: ignore
             .bind(on_key_down=self._process_shortcut))
 
-    def setup(
-        self,
-        bot_manager: BotManager,
-        interface: Interfaces,
-        option: IndicatorOption
-    ) -> None:
-        backtester = BotBacketster(bot_manager, interface, option)
+    def setup(self, backtester: BotBacketster) -> None:
         self.gui_backtester = SingleBacktester(
                 backtester, self.ids.logs_layout, self.ids.backtesting_info)
 
@@ -38,9 +28,9 @@ class SingleBacktesterScreen(Screen):
 
         self.ids.logs_layout.clear()
         self.ids.backtesting_info.update(
-            option.value,
-            bot_manager.bot_roi(),
-            InterfaceWrapper(interface).name)
+            backtester.option.value,
+            backtester.manager.bot_roi(),
+            InterfaceWrapper(backtester.interface).name)
 
     def back_to_option_selector(self) -> None:
         log.debug("Going to interface option selection")
