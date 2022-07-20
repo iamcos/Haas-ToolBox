@@ -141,8 +141,8 @@ class MadHatterApiProvider:
 
     def update_bot_interface_option(
         self,
-        option: InterfaceOption,
-        bot_guid: GUID
+        bot_guid: GUID,
+        option: InterfaceOption
     ) -> None:
 
         option_info = self._get_option_info(option, bot_guid)
@@ -200,7 +200,7 @@ class MadHatterApiProvider:
             f"Wrong indicator for getting enum type: {interface.indicatorName}"
         )
 
-    def get_available_interface_types(self) -> tuple[Type[Interface], ...]:
+    def get_available_interface_types(guid_or_bot: GUID | Bot, self) -> tuple[Type[Interface], ...]:
         return tuple([Indicator])
 
     def clone_and_save_bot(self, bot: Bot) -> Bot:
