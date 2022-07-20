@@ -1,9 +1,7 @@
 from InquirerPy import inquirer
 from api.type_specifiers import get_bot_type
 from cli.factories.autobacktester_types_factory import get_autobacktesters_types
-from api.models import Bot
-from api.bots.BotManager import BotManager
-from api.factories.bot_managers_factory import get_bot_manager
+from api.domain.types import Bot
 from typing import Type
 from loguru import logger as log
 
@@ -13,7 +11,7 @@ from cli.bots.AutoBacktesterCli import AutoBacktesterCli
 def start_multiple_backtesting(bots: list[Bot]) -> None:
     bot_type: Type = get_bot_type(bots[0])
     AutoBacktester: Type = _get_auto_backtester(bot_type)
-    manager: BotManager = get_bot_manager(bot_type)
+    # manager: BotManager = get_bot_manager(bot_type)
 
     log.info(f"Starting multiple backtesting for {len(bots)} bots")
     log.debug(f"Choosed bot type {bot_type}")

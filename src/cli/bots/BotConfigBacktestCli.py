@@ -1,6 +1,4 @@
-from api.backtesting.BotConfigBacktester import BotConfigBacktester
-from api.bots.BotManager import BotManager
-from api.MainContext import main_context
+from api.backtesting.bot_config_backtester import BotConfigBacktester
 from api.config_manager import ConfigManager
 from cli.bots.AutoBacktesterCli import AutoBacktesterCli
 from cli.inquirer_wrappers import input_int
@@ -9,14 +7,13 @@ from api.config import toolbox_settings_path
 
 
 class BotConfigBacktestCli(AutoBacktesterCli):
-    def __init__(self, manager: BotManager):
-        self.config: ConfigManager = main_context.config_manager
-        self.manager: BotManager = manager
+    def __init__(self):
+        pass
 
 
     @classmethod
-    def with_manager(cls, manager: BotManager) -> AutoBacktesterCli:
-        return cls(manager)
+    def with_manager(cls) -> AutoBacktesterCli:
+        return cls()
 
 
     def start(self) -> None:

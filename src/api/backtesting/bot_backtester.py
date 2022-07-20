@@ -27,9 +27,9 @@ class BotBacktester(Protocol):
 
     def setup(self, info: BacktestSetupInfo) -> None: ...
 
-    def backtest_up(self) -> None: ...
+    def backtest_up(self) -> BacktestResult: ...
 
-    def backtest_down(self) -> None: ...
+    def backtest_down(self) -> BacktestResult: ...
 
     def backtesting_length_x2(self) -> int: ...
 
@@ -43,18 +43,29 @@ class ApiV3BotBacketster:
     def __init__(
         self, 
         provider: BotApiProvider,
-        cache: BacktestingCache
+        cache: BacktestingCache,
+        ticks: int
     ) -> None:
         self.provider: BotApiProvider = provider
         self.cache: BacktestingCache = cache
 
         self.backtesting_strategy: BacktestingStrategy
         self.info: BacktestSetupInfo
+        self.ticks = ticks
 
     def setup(self, info: BacktestSetupInfo) -> None:
         self.backtesting_strategy = (factories.get_backtesting_strategy(
-                                         info.option.value))
+                                         info.option.step))
         self.info = info
+
+        sample = BacktestSample(
+                    self.info.interface.guid,
+                    self.info.option,
+                    self.info.ticks,
+                    self.ticks)
+
+        self.cache.add(sample)
+
         self.backtesting_strategy.set_step(self.info.option.step) # type: ignore
 
     @timeit
@@ -64,6 +75,8 @@ class ApiV3BotBacketster:
         value = self.backtesting_strategy.count_up(
             self.info.option.value,
             self.cache.get_used_values(self.info.ticks))
+
+        log.info(f"{value=}")
 
         self.info.option.value = value
 
@@ -76,6 +89,8 @@ class ApiV3BotBacketster:
         value = self.backtesting_strategy.count_down(
             self.info.option.value,
             self.cache.get_used_values(self.info.ticks))
+
+        log.info(f"{value=}")
 
         self.info.option.value = value
 
@@ -96,8 +111,9 @@ class ApiV3BotBacketster:
         self.cache.get_top_samples()
 
     def _backtest(self) -> BacktestResult:
+        log.info(f"{self.info=}")
         self.provider.update_bot_interface_option(
-            self.info.option, self.info.bot_guid)
+            self.info.bot_guid, self.info.option)
 
         self.provider.backtest_bot(self.info.bot_guid, self.info.ticks)
 
@@ -114,5 +130,5 @@ class ApiV3BotBacketster:
 
         self.cache.add(sample)
 
-        return BacktestResult(self.info.option.value, roi)
+        return BacktestResult(self.info.option, self.info.option.value, roi)
 

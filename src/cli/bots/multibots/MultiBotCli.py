@@ -1,4 +1,4 @@
-from api.models import Bot
+from api.domain.types import Bot
 from InquirerPy import inquirer
 from typing import Callable, Any
 from loguru import logger as log

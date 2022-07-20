@@ -1,7 +1,7 @@
 import api.factories as factories
 
 from api.loader import log
-from api.domain.types import Interface, Bot
+from api.domain.types import GUID, Interface, Bot
 from api.providers.bot_api_provider import BotApiProvider
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
@@ -23,18 +23,13 @@ class BotCli:
         self.provider: BotApiProvider = factories.get_provider(t)
         self.bot_name: str = t.__name__
 
-        self.bot_selector = BotSelectorCli(self.provider, self.bot_name)
-        self.interface_selector = InterfaceSelectorCli(self.provider)
-        self.indictator_option_selector = InterfaceOptionSelectorCli(
-            self.provider)
-
         self.main_menu: dict[str, tuple[Callable[..., Any], ...]] = dict({
             "Select interface": (
-                self.interface_selector.select_interface,
+                self.select_interface,
                 self._process_interface
             ),
             f"Select another {self.bot_name}": (
-                self.bot_selector.select_bots,
+                self.select_bots,
                 self._process_bots
             ),
             "Quit": (
@@ -42,52 +37,56 @@ class BotCli:
             )
         })
 
+    def select_interface(self, bot_guid: GUID) -> Interface:
+        return InterfaceSelectorCli(self.provider, bot_guid).select_interface()
+
+    def select_bots(self) -> list[Bot]:
+        return BotSelectorCli(self.provider, self.bot_name).select_bots()
+
     def menu(self) -> None:
         log.info(f"Starting {self.bot_name} CLI menu..")
-        bots: list[Bot] = self.bot_selector.select_bots()
-
+        bots: list[Bot] = self.select_bots()
         self._process_bots(bots)
-
-        if len(bots) == 1:
-            self._process_user_choice(self._menu_action())
-
-    def _menu_action(self) -> str:
-        choosed_action: str = inquirer.select(
-            message="Select action:",
-            choices=list(self.main_menu.keys())
-        ).execute()
-
-        return choosed_action
-
-    def _process_user_choice(self, choice: str) -> None:
-        method_result: Any = None
-
-        for method in self.main_menu[choice]:
-            if method_result is None:
-                method_result = method()
-            else:
-                method_result = method(method_result)
-
-        self.menu()
 
     def _process_bots(self, bots: list[Bot]) -> None:
         if len(bots) > 1:
-            return MultiBotCli(bots).start()
+            MultiBotCli(bots).start()
         else:
-            self.bot = bots.pop()
-            self._process_user_choice(self._menu_action())
+            self.guid: GUID = bots.pop().guid
+            interface = self.select_interface(self.guid)
+            self._process_interface(interface)
+
+    # def _menu_action(self) -> str:
+    #     choosed_action: str = inquirer.select(
+    #         message="Select action:",
+    #         choices=list(self.main_menu.keys())
+    #     ).execute()
+    #
+    #     return choosed_action
+
+    def _process_user_choice(self, choice: str, *args) -> None:
+        method_result: Any = args
+
+        for method in self.main_menu[choice]:
+            if hasattr(method_result, "__iter__"):
+                method_result = method(*method_result)
+            else:
+                method_result = method(method_result)
 
     def _process_interface(self, choice: Interface) -> None:
         if choice == "Back":
-            return self._process_user_choice(self._menu_action())
+            return self.menu()
 
-        option = self.indictator_option_selector.select_option(choice)
+        option = InterfaceOptionSelectorCli(
+                self.provider, self.bot_name, self.guid).select_option(choice)
+
         log.info("Waiting")
 
         if option == "Back":
-            return self._process_user_choice("Select interface")
+            return self.select_interface(self.guid)
         else:
             BotBacktestCli(self.provider).process_backtest(
+                    self.guid,
                     choice,
                     cast(IndicatorOption, option)
             )
@@ -96,7 +95,6 @@ class BotCli:
     def _process_keyboard_interrupt(self) -> None:
         log.info("Bye :)")
         exit("666")
-
 
     def add_menu_action(
             self,

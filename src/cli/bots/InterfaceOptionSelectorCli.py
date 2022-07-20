@@ -9,13 +9,10 @@ from cli.bots.config.ignored_options import ignored_options
 
 
 class InterfaceOptionSelectorCli:
-    def __init__(self, api: BotApiProvider, bot_name: str) -> None:
+    def __init__(self, api: BotApiProvider, bot_name: str, bot_guid: GUID) -> None:
         self._api: BotApiProvider = api
         self.bot_name: str = bot_name
-        self.bot_guid: GUID
-
-    def set_bot_guid(self, bot_guid: GUID) -> None:
-        self.bot_guid = bot_guid
+        self.bot_guid: GUID = bot_guid
 
     def select_option(self, interface: Interface) -> IndicatorOption | str:
         interface = self._update_interface(interface)

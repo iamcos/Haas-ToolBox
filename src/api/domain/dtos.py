@@ -82,6 +82,7 @@ class BacktestSetupInfo:
 
 
 class BacktestResult(NamedTuple):
+    option: InterfaceOption
     value: str
     roi: ROI
 

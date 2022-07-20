@@ -7,8 +7,8 @@ class MadHatterCli(BotCli):
     def __init__(self) -> None:
         super().__init__(MadHatterBot)
 
-        self.add_menu_action(
-            "Start backtesting by config",
-            tuple([BotConfigBacktestCli(self.manager).start])
-        )
+        # self.add_menu_action(
+        #     "Start backtesting by config",
+        #     tuple([BotConfigBacktestCli(self.manager).start])
+        # )
 

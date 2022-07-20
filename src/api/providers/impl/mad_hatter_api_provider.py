@@ -147,10 +147,17 @@ class MadHatterApiProvider:
 
         option_info = self._get_option_info(option, bot_guid)
 
-        edit_func = self._inject_interface_type(
-            self._get_interface_enum_type(option_info.interface))
+        interface_enum_type = self._get_interface_enum_type(
+                option_info.interface)
 
-        res = edit_func(bot_guid, option_info.option_num, option.value)
+        print(vars(option), bot_guid, option_info, interface_enum_type)
+
+        res = self._api.set_mad_hatter_indicator_parameter(
+            bot_guid,
+            interface_enum_type,
+            option_info.option_num,
+            option.value
+        )
 
         self._process_error(res, "Error while editing interface")
 
@@ -173,14 +180,6 @@ class MadHatterApiProvider:
 
         raise MadHatterException(f"Option {option} not found")
 
-    def _inject_interface_type(
-        self,
-        t: EnumMadHatterIndicators,
-    ) -> Callable:
-        return lambda a, b, c: self._api.set_mad_hatter_indicator_parameter(
-            a, t, b, c
-        )
-
     def _get_interface_enum_type(
         self,
         interface: Interface
@@ -200,7 +199,7 @@ class MadHatterApiProvider:
             f"Wrong indicator for getting enum type: {interface.indicatorName}"
         )
 
-    def get_available_interface_types(guid_or_bot: GUID | Bot, self) -> tuple[Type[Interface], ...]:
+    def get_available_interface_types(self) -> tuple[Type[Interface], ...]:
         return tuple([Indicator])
 
     def clone_and_save_bot(self, bot: Bot) -> Bot:

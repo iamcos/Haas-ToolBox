@@ -4,7 +4,7 @@ from haasomeapi.dataobjects.custombots.BaseCustomBot import BaseCustomBot
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
 from haasomeapi.dataobjects.tradebot.TradeBot import TradeBot
-from api.backtesting.backtesting_strategy import BacktestingStrategy, FloatBacktestingStrategy
+from api.backtesting.backtesting_strategy import BacktestingStrategy, FloatBacktestingStrategy, IntBacktestingStrategy
 from api.loader import main_context
 from api.bot_manager import ApiV3BotManager, BotManager
 
@@ -53,8 +53,13 @@ def get_bot_manager_by_bot(bot: Bot) -> BotManager:
 
 
 def get_backtesting_strategy(value) -> BacktestingStrategy:
-    if type(value) is str and value.replace(".", "").isdigit():
+    if type(value) is str and "." in value and value.replace(".", "").isdigit():
         return FloatBacktestingStrategy()
+    elif type(value) is float:
+        return FloatBacktestingStrategy()
+    elif type(value) is int or value.isdigit():
+        return IntBacktestingStrategy()
+    
 
     raise BacktestingStrategyCreationException(
         f"Strategy for {value} not implemented")

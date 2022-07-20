@@ -10,10 +10,7 @@ from cli.bots.custom_dtos import InterfacesForCli
 class InterfaceSelectorCli:
     def __init__(self, api: BotApiProvider, bot_guid: GUID) -> None:
         self._api: BotApiProvider = api
-        self.bot_guid: GUID
-
-    def set_bot_guid(self, bot_guid: GUID) -> None:
-        self.bot_guid = bot_guid
+        self.bot_guid: GUID = bot_guid
 
     def select_interface(self) -> Interface:
         choices: list[InterfacesForCli] = self._interfaces_menu_options()

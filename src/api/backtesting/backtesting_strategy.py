@@ -1,7 +1,4 @@
 from typing import Any, Iterable, Protocol
-from api.backtesting.backtesting_cache import BacktestingCache
-
-from api.domain.dtos import BacktestSample
 
 
 class BacktestingStrategy(Protocol):
@@ -11,14 +8,16 @@ class BacktestingStrategy(Protocol):
 
 
 class FloatBacktestingStrategy:
-    def set_step(self, step: float) -> None:
-        self._step: float = step
+    def set_step(self, step: Any) -> None:
+        self._check_value(step);
+        self._step: float = float(step)
 
     def count_up(self, value: str, used_values: Iterable) -> str:
         self._check_value(value)
         new_value: float = self._smart_round(value)
+        print(f"{new_value=}, {used_values=}")
 
-        while new_value in used_values:
+        while str(new_value) in used_values:
             new_value += self._step
 
         return str(new_value)
@@ -27,14 +26,15 @@ class FloatBacktestingStrategy:
         self._check_value(value)
         new_value: float = self._smart_round(value)
 
-        while new_value in used_values:
+        while str(new_value) in used_values:
             new_value -= self._step
 
         return str(new_value)
 
     def _smart_round(self, value: str) -> float:
-        numbers_after_dot: int = len(str(self._step)[2:])
-        return round(float(value), numbers_after_dot)
+        # numbers_after_dot: int = len(str(self._step)[2:])
+        # return round(float(value), numbers_after_dot)
+        return float(value)
 
     def _check_value(self, value: Any) -> None:
         checkers = (
@@ -43,6 +43,40 @@ class FloatBacktestingStrategy:
                 .replace(".", "")
                 .replace(",", "")
                 .isdigit()),
+        )
+
+        for checker in checkers:
+            if checker(value):
+                raise ValueError(f"Passed not a float like value: {value}")
+
+
+class IntBacktestingStrategy:
+    def set_step(self, step: Any) -> None:
+        self._check_value(step);
+        self._step: int = int(step)
+
+    def count_up(self, value: str, used_values: Iterable) -> str:
+        self._check_value(value)
+        new_value: int = int(value)
+        print(f"{value=}, {used_values=}")
+        while str(new_value) in used_values:
+            new_value += self._step
+
+        return str(new_value)
+
+    def count_down(self, value: str, used_values: Iterable) -> str:
+        self._check_value(value)
+        new_value: int = int(value)
+
+        while str(new_value) in used_values:
+            new_value -= self._step
+
+        return str(new_value)
+
+    def _check_value(self, value: Any) -> None:
+        checkers = (
+            lambda v: v is None,
+            lambda v: type(v) is str and not value.isdigit(),
         )
 
         for checker in checkers:

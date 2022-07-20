@@ -1,79 +1,99 @@
 from InquirerPy.prompts.list import ListPrompt
 from InquirerPy import inquirer
 from InquirerPy.separator import Separator
+from api.loader import main_context
+from api.backtesting.backtesting_cache import BacktestingCache, SetBacktestingCache
+from api.domain.dtos import BacktestSetupInfo
+from api.providers.bot_api_provider import BotApiProvider
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from api.bots.BotManager import BotManager
 
-from api.models import Interface
-from api.backtesting.BotBacktester import BotBacketster
+from api.domain.types import GUID, Interface, InterfaceOption
+from api.backtesting.bot_backtester import ApiV3BotBacketster, BotBacktester
+from loguru import logger as log
 
 
 class BacktestCliException(Exception): pass
 
 
 class BotBacktestCli:
-    def __init__(self, manager: BotManager) -> None:
-        self.manager: BotManager = manager
+    def __init__(self, provider: BotApiProvider) -> None:
+        cache: BacktestingCache = SetBacktestingCache()
+        self.ticks: int = main_context.config_manager.read_ticks()
+        print(f"{self.ticks=}")
+        self.backtester: BotBacktester = ApiV3BotBacketster(
+                provider, cache, self.ticks)
+        self.provider: BotApiProvider = provider
 
     def process_backtest(
         self,
+        bot_guid: GUID,
         interface: Interface,
-        selected_option: IndicatorOption
+        option: InterfaceOption
     ) -> None:
-
-        if selected_option.step is None:
+        if option.step is None:
             raise BacktestCliException("Step must be not None")
 
-        backtest_methods = BotBacketster(
-            self.manager,
+        info: BacktestSetupInfo = BacktestSetupInfo(
+            bot_guid,
             interface,
-            selected_option
+            option,
+            self.ticks
         )
 
-        action = self._get_backtest_promt(selected_option, backtest_methods)
+        self.backtester.setup(info)
+
+        action = self._get_backtest_promt(option, self.backtester, bot_guid)
 
         res = action.execute()
+
         while res != "Select another parameter":
-            res()
-            selected_option = self.manager.update_option(selected_option)
+            backtest_data = res()
+
+            log.info(f"{backtest_data=}")
             res = self._get_backtest_promt(
-                selected_option, backtest_methods
+                backtest_data.option, self.backtester, bot_guid
             ).execute()
 
-        backtest_methods.stop_backtesting()
+        self.backtester.stop_backtesting()
 
 
     def _get_backtest_promt(
         self,
         option: IndicatorOption,
-        backtest_methods: BotBacketster
-
+        backtester: BotBacktester,
+        bot_guid: GUID
     ) -> ListPrompt:
 
         actions = list([
             {
                 "name": "backtest up",
-                "value": backtest_methods.backtest_up
+                "value": backtester.backtest_up
             },
             {
                 "name": "backtest down",
-                "value": backtest_methods.backtest_down
+                "value": backtester.backtest_down
             },
             {
                 "name": "backtest 10 steps up",
-                "value": backtest_methods.backtest_steps_up
+                "value": lambda: [
+                    backtester.backtest_up()
+                    for _ in range(10)
+                ]
             },
             {
                 "name": "backtest 10 steps down",
-                "value": backtest_methods.backtest_steps_down
+                "value": lambda: [
+                    backtester.backtest_down()
+                    for _ in range(10)
+                ]
             },
             {
                 "name": "backtesting length X 2",
-                "value": backtest_methods.backtesting_length_x2
+                "value": backtester.backtesting_length_x2
             },
             {
                 "name": "backtesting length / 2",
-                "value": backtest_methods.backtesting_length_devide2
+                "value": backtester.backtesting_length_devide2
             },
         ])
 
@@ -84,8 +104,8 @@ class BotBacktestCli:
                 Separator(
                     f"{option.title}: "
                     f"{option.value} |"
-                    f" step: {self.manager.update_option(option).step} |"
-                    f" ROI: {self.manager.bot_roi()}%"
+                    f" step: {option.step} |"
+                    f" ROI: {self.provider.get_refreshed_bot(bot_guid).roi}%"
                 ),
                 *actions,
                 "Select another parameter"
