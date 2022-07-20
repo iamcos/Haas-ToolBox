@@ -73,7 +73,7 @@ def test_update_bot_interface_option(mad_guid, mad_api: BotApiProvider):
 
 
 def test_get_available_interface_types(mad_guid, mad_api: BotApiProvider):
-    types = mad_api.get_available_interface_types(mad_guid);
+    types = mad_api.get_available_interface_types();
     assert types == (Indicator,)
 
 
