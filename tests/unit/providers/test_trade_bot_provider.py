@@ -1,41 +1,39 @@
+import pytest
+
 from collections import defaultdict
-from dataclasses import dataclass
+from typing import Type, cast
+
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
 from haasomeapi.dataobjects.custombots.dataobjects.Insurance import Insurance
 from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from haasomeapi.dataobjects.marketdata.Market import Market
-import pytest
-from api.exceptions import TradeBotException
-
-from api.providers.impl.trade_bot_api_provider import TradeBotApiProvider
-from api.providers.bot_api_provider import BotApiProvider
-from api.domain.types import GUID, ROI, Bot, Interface, InterfaceOption
-
 from haasomeapi.apis.TradeBotApi import TradeBotApi
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 
-from typing import NamedTuple, Type, cast
+from api.exceptions import TradeBotException
+from api.providers.impl.trade_bot_api_provider import TradeBotApiProvider
+from api.providers.bot_api_provider import BotApiProvider
+from api.domain.types import GUID, ROI, Bot, Interface, InterfaceOption
 
 
-class FakeTradeBot(NamedTuple):
-    guid: GUID = "guid"
-    accountId: str = "accountId"
-    name: str = "name"
-    roi: ROI = 100.0
-    priceMarket: Market = Market()
-    leverage: float = 0.9
+class FakeTradeBot:
+    def __init__(self, guid="guid"):
+        self.guid: GUID = guid
+        self.accountId: str = "accountId"
+        self.name: str = "name"
+        self.roi: ROI = 100.0
 
-    indicators: defaultdict[str, Indicator] = defaultdict(Indicator)
+        priceMarket = Market()
+        priceMarket.primaryCurrency = "primaryCurrency"
+        priceMarket.secondaryCurrency = "secondaryCurrency"
+        priceMarket.contractName = "contractName"
+        self.priceMarket: Market = priceMarket
 
-    safeties: defaultdict[str, Safety] = defaultdict(Safety)
-
-    insurances: defaultdict[str, Insurance] = defaultdict(Insurance)
-
-    def __post_init__(self) -> None:
-        self.priceMarket.primaryCurrency = "primaryCurrency"
-        self.priceMarket.secondaryCurrency = "secondaryCurrency"
-        self.priceMarket.contractName = "contractName"
+        self.leverage: float = 0.9
+        self.indicators: defaultdict[str, Indicator] = defaultdict(Indicator)
+        self.safeties: defaultdict[str, Safety] = defaultdict(Safety)
+        self.insurances: defaultdict[str, Insurance] = defaultdict(Insurance)
 
 
 class FakeTradeBotApi:
@@ -154,10 +152,12 @@ def test_fails_to_get_all_bots_on_api_error(
 def test_get_all_bot_interfaces(provider: BotApiProvider) -> None:
     after: tuple[Interface] = provider.get_all_bot_interfaces("guid")
 
+    bot = FakeTradeBot();
+
     mustbe: tuple[Interface] = tuple([
-            *FakeTradeBot.indicators.values(),
-            *FakeTradeBot.insurances.values(),
-            *FakeTradeBot.safeties.values()])
+            *bot.indicators.values(),
+            *bot.insurances.values(),
+            *bot.safeties.values()])
 
     msg: str = f"{after=}, {mustbe=}"
 
@@ -174,10 +174,11 @@ def test_fails_to_get_all_bot_interfaces_on_api_error(
 def test_get_bot_interfaces_by_type(
     provider: BotApiProvider
 ) -> None:
+    bot = FakeTradeBot()
     types: dict[str, Type[Interface]] = {
-        "_indicators": Indicator,
-        "_safeties": Safety,
-        "_insurances": Insurance
+        "indicators": Indicator,
+        "safeties": Safety,
+        "insurances": Insurance
         }
 
     for name, t in types.items():
@@ -185,7 +186,7 @@ def test_get_bot_interfaces_by_type(
                 "guid", t)
 
         mustbe: tuple[Interface] = tuple(
-                getattr(FakeTradeBotApi, name).values())
+                getattr(bot, name).values())
 
         msg: str = f"{after=}, {mustbe=}"
         
@@ -198,7 +199,7 @@ def test_get_bot_interfaces_by_type_works_with_bot(
     after: tuple[Interface] = provider.get_bot_interfaces_by_type(
             cast(Bot, FakeTradeBot()), Safety)
 
-    mustbe: tuple[Interface] = tuple(FakeTradeBot.safeties.values())
+    mustbe: tuple[Interface] = tuple(FakeTradeBot().safeties.values())
 
     msg: str = f"{after=}, {mustbe=}"
 
