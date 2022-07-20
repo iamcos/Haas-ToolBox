@@ -1,16 +1,15 @@
-from api.bots.BotManager import BotManager
-from api.bots.BotApiProvider import Bot
-from api.factories.bot_managers_factory import get_bot_manager_by_type
-from api.models import Interfaces
+import api.factories as factories
+
+from api.loader import log
+from api.domain.types import Interface, Bot
+from api.providers.bot_api_provider import BotApiProvider
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
 from cli.bots.InterfaceOptionSelectorCli import InterfaceOptionSelectorCli
 from cli.bots.BotBacktestCli import BotBacktestCli
 from cli.bots.multibots.MultiBotCli import MultiBotCli
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from typing import Type, Any, cast
-from typing import Callable
-from loguru import logger as log
+from typing import Type, Any, cast, Callable
 from InquirerPy import inquirer
 
 
@@ -20,19 +19,21 @@ class BotCli:
     """
 
     def __init__(self, t: Type) -> None:
-        self.manager: BotManager = get_bot_manager_by_type(t)
+        self.bot: Bot
+        self.provider: BotApiProvider = factories.get_provider(t)
+        self.bot_name: str = t.__name__
 
-        self.bot_selector = BotSelectorCli(self.manager)
-        self.interface_selector = InterfaceSelectorCli(self.manager)
+        self.bot_selector = BotSelectorCli(self.provider, self.bot_name)
+        self.interface_selector = InterfaceSelectorCli(self.provider)
         self.indictator_option_selector = InterfaceOptionSelectorCli(
-            self.manager)
+            self.provider)
 
         self.main_menu: dict[str, tuple[Callable[..., Any], ...]] = dict({
             "Select interface": (
                 self.interface_selector.select_interface,
                 self._process_interface
             ),
-            f"Select another {self.manager.bot_name()}": (
+            f"Select another {self.bot_name}": (
                 self.bot_selector.select_bots,
                 self._process_bots
             ),
@@ -42,7 +43,7 @@ class BotCli:
         })
 
     def menu(self) -> None:
-        log.info(f"Starting {self.manager.bot_name()} CLI menu..")
+        log.info(f"Starting {self.bot_name} CLI menu..")
         bots: list[Bot] = self.bot_selector.select_bots()
 
         self._process_bots(bots)
@@ -73,10 +74,10 @@ class BotCli:
         if len(bots) > 1:
             return MultiBotCli(bots).start()
         else:
-            self.manager.set_bot(bots[0])
+            self.bot = bots.pop()
             self._process_user_choice(self._menu_action())
 
-    def _process_interface(self, choice: Interfaces) -> None:
+    def _process_interface(self, choice: Interface) -> None:
         if choice == "Back":
             return self._process_user_choice(self._menu_action())
 
@@ -86,7 +87,7 @@ class BotCli:
         if option == "Back":
             return self._process_user_choice("Select interface")
         else:
-            BotBacktestCli(self.manager).process_backtest(
+            BotBacktestCli(self.provider).process_backtest(
                     choice,
                     cast(IndicatorOption, option)
             )

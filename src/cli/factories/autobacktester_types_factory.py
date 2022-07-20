@@ -1,6 +1,7 @@
-from api.models import Bot
+from api.domain.types import Bot
 from api.exceptions import AutobacktesterTypesFactryException
 from cli.bots.AutoBacktesterCli import AutoBacktesterCli
+
 from cli.bots.BotConfigBacktestCli import BotConfigBacktestCli
 from cli.bots.scalper.ScalperRangeBacktesterCli import ScalperRangeBacktesterCli
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot

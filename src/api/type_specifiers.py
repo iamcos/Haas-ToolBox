@@ -1,4 +1,4 @@
-from api.models import Bot
+from api.domain.types import Bot
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
 from typing import Type, cast

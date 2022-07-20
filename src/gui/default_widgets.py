@@ -1,4 +1,6 @@
 import re
+import kivy
+from kivy.clock import mainthread
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
@@ -92,6 +94,7 @@ class LogsLayout(ScrollView, BorderWidget):
         self.logs_grid = ScrollingGridLayout()
         self.add_widget(self.logs_grid)
 
+    @mainthread
     def info(self, text: str, *args) -> TextLabel:
         if len(args) == 1:
             return self.update_old_log(text, *args)
@@ -105,16 +108,26 @@ class LogsLayout(ScrollView, BorderWidget):
 
             return label
 
+    @mainthread
+    def debug(self, text: str, *args) -> None:
+        pass
+
+    @mainthread
+    def warning(self, text: str, *args) -> None:
+        pass
+
+    @mainthread
+    def error(self, text: str, *args) -> None:
+        pass
+
     def update_old_log(self, text: str, log_row: TextLabel) -> TextLabel:
         log_row.text += f" | {text}"
         log_row.color = colors.green
         return log_row
         
-
     def clear(self) -> None:
         self.remove_widget(self.logs_grid)
         self.logs_grid = ScrollingGridLayout()
         self.add_widget(self.logs_grid)
         self.scroll_y = 0
-
 

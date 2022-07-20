@@ -1,3 +1,4 @@
+from gui.autobacktesters.config_backtester.config_backtester_screen import ConfigBacktesterScreen
 from gui.backtesting.single_backtester_screen import SingleBacktesterScreen
 from gui.bot_menu.multiple_bot_menu_screen import MultipleBotMenuScreen
 from gui.bot_menu.single_bot_menu_screen import SingleBotMenuScreen
@@ -29,6 +30,7 @@ class HaasToolBoxApp(App):
         sm.add_widget(InterfaceOptionSelectorScreen(
             name="interface_option_selector"))
         sm.add_widget(SingleBacktesterScreen(name="single_backtester"))
+        sm.add_widget(ConfigBacktesterScreen(name="config_backtester_screen"))
 
         return sm
 

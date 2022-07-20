@@ -4,7 +4,7 @@ from InquirerPy.separator import Separator
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from api.bots.BotManager import BotManager
 
-from api.models import Interfaces
+from api.models import Interface
 from api.backtesting.BotBacktester import BotBacketster
 
 
@@ -17,7 +17,7 @@ class BotBacktestCli:
 
     def process_backtest(
         self,
-        interface: Interfaces,
+        interface: Interface,
         selected_option: IndicatorOption
     ) -> None:
 

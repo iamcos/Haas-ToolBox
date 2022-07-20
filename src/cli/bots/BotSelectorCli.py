@@ -1,15 +1,16 @@
-from api.bots.BotManager import BotManager
-from api.bots.BotApiProvider import Bot
-from loguru import logger as log
+from api.loader import log
+from api.domain.types import Bot
 from typing import cast
 from InquirerPy.separator import Separator
 from InquirerPy import inquirer
 
+from api.providers.bot_api_provider import BotApiProvider
+
 
 class BotSelectorCli:
-    def __init__(self, manager: BotManager) -> None:
-        self.manager: BotManager = manager
-        self.bot_name: str = manager.bot_name()
+    def __init__(self, api: BotApiProvider, bot_name: str) -> None:
+        self._api: BotApiProvider = api
+        self.bot_name: str = bot_name
 
     def select_bots(self) -> list[Bot]:
         log.info("Starting processing selecting bot..")
@@ -21,14 +22,6 @@ class BotSelectorCli:
             return self.select_bots()
 
         return self._process_selecting_bot(bots_chain)
-
-    def choose_bot(self) -> None:
-        if self.manager.bot_not_selected():
-            log.info(f"{self.bot_name} isn't selected")
-            bots: list[Bot] = self.select_bots()
-            self.manager.set_bot(bots[0])
-        else:
-            log.info(f"{self.bot_name} selected")
 
     def _process_selecting_bot(
             self,
@@ -54,13 +47,13 @@ class BotSelectorCli:
                         + f"{bot.priceMarket.secondaryCurrency}",
                 "value": bot
             }
-            for bot in self.manager.get_available_bots()
+            for bot in self._api.get_all_bots()
         ]
 
     def _wait_bot_creating(self) -> None:
         msg: str = f"NO {self.bot_name} DETECTED! Please create one by hand"
 
-        while not self.manager.get_available_bots():
+        while not self._api.get_all_bots():
             log.warning(msg)
             inquirer.select(
                 message=f"Select {self.bot_name}. "

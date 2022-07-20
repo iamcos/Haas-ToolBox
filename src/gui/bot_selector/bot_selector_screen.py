@@ -3,7 +3,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
 
 from api.bots.BotManager import BotManager
-from api.factories.bot_managers_factory import get_bot_manager_by_type
+from api.factories.bot_managers_factory import get_bot_manager
 from api.models import Bot
 from gui.default_widgets import LabelButton, ScrollingGridLayout
 
@@ -30,7 +30,7 @@ class BotSelectorScreen(Screen):
         self.selected_bots: set[Bot] = set()
 
     def prepare(self, bot_type: Type) -> None:
-        self.bot_manager = get_bot_manager_by_type(bot_type)
+        self.bot_manager = get_bot_manager(bot_type)
         self.update_bots_map()
         self.update_bots_buttons()
 

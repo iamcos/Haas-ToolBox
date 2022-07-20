@@ -3,7 +3,6 @@ from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
 from kivy.lang import Builder
 
 from api.models import Bot
-from api.type_specifiers import get_bot_type
 from gui.bot_menu.base_bot_menu_screen import BaseBotMenuScreen
 from gui.default_widgets import LabelButton
 from loguru import logger as log
@@ -44,7 +43,8 @@ class SingleBotMenuScreen(BaseBotMenuScreen):
 
     def config_backtesting(self, _: LabelButton) -> None:
         log.debug(f"Config backtesting")
-        self.manager.get_screen("config_backtester_screen").setup(self.bot)
+        self.manager.get_screen("config_backtester_screen").setup({self.bot})
+        self.manager.current = "config_backtester_screen"
 
     def range_backtesting(self, _: LabelButton) -> None:
         log.debug(f"Range backtesting")

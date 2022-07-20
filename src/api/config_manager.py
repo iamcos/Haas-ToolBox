@@ -1,11 +1,10 @@
 from configparser import NoOptionError, NoSectionError, SafeConfigParser, DuplicateSectionError
 from typing import Optional
-from api.models import SclaperBacktestSample, BacktestRange
+from api.domain.dtos import SclaperBacktestSample, BacktestRange
 from api.config import toolbox_settings_path
-
+from api.loader import log
 from InquirerPy import inquirer
 from datetime import datetime
-from loguru import logger as log
 
 
 class ConfigManager:

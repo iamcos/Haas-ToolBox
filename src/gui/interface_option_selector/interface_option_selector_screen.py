@@ -1,6 +1,6 @@
 from api.backtesting.BotBacktester import BotBacketster
 from api.bots.BotManager import BotManager
-from api.models import Interfaces
+from api.models import Interface
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from kivy.uix.screenmanager import Screen
 from kivy.lang import Builder
@@ -18,11 +18,11 @@ class InterfaceOptionSelectorScreen(Screen):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.bot_manager: BotManager
-        self.interface: Interfaces
+        self.interface: Interface
         self.grid: ScrollingGridLayout = ScrollingGridLayout()
         self.ids.scroll_view.add_widget(self.grid)
 
-    def setup(self, bot_manager: BotManager, interface: Interfaces) -> None:
+    def setup(self, bot_manager: BotManager, interface: Interface) -> None:
         self.bot_manager = bot_manager
         self.interface = interface
         self.clear_buttons()
@@ -32,7 +32,7 @@ class InterfaceOptionSelectorScreen(Screen):
         self.ids.scroll_view.remove_widget(self.grid)
         self.grid = ScrollingGridLayout()
 
-    def generate_buttons(self, interface: Interfaces) -> None:
+    def generate_buttons(self, interface: Interface) -> None:
         for option in self.bot_manager.interface_options(interface):
             print(f"{option.title=}, {option.value=}")
             self.grid.add_widget(
