@@ -1,16 +1,16 @@
-from configparser import NoOptionError, NoSectionError, SafeConfigParser, DuplicateSectionError
+from configparser import NoOptionError, NoSectionError, ConfigParser, DuplicateSectionError
 from typing import Optional
 from api.domain.dtos import SclaperBacktestSample, BacktestRange
 from api.config import toolbox_settings_path
-from api.loader import log
 from InquirerPy import inquirer
 from datetime import datetime
+from loguru import logger as log
 
 
 class ConfigManager:
 
     def __init__(self):
-        self.config_parser: SafeConfigParser = SafeConfigParser()
+        self.config_parser: ConfigParser = ConfigParser()
         self.config_parser.read(toolbox_settings_path)
         self.url, self.secret = self._get_ip_and_secret()
 

@@ -2,7 +2,7 @@ from typing import Union
 from haasomeapi.HaasomeClient import HaasomeClient
 from haasomeapi.apis.TradeBotApi import TradeBotApi
 from api.Haas import Haas
-from api.loader import log
+from loguru import logger as log
 from api.config_manager import ConfigManager
 import time
 
