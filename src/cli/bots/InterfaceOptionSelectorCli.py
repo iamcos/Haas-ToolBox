@@ -1,4 +1,3 @@
-from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from api.domain.types import GUID, Interface, InterfaceOption
 from InquirerPy import inquirer
 from api.exceptions import HaasToolBoxException
@@ -14,9 +13,12 @@ class InterfaceOptionSelectorCli:
         self.bot_name: str = bot_name
         self.bot_guid: GUID = bot_guid
 
-    def select_option(self, interface: Interface) -> IndicatorOption | str:
+    def select_option(self, interface: Interface) -> InterfaceOption | str:
         interface = self._update_interface(interface)
-        return self._parameter_selector(InterfaceWrapper(interface).options)
+        wrapped = InterfaceWrapper(interface)
+        tofilter = ignored_options[self.bot_name][wrapped.name]
+        filtered_options = [i for i in wrapped.options if i.title not in tofilter]
+        return self._parameter_selector(filtered_options)
 
 
     def _update_interface(self, interface: Interface) -> Interface:
@@ -29,21 +31,21 @@ class InterfaceOptionSelectorCli:
         raise HaasToolBoxException(f"Interface {interface_name} not found") 
 
     def _parameter_selector(
-            self,
-            indicator_options: tuple[IndicatorOption]
-    ) -> IndicatorOption | str:
+        self,
+        options: list[InterfaceOption]
+    ) -> InterfaceOption | str:
 
-        choices: list[dict[str, str | IndicatorOption]] = [
+        choices: list[dict[str, str | InterfaceOption]] = [
             {
                 "name": f"{i.title} : {i.value}",
                 "value": i
             }
-            for i in indicator_options
+            for i in options
         ]
 
         choices.append({"name": "Back", "value": "Back"})
 
-        selected_option: IndicatorOption = inquirer.select(
+        selected_option: InterfaceOption = inquirer.select(
             message="Select Parameter",
             choices=choices,
         ).execute()
