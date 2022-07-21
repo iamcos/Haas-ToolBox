@@ -48,8 +48,6 @@ class BotCli:
         else:
             self.bot_guid: GUID = bots.pop().guid
             self._do_action()
-            # interface = self.select_interface()
-            # self._process_interface(interface)
 
     def _do_action(self) -> None:
         choosed_action: str = self._menu_action()
@@ -113,5 +111,4 @@ class BotCli:
         self.main_menu[title] = methods_chain
 
         self.main_menu["Quit"] = quit
-
 
