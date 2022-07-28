@@ -7,6 +7,7 @@ from api import factories
 
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
+from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 
 
 @pytest.fixture
@@ -53,15 +54,25 @@ def test_bot_interfaces_by_type(mad_guid, mad_interfaces_names, mad_api: BotApiP
     assert names == mad_interfaces_names
 
 
+def test_update_bot_interface_option_from_custom_class(
+    mad_guid,
+    mad_api: BotApiProvider
+):
+    option = IndicatorOption()
+
+
+
 def test_update_bot_interface_option(mad_guid, mad_api: BotApiProvider):
     interfaces = mad_api.get_bot_interfaces_by_type(mad_guid, Indicator)
     interface = interfaces[0];
-    options = InterfaceWrapper(interface).options
+    wrapped = InterfaceWrapper(interface)
+    options = wrapped.options
+    interface_name = wrapped.name
     option = options[0];
     option.value = 15
 
     try:
-        mad_api.update_bot_interface_option(mad_guid, option)
+        mad_api.update_bot_interface_option(mad_guid, interface_name, option)
 
         new_interface = mad_api.get_bot_interfaces_by_type(mad_guid, Indicator)[0]
         new_option = InterfaceWrapper(new_interface).options[0]
@@ -69,10 +80,10 @@ def test_update_bot_interface_option(mad_guid, mad_api: BotApiProvider):
         assert new_option.value == '15'
     finally:
         option.value = 12
-        mad_api.update_bot_interface_option(mad_guid, option)
+        mad_api.update_bot_interface_option(mad_guid, interface_name, option)
 
 
-def test_get_available_interface_types(mad_guid, mad_api: BotApiProvider):
+def test_get_available_interface_types(mad_api: BotApiProvider):
     types = mad_api.get_available_interface_types();
     assert types == (Indicator,)
 
