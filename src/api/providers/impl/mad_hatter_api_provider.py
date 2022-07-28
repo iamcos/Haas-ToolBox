@@ -1,10 +1,10 @@
 from re import sub
 from api.domain.dtos import InterfaceOptionInfo
 
-from api.loader import main_context, log
+from api.loader import log
 from api.domain.types import GUID, Interface, Bot, InterfaceOption
 from api.exceptions import MadHatterException
-from typing import Any, Callable, Optional, Type, cast
+from typing import Any, Type, cast
 from haasomeapi.apis.CustomBotApi import CustomBotApi
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
@@ -142,10 +142,11 @@ class MadHatterApiProvider:
     def update_bot_interface_option(
         self,
         bot_guid: GUID,
+        interface_name: str,
         option: InterfaceOption
     ) -> None:
 
-        option_info = self._get_option_info(option, bot_guid)
+        option_info = self._get_option_info(interface_name, option, bot_guid)
 
         interface_enum_type = self._get_interface_enum_type(
                 option_info.interface)
@@ -163,22 +164,27 @@ class MadHatterApiProvider:
 
     def _get_option_info(
         self,
+        interface_name: str,
         option: InterfaceOption,
         bot_guid: GUID
     ) -> InterfaceOptionInfo:
+        interface = next((
+            interface
+            for interface in self.get_all_bot_interfaces(bot_guid)
+            if InterfaceWrapper(interface).name == interface_name
+        ))
 
-        for interface in self.get_all_bot_interfaces(bot_guid):
-            interface_wrapper: InterfaceWrapper = InterfaceWrapper(interface)
-            options: tuple[InterfaceOption, ...] = interface_wrapper.options
+        wrapped = InterfaceWrapper(interface)
+        options: tuple[InterfaceOption, ...] = wrapped.options
 
-            for opt_number, opt in enumerate(options):
-                if opt.title == option.title: 
-                    return InterfaceOptionInfo(
-                            interface,
-                            interface_wrapper.guid,
-                            opt_number)
+        for opt_number, opt in enumerate(options):
+            if opt.title == option.title: 
+                return InterfaceOptionInfo(
+                        interface,
+                        wrapped.guid,
+                        opt_number)
 
-        raise MadHatterException(f"Option {option} not found")
+        raise MadHatterException(f"Option {option.title} not found")
 
     def _get_interface_enum_type(
         self,
@@ -202,7 +208,12 @@ class MadHatterApiProvider:
     def get_available_interface_types(self) -> tuple[Type[Interface], ...]:
         return tuple([Indicator])
 
-    def clone_and_save_bot(self, bot: Bot) -> Bot:
+    def clone_and_save_bot(self, bot_or_guid: Bot | GUID) -> Bot:
+        if type(bot_or_guid) is GUID:
+            bot = self.get_refreshed_bot(bot_or_guid)
+        else:
+            bot = cast(Bot, bot_or_guid)
+
         name: str = sub(r"\s\[.*\]", "", bot.name)
 
         res = self._api.clone_custom_bot(
