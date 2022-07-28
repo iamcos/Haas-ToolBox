@@ -20,6 +20,8 @@ ROI = float
 
 GUID = str
 
+OptionValue = str | int | float | bool
+
 
 class Logger(Protocol):
     def info(self, text: str, *args) -> None:
