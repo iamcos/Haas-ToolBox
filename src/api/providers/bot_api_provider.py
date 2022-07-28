@@ -11,7 +11,7 @@ class BotApiProvider(Protocol):
 
     def get_available_interface_types(self) -> tuple[Type[Interface], ...]: ...
 
-    def clone_and_save_bot(self, bot: Bot) -> Bot: ...
+    def clone_and_save_bot(self, bot_or_guid: Bot | GUID) -> Bot: ...
 
     def delete_bot(self, bot_guid: GUID) -> None: ...
 
@@ -26,6 +26,7 @@ class BotApiProvider(Protocol):
     def update_bot_interface_option(
         self,
         bot_guid: GUID,
+        interface_name: str,
         option: InterfaceOption
     ) -> None: ...
 
