@@ -19,7 +19,7 @@ class BotBacktestCli:
     def __init__(self, provider: BotApiProvider) -> None:
         cache: BacktestingCache = SetBacktestingCache()
         self.ticks: int = main_context.config_manager.read_ticks()
-        print(f"{self.ticks=}")
+        log.info(f"{self.ticks=}")
         self.backtester: BotBacktester = ApiV3BotBacketster(
                 provider, cache, self.ticks)
         self.provider: BotApiProvider = provider
@@ -30,6 +30,7 @@ class BotBacktestCli:
         interface: Interface,
         option: InterfaceOption
     ) -> None:
+        # TODO: Why and where ?
         if option.step is None:
             raise BacktestCliException("Step must be not None")
 
