@@ -1,10 +1,9 @@
-from re import sub
 from api.domain.dtos import InterfaceOptionInfo
-
-from api.loader import log
 from api.domain.types import GUID, Interface, Bot, InterfaceOption
 from api.exceptions import MadHatterException
+from api.wrappers.interface_wrapper import InterfaceWrapper
 from typing import Any, Type, cast
+from re import sub
 from haasomeapi.apis.CustomBotApi import CustomBotApi
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
@@ -13,8 +12,6 @@ from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientRespo
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
-
-from api.wrappers.interface_wrapper import InterfaceWrapper
 
 
 class MadHatterApiProvider:
