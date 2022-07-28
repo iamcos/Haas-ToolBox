@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, Type
 from api.domain.types import Bot
 from api.exceptions import BotWrapperException
+from api import type_specifiers
 
 
 class BotWrapper:
@@ -33,7 +34,11 @@ class BotWrapper:
 
     @property
     def name(self) -> str:
-        return ""
+        if self._bot is None:
+            raise BotWrapperException("Can't get ROI from None")
+
+        bot_type: Type = type_specifiers.get_bot_type(self._bot)
+        return bot_type.__name__
 
     def is_bot_selected(self) -> bool:
         return self._bot is None
