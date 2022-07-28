@@ -1,53 +1,58 @@
 from collections import defaultdict
-from datetime import time
 from time import monotonic
-
-from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
-from api.bots.scalper.ScalperBotManager import ScalperBotManager
-from api.MainContext import main_context
-from api.models import SclaperBacktestSample
+from haasomeapi.dataobjects.custombots.dataobjects.Safety import IndicatorOption
 from typing import Generator
 from loguru import logger as log
-from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
+from api.domain.dtos import SclaperBacktestSample
+from api.domain.types import GUID, ROI
+from api.providers.bot_api_provider import BotApiProvider
 
-from api.models import ROI
-from time import sleep
+
+Cache = defaultdict[ROI, list[tuple[float, float]]]
 
 
 class ScalperRangeBacktesterApi:
 
-    def __init__(self, manager: ScalperBotManager) -> None:
-        self.manager: ScalperBotManager = manager
-        self.cache: defaultdict[ROI, list[tuple[float, float]]] = \
-                defaultdict(list)
-        self.ticks = main_context.config_manager.read_ticks()
+    def __init__(
+        self,
+        bot_guid: GUID,
+        provider: BotApiProvider,
+        ticks: int
+    ) -> None:
+        self.cache: Cache = defaultdict(list)
+        self._provider: BotApiProvider = provider
+        self._bot_guid: GUID = bot_guid
+        self.ticks: int = ticks
+
+    @property
+    def _bot_roi(self) -> ROI:
+        return self._provider.get_refreshed_bot(self._bot_guid).roi
 
     def backtest(
         self,
         sample: SclaperBacktestSample
     ) -> None:
 
-        for (target_percentage, stop_loss) in self.perm_generator(sample):
+        for (target_percentage, stop_loss) in self._perm_generator(sample):
             log.info(f"{target_percentage=}, {stop_loss=}")
 
-            self.manager.edit_interface(Indicator(), 1, target_percentage)
-            self.manager.edit_interface(Safety(), 2, stop_loss)
+            self._update_options(target_percentage, stop_loss)
 
             start = monotonic()
-            self.manager.backtest_bot(self.ticks)
+            self._provider.backtest_bot(self._bot_guid, self.ticks)
 
             log.info(
-                f"Result ROI: {self.manager.bot_roi()}. "
+                f"Result ROI: {self._bot_roi}. "
                 f"Time passed: {monotonic() - start:.2f} s"
             )
-            self.cache[self.manager.bot_roi()].append(
+            self.cache[self._bot_roi].append(
                 (target_percentage, stop_loss)
             )
 
         self._create_result_bot()
 
 
-    def perm_generator(
+    def _perm_generator(
             self,
             sample: SclaperBacktestSample
         ) -> Generator[tuple[float, float], None, None]:
@@ -57,19 +62,41 @@ class ScalperRangeBacktesterApi:
 
     def _create_result_bot(self) -> None:
         top_roi: ROI = max(list(self.cache.keys()))
-        log.debug(f"All rois {list(self.cache.keys())}")
-        log.debug(f"Top roi {top_roi}, stop_loss = {self.cache[top_roi][0][1]}, target_percentage = {self.cache[top_roi][0][0]}")
+        log.debug(f"All ROIs {list(self.cache.keys())}")
 
-        self.manager.edit_interface(
-            Indicator(),
-            1,
-            self.cache[top_roi][0][0]
-        )
-        self.manager.edit_interface(
-            Safety(),
-            2,
-            self.cache[top_roi][0][1]
+        target_percentage: float = self.cache[top_roi][0][0]
+        stop_loss: float = self.cache[top_roi][0][1]
+        self._update_options(target_percentage, stop_loss)
+
+        log.debug(f"Top roi {top_roi}, stop_loss = {stop_loss},"
+                    f"target_percentage = {target_percentage}")
+
+        self._provider.backtest_bot(self._bot_guid, self.ticks)
+
+    def _update_options(
+        self,
+        target_percentage: float,
+        stop_loss: float
+    ) -> None:
+        target_percentage_option = IndicatorOption()
+        target_percentage_option.title = "Target Percentage"
+        target_percentage_option.value = str(target_percentage)
+
+        stop_loss_option = IndicatorOption()
+        stop_loss_option.title = "Stop Loss"
+        stop_loss_option.value = str(stop_loss)
+
+        log.debug(f"{vars(self._provider)=}")
+
+        self._provider.update_bot_interface_option(
+            self._bot_guid,
+            "",
+            target_percentage_option
         )
 
-        self.manager.backtest_bot(self.ticks)
+        self._provider.update_bot_interface_option(
+            self._bot_guid,
+            "",
+            stop_loss_option
+        )
 
