@@ -12,6 +12,8 @@ from api.domain.dtos import BacktestResult, BacktestSample, BacktestSetupInfo
 from api.loader import log
 from time import monotonic
 
+from api.wrappers.interface_wrapper import InterfaceWrapper
+
 
 def timeit(func):
     def inner(*args, **kwargs):
@@ -112,8 +114,12 @@ class ApiV3BotBacketster:
 
     def _backtest(self) -> BacktestResult:
         log.info(f"{self.info=}")
+        interface_name: str = InterfaceWrapper(self.info.interface).name
         self.provider.update_bot_interface_option(
-            self.info.bot_guid, self.info.option)
+            self.info.bot_guid,
+            interface_name,
+            self.info.option
+        )
 
         self.provider.backtest_bot(self.info.bot_guid, self.info.ticks)
 
