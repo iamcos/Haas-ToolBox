@@ -86,3 +86,12 @@ class BacktestResult(NamedTuple):
     value: str
     roi: ROI
 
+
+@dataclass
+class BotConfigSetup:
+    bot_guid: GUID
+    batch_size: int
+    top_bots_count: int
+    ticks: int
+    config: dict
+
