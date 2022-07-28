@@ -1,5 +1,4 @@
 import itertools
-from functools import lru_cache
 from api.domain.dtos import InterfaceOptionInfo
 from api.domain.types import GUID, Bot, InterfaceOption, Interface
 from api.exceptions import TradeBotException
@@ -12,7 +11,7 @@ from haasomeapi.dataobjects.tradebot.TradeBot import TradeBot
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from re import sub
-from typing import Any, NamedTuple, Type, cast
+from typing import Any, Type, cast
 
 
 class TradeBotApiProvider:
