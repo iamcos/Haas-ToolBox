@@ -1,10 +1,9 @@
-from re import sub
 from api.domain.dtos import InterfaceOptionInfo
-
-from api.loader import log
 from api.domain.types import GUID, Interface, Bot, InterfaceOption
 from api.exceptions import MadHatterException
+from api.wrappers.interface_wrapper import InterfaceWrapper
 from typing import Any, Type, cast
+from re import sub
 from haasomeapi.apis.CustomBotApi import CustomBotApi
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
@@ -13,8 +12,6 @@ from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientRespo
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
-
-from api.wrappers.interface_wrapper import InterfaceWrapper
 
 
 class MadHatterApiProvider:
@@ -115,7 +112,7 @@ class MadHatterApiProvider:
         self,
         guid_or_bot: GUID | Bot,
         interface_type: Type[Interface]
-    ) -> tuple[Interface]:
+    ) -> tuple[Interface, ...]:
         if interface_type != Indicator:
             raise MadHatterException("Only indicators supported "
                                      f"got {interface_type}")
@@ -208,11 +205,11 @@ class MadHatterApiProvider:
     def get_available_interface_types(self) -> tuple[Type[Interface], ...]:
         return tuple([Indicator])
 
-    def clone_and_save_bot(self, bot_or_guid: Bot | GUID) -> Bot:
-        if type(bot_or_guid) is GUID:
-            bot = self.get_refreshed_bot(bot_or_guid)
+    def clone_and_save_bot(self, guid_or_bot: GUID | Bot) -> Bot:
+        if type(guid_or_bot) is GUID:
+            bot = self.get_refreshed_bot(guid_or_bot)
         else:
-            bot = cast(Bot, bot_or_guid)
+            bot = cast(Bot, guid_or_bot)
 
         name: str = sub(r"\s\[.*\]", "", bot.name)
 

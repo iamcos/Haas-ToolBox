@@ -1,6 +1,7 @@
+from api.domain.types import GUID, Bot, Interface, InterfaceOption
+from api.exceptions import ScalperException
 from re import sub
-
-from typing import Any, Callable, Optional, Type, cast
+from typing import Any, Optional, Type, cast
 from haasomeapi.apis.CustomBotApi import CustomBotApi
 from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
 from haasomeapi.dataobjects.custombots.dataobjects.Indicator import Indicator
@@ -9,18 +10,13 @@ from haasomeapi.dataobjects.custombots.dataobjects.Safety import Safety
 from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientResponse
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
-from api.domain.dtos import InterfaceOptionInfo
-from api.loader import main_context
-from api.domain.types import GUID, Interface, Bot, InterfaceOption
-from api.exceptions import ScalperException
-from api.wrappers.interface_wrapper import InterfaceWrapper
 
 
 class ScalperApiProvider:
     def __init__(self, api: CustomBotApi) -> None:
         self._api: CustomBotApi = api
 
-    def get_all_bots(self) -> tuple[ScalperBot]:
+    def get_all_bots(self) -> tuple[ScalperBot, ...]:
         bots = self._process_error(
             self._api.get_all_custom_bots(), "Can't get bots list")
         res = tuple(bot for bot in bots if bot.botType == 3)
@@ -32,10 +28,11 @@ class ScalperApiProvider:
         target_percentage_value: float = vars(bot)["minimumTargetChange"]
         stop_loss_value: float = vars(bot)["maxAllowedReverseChange"]
 
-        return tuple([
+        res = tuple([
             self._create_target_percentage(target_percentage_value),
             self._create_stop_loss(stop_loss_value)
         ])
+        return res
 
     def _create_target_percentage(
         self,
@@ -44,7 +41,7 @@ class ScalperApiProvider:
 
         target_percentage: Indicator = Indicator()
         target_percentage.indicatorName = "Target Percentage"
-        target_percentage.enabled = True # type: ignore
+        target_percentage.enabled = True
         target_percentage.guid = target_percentage.indicatorName
         target_percentage.indicatorInterface = self._create_options(
             target_percentage_value, 0.2
@@ -56,7 +53,7 @@ class ScalperApiProvider:
     def _create_stop_loss(self, stop_loss_value: float) -> Safety:
         stop_loss: Safety = Safety()
         stop_loss.safetyName = "Stop loss"
-        stop_loss.enabled = True # type: ignore
+        stop_loss.enabled = True
         stop_loss.guid = stop_loss.safetyName
         stop_loss.safetyInterface = self._create_options(
             stop_loss_value, 0.1
@@ -72,8 +69,8 @@ class ScalperApiProvider:
 
         start: IndicatorOption = IndicatorOption()
         start.title = "Value"
-        start.value = start_value # type: ignore
-        start.step = step_value # type: ignore
+        start.value = str(start_value)
+        start.step = step_value
 
         return [start]
 
@@ -82,20 +79,12 @@ class ScalperApiProvider:
         self,
         guid_or_bot: GUID | Bot,
         interface_type: Type[Interface]
-    ) -> tuple[Interface]:
-
-        guid: GUID
-
+    ) -> tuple[Interface, ...]:
+        bot: ScalperBot
         if type(guid_or_bot) is GUID:
-            guid = guid_or_bot
-        elif "guid" in vars(guid_or_bot):
-            guid = cast(Bot, guid_or_bot).guid
+            bot = self.get_refreshed_bot(guid_or_bot)
         else:
-            raise ScalperException(
-                    "GUID or Bot must be passed as guid_or_bot, "
-                    f"got {guid_or_bot}")
-
-        bot: ScalperBot = self.get_refreshed_bot(guid)
+            bot = cast(ScalperBot, guid_or_bot)
 
         if interface_type is Safety:
             stop_loss_value: float = bot.maxAllowedReverseChange
@@ -105,7 +94,7 @@ class ScalperApiProvider:
             return tuple([
                 self._create_target_percentage(target_percentage_value)])
 
-        raise ScalperException(f"{interface_type} type is not supported")
+        return self._process_error(f"{interface_type} type is not supported")
 
 
     def get_refreshed_bot(self, bot_guid: GUID) -> ScalperBot:
@@ -116,21 +105,21 @@ class ScalperApiProvider:
 
     def update_bot_interface_option(
         self,
-        option: InterfaceOption,
-        bot_guid: GUID
+        bot_guid: GUID,
+        interface_name: str,
+        option: InterfaceOption
     ) -> None:
         bot: ScalperBot = self.get_refreshed_bot(bot_guid)
-        option_info = self._get_option_info(option, bot_guid)
 
-        if option_info.option_num == 1:
+        if option.title == "Target Percentage":
             bot.minimumTargetChange = float(option.value)
-        elif option_info.option_num == 2:
+        elif option.title == "Stop Loss":
             bot.maxAllowedReverseChange = float(option.value)
         else:
-            raise ScalperException(
-                f"No param with num {option_info.option_num}")
+            self._process_error(f"Option with title {option.title} "
+                                "is not supported")
 
-        self._api.setup_scalper_bot(
+        res = self._api.setup_scalper_bot(
 			accountguid=bot.accountId,
 			botguid=bot.guid,
 			botname=bot.name,
@@ -147,29 +136,17 @@ class ScalperApiProvider:
 			safetythreshold=bot.maxAllowedReverseChange,
 		)
 
-    def _get_option_info(
-        self,
-        option: InterfaceOption,
-        bot_guid: GUID
-    ) -> InterfaceOptionInfo:
-
-        for interface in self.get_all_bot_interfaces(bot_guid):
-            interface_wrapper: InterfaceWrapper = InterfaceWrapper(interface)
-            options: tuple[InterfaceOption, ...] = interface_wrapper.options
-
-            for opt_number, opt in enumerate(options):
-                if opt.title == option.title: 
-                    return InterfaceOptionInfo(
-                            interface,
-                            interface_wrapper.guid,
-                            opt_number)
-
-        raise ScalperException(f"Option {option} not found")
+        self._process_error(res, "Error in editing bot")
 
     def get_available_interface_types(self) -> tuple[Type[Interface], ...]:
         return tuple([Indicator, Safety])
 
-    def clone_and_save_bot(self, bot: Bot) -> Bot:
+    def clone_and_save_bot(self, guid_or_bot: GUID | Bot) -> Bot:
+        if type(guid_or_bot) is GUID:
+            bot = self.get_refreshed_bot(guid_or_bot)
+        else:
+            bot = cast(Bot, guid_or_bot)
+
         name: str = sub(r"\s\[.*\]", "", bot.name)
 
         res = self._api.clone_custom_bot(
@@ -193,15 +170,21 @@ class ScalperApiProvider:
 
     def _process_error(
         self,
-        response: HaasomeClientResponse,
+        response: Optional[HaasomeClientResponse | Any] = None,
         message: str = "Scalper Error"
     ) -> Any:
-        if response.errorCode is not EnumErrorCode.SUCCESS:
-            raise ScalperException(
-                f"{message}"
-                f" [Error code: {response.errorCode} "
-                f" Error message: {response.errorMessage}]"
-            )
+        if response is None:
+            raise ScalperException(message)
 
-        return response.result
+        if type(response) is HaasomeClientResponse:
+            if response.errorCode is not EnumErrorCode.SUCCESS:
+                raise ScalperException(
+                    f"{message}"
+                    f" [Error code: {response.errorCode} "
+                    f" Error message: {response.errorMessage}]"
+                )
+
+            return response.result
+
+        return response
 
