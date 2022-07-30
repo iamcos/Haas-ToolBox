@@ -27,12 +27,12 @@ class InterfaceSelectorCli:
     def _interfaces_menu_options(self) -> list[InterfacesForCli]:
         choices: list[InterfacesForCli] = []
 
-        for interface_name in self._api.get_available_interface_types():
+        for interface_type in self._api.get_available_interface_types():
             interfaces = self._api.get_bot_interfaces_by_type(
-                self.bot_guid, interface_name)
+                self.bot_guid, interface_type)
 
             iterface_selector = self._display_interface_selector(
-                interface_name, interfaces
+                interface_type, interfaces
             )
 
             choices.extend(iterface_selector)
@@ -42,20 +42,20 @@ class InterfaceSelectorCli:
         return choices
 
     def _display_interface_selector(
-            self,
-            interface_name: Type[Interface],
-            interfaces: tuple[Interface, ...]
+        self,
+        interface_type: Type[Interface],
+        interfaces: tuple[Interface, ...]
     ) -> list[InterfacesForCli]:
 
         if interfaces:
             return self._menu_for_choosing_indicator(interfaces)
         else:
-            msg: str = f"No {interface_name.__name__} to select"
+            msg: str = f"No {interface_type.__name__} to select"
             return self._get_separated_msg(msg)
 
     def _menu_for_choosing_indicator(
-            self,
-            interfaces: tuple[Interface, ...]
+        self,
+        interfaces: tuple[Interface, ...]
     ) -> list[InterfacesForCli]:
         type_as_name: str = type(interfaces[0]).__name__.lower()
 
