@@ -15,7 +15,6 @@ class FloatBacktestingStrategy:
     def count_up(self, value: str, used_values: Iterable[str]) -> str:
         self._check_value(value)
         new_value: float = self._smart_round(value)
-        print(f"{new_value=}, {used_values=}")
 
         while str(new_value) in used_values:
             new_value += self._step
@@ -58,7 +57,7 @@ class IntBacktestingStrategy:
     def count_up(self, value: str, used_values: Iterable) -> str:
         self._check_value(value)
         new_value: int = int(value)
-        print(f"{value=}, {used_values=}")
+
         while str(new_value) in used_values:
             new_value += self._step
 
