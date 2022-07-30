@@ -1,13 +1,13 @@
 from __future__ import annotations
-from typing import Optional, Protocol
-from dataclasses import dataclass
+from typing import Protocol
+
 from api import factories
+from copy import deepcopy
 
 from api.backtesting.backtesting_cache import BacktestingCache
 from api.backtesting.backtesting_strategy import BacktestingStrategy
 from api.providers.bot_api_provider import BotApiProvider
-from api.exceptions import BotBacktesterException
-from api.domain.types import GUID, ROI, Interface, InterfaceOption
+from api.domain.types import ROI
 from api.domain.dtos import BacktestResult, BacktestSample, BacktestSetupInfo
 from api.loader import log
 from time import monotonic
@@ -26,18 +26,12 @@ def timeit(func):
 
 
 class BotBacktester(Protocol):
-
     def setup(self, info: BacktestSetupInfo) -> None: ...
-
     def backtest_up(self) -> BacktestResult: ...
-
     def backtest_down(self) -> BacktestResult: ...
-
     def backtesting_length_x2(self) -> int: ...
-
     def backtesting_length_devide2(self) -> int: ...
-
-    def stop_backtesting(self) -> None: ...
+    def set_best_result(self) -> None: ...
 
 
 class ApiV3BotBacketster:
@@ -60,11 +54,14 @@ class ApiV3BotBacketster:
                                          info.option.step))
         self.info = info
 
+        option = deepcopy(info.option)
+        roi: ROI = self.provider.get_refreshed_bot(info.bot_guid).roi
+
         sample = BacktestSample(
-                    self.info.interface.guid,
-                    self.info.option,
-                    self.info.ticks,
-                    self.ticks)
+                    info.interface.guid,
+                    option,
+                    info.ticks,
+                    roi)
 
         self.cache.add(sample)
 
@@ -108,12 +105,12 @@ class ApiV3BotBacketster:
         log.info(f"{self.info.ticks=}")
         return self.info.ticks
 
-    def stop_backtesting(self) -> None:
-        # FIXME: Add saving top results
-        self.cache.get_top_samples()
+    def set_best_result(self) -> None:
+        sample: BacktestSample = self.cache.get_top_samples().pop()
+        self.info.option = sample.option
+        self._backtest()
 
     def _backtest(self) -> BacktestResult:
-        log.info(f"{self.info=}")
         interface_name: str = InterfaceWrapper(self.info.interface).name
         self.provider.update_bot_interface_option(
             self.info.bot_guid,
@@ -129,12 +126,14 @@ class ApiV3BotBacketster:
             f"{self.info.option.title} "
             f": {self.info.option.value} ROI:{roi}%")
 
+        new_option = deepcopy(self.info.option)
+
         sample = BacktestSample(
                     self.info.interface.guid,
-                    self.info.option,
+                    new_option,
                     self.info.ticks,roi)
 
         self.cache.add(sample)
 
-        return BacktestResult(self.info.option, self.info.option.value, roi)
+        return BacktestResult(new_option, new_option.value, roi)
 
