@@ -95,3 +95,12 @@ class BotConfigSetup:
     ticks: int
     config: dict
 
+
+@dataclass
+class UpAndDownBacktesterSetup:
+    length: int
+    interface_name: str
+    option: InterfaceOption
+    ticks: int
+    bot_guid: GUID
+

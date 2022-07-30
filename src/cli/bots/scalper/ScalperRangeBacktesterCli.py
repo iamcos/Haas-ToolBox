@@ -1,4 +1,4 @@
-from api.bots.scalper.ScalperRangeBacktesterApi import ScalperRangeBacktesterApi
+from api.backtesting.scalper_range_backtester import ScalperRangeBacktesterApi
 from api.domain.dtos import BacktestRange, SclaperBacktestSample
 from api.domain.types import GUID
 from api.providers.bot_api_provider import BotApiProvider

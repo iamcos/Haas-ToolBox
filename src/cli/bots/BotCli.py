@@ -9,7 +9,7 @@ from cli.bots.InterfaceOptionSelectorCli import InterfaceOptionSelectorCli
 from cli.bots.BotBacktestCli import BotBacktestCli
 from cli.bots.multibots.MultiBotCli import MultiBotCli
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
-from typing import Type, Any, cast, Callable
+from typing import Optional, Type, Any, cast, Callable
 from InquirerPy import inquirer
 
 
@@ -69,13 +69,15 @@ class BotCli:
             else:
                 method_result = method(method_result)
 
-    def select_interface(self) -> Interface:
+    def select_interface(self) -> Optional[Interface]:
         interface_or_back = InterfaceSelectorCli(
                 self.provider, self.bot_guid).select_interface()
 
         if interface_or_back == "Back":
             return self._do_action()
-        return cast(interface_or_back, Interface)
+
+        print(f"{interface_or_back=}")
+        return cast(Interface, interface_or_back)
 
 
     def select_bots(self) -> list[Bot]:

@@ -148,8 +148,6 @@ class MadHatterApiProvider:
         interface_enum_type = self._get_interface_enum_type(
                 option_info.interface)
 
-        print(vars(option), bot_guid, option_info, interface_enum_type)
-
         res = self._api.set_mad_hatter_indicator_parameter(
             bot_guid,
             interface_enum_type,
