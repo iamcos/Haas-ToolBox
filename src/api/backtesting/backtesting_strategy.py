@@ -3,8 +3,8 @@ from typing import Any, Iterable, Protocol
 
 class BacktestingStrategy(Protocol):
     def set_step(self, step: Any) -> None: ...
-    def count_up(self, value: str, used_values: Iterable) -> str: ...
-    def count_down(self, value: str, used_values: Iterable) -> str: ...
+    def count_up(self, value: str, used_values: Iterable[str]) -> str: ...
+    def count_down(self, value: str, used_values: Iterable[str]) -> str: ...
 
 
 class FloatBacktestingStrategy:
@@ -12,7 +12,7 @@ class FloatBacktestingStrategy:
         self._check_value(step);
         self._step: float = float(step)
 
-    def count_up(self, value: str, used_values: Iterable) -> str:
+    def count_up(self, value: str, used_values: Iterable[str]) -> str:
         self._check_value(value)
         new_value: float = self._smart_round(value)
         print(f"{new_value=}, {used_values=}")
@@ -22,7 +22,7 @@ class FloatBacktestingStrategy:
 
         return str(new_value)
 
-    def count_down(self, value: str, used_values: Iterable) -> str:
+    def count_down(self, value: str, used_values: Iterable[str]) -> str:
         self._check_value(value)
         new_value: float = self._smart_round(value)
 
