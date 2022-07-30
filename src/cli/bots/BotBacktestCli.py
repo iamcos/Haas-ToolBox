@@ -9,6 +9,7 @@ from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import Indica
 
 from api.domain.types import GUID, Interface, InterfaceOption
 from api.backtesting.bot_backtester import ApiV3BotBacketster, BotBacktester
+from api.backtesting.up_and_down_backtester import UpAndDownBacktester
 from loguru import logger as log
 
 
@@ -75,18 +76,8 @@ class BotBacktestCli:
                 "value": backtester.backtest_down
             },
             {
-                "name": "backtest 10 steps up",
-                "value": lambda: [
-                    backtester.backtest_up()
-                    for _ in range(10)
-                ]
-            },
-            {
-                "name": "backtest 10 steps down",
-                "value": lambda: [
-                    backtester.backtest_down()
-                    for _ in range(10)
-                ]
+                "name": "Up&Down",
+                "value": UpAndDownBacktester(backtester).execute
             },
             {
                 "name": "backtesting length X 2",
