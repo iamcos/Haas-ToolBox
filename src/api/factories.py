@@ -53,12 +53,15 @@ def get_bot_manager_by_bot(bot: Bot) -> BotManager:
 
 
 def get_backtesting_strategy(value) -> BacktestingStrategy:
-    if type(value) is str and "." in value and value.replace(".", "").isdigit():
+    print(f"Hello from backtesting strategy factory, {value=}")
+
+    if type(value) is int or str(value).replace(".0", "").isdigit():
+        print('int')
+        return IntBacktestingStrategy()
+    elif type(value) is str and "." in value and value.replace(".", "").isdigit():
         return FloatBacktestingStrategy()
     elif type(value) is float:
         return FloatBacktestingStrategy()
-    elif type(value) is int or value.isdigit():
-        return IntBacktestingStrategy()
     
 
     raise BacktestingStrategyCreationException(
