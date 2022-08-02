@@ -31,8 +31,6 @@ class FloatBacktestingStrategy:
         return str(new_value)
 
     def _smart_round(self, value: str) -> float:
-        # numbers_after_dot: int = len(str(self._step)[2:])
-        # return round(float(value), numbers_after_dot)
         return float(value)
 
     def _check_value(self, value: Any) -> None:
