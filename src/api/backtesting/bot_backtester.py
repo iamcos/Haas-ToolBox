@@ -51,12 +51,14 @@ class ApiV3BotBacketster:
         self.info: BacktestSetupInfo
 
     def setup(self, info: BacktestSetupInfo) -> None:
-        log.info(f"Starting backtestion option {info.option.title}");
+        self.cache.clear()
+
+        log.info(f"Starting backtesting option {info.option.title}");
         self.backtesting_strategy = (self.get_backtesting_strategy(
                                          info.option.step))
-        self.info = info
+        self.info = deepcopy(info)
 
-        option = deepcopy(info.option)
+        option = self.info.option
         roi: ROI = self.provider.get_refreshed_bot(info.bot_guid).roi
 
         sample = BacktestSample(
@@ -72,12 +74,9 @@ class ApiV3BotBacketster:
     @timeit
     def backtest_up(self) -> BacktestResult:
         log.info("Backtesting up")
-
         value = self.backtesting_strategy.count_up(
             self.info.option.value,
             self.cache.get_used_values(self.info.ticks))
-
-        log.info(f"{value=}")
 
         self.info.option.value = value
 
