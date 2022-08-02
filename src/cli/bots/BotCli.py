@@ -1,14 +1,16 @@
+from api.backtesting.BotFineTuneBacktester import BotFineTuneBacktester
 from api.backtesting.interface_fine_tune_backtester import InterfaceFineTuneBacktester
-from api.domain.dtos import InterfaceFineTuneSetup
+from api.domain.dtos import BotFineTuneSetup, InterfaceFineTuneSetup
 import api.factories as factories
-
 from api.loader import log, main_context
 from api.domain.types import GUID, Interface, Bot, InterfaceOption
 from api.providers.bot_api_provider import BotApiProvider
+from api.wrappers.interface_wrapper import InterfaceWrapper
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
 from cli.bots.InterfaceOptionSelectorCli import InterfaceOptionSelectorCli
 from cli.bots.BotBacktestCli import BotBacktestCli
+from cli.bots.config.ignored_options import ignored_options
 from cli.bots.multibots.MultiBotCli import MultiBotCli
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from typing import Optional, Type, Any, cast, Callable
@@ -33,6 +35,9 @@ class BotCli:
             f"Select another {self.bot_name}": (
                 self.select_bots,
                 self._process_bots
+            ),
+            "Bot Fine Tune": (
+                self.bot_fine_tune,
             ),
             "Quit": (
                 self._process_keyboard_interrupt,
@@ -129,6 +134,17 @@ class BotCli:
     def _process_keyboard_interrupt(self) -> None:
         log.info("Bye :)")
         exit("666")
+
+    def bot_fine_tune(self) -> None:
+        backtester = factories.get_bot_fine_tune_backtester(self.provider)
+        interfaces = self.provider.get_all_bot_interfaces(self.bot_guid, filtered=True)
+
+        setup = BotFineTuneSetup(
+            bot_guid=self.bot_guid,
+            ticks=main_context.config_manager.read_ticks(),
+            interfaces=interfaces)
+
+        backtester.execute(setup)
 
     def add_menu_action(
             self,
