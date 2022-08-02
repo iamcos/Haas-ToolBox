@@ -1,3 +1,4 @@
+from api.loader import log
 from typing import Any, Iterable, Protocol
 
 
@@ -14,7 +15,7 @@ class FloatBacktestingStrategy:
 
     def count_up(self, value: str, used_values: Iterable[str]) -> str:
         self._check_value(value)
-        new_value: float = self._smart_round(value)
+        new_value: float = self._smart_round(value) + self._step
 
         while str(new_value) in used_values:
             new_value += self._step
@@ -55,7 +56,7 @@ class IntBacktestingStrategy:
 
     def count_up(self, value: str, used_values: Iterable) -> str:
         self._check_value(value)
-        new_value: int = int(value)
+        new_value: int = int(value) + self._step
 
         while str(new_value) in used_values:
             new_value += self._step
