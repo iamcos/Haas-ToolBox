@@ -1,12 +1,11 @@
 import random
-from dataclasses import dataclass
 
 from api.backtesting.fine_tune_backtester import FineTuneBacktester
-from api.domain.dtos import BacktestResult, BacktestSetupInfo, InterfaceFineTuneSetup
-
+from api.domain.dtos import BacktestSetupInfo, InterfaceFineTuneSetup
 from api.domain.types import InterfaceOption
 from api.wrappers.interface_wrapper import InterfaceWrapper
 from api.loader import log
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
