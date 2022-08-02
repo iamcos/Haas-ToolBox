@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import Protocol
+from collections.abc import Callable
+from typing import Any, Protocol
 
-from api import factories
 from copy import deepcopy
 
 from api.backtesting.backtesting_cache import BacktestingCache
@@ -40,17 +40,19 @@ class ApiV3BotBacketster:
         self, 
         provider: BotApiProvider,
         cache: BacktestingCache,
-        ticks: int
+        get_backtesting_strategy: Callable[[Any], BacktestingStrategy]
     ) -> None:
         self.provider: BotApiProvider = provider
         self.cache: BacktestingCache = cache
+        self.get_backtesting_strategy: Callable[[Any], BacktestingStrategy] = \
+                get_backtesting_strategy
 
         self.backtesting_strategy: BacktestingStrategy
         self.info: BacktestSetupInfo
-        self.ticks = ticks
 
     def setup(self, info: BacktestSetupInfo) -> None:
-        self.backtesting_strategy = (factories.get_backtesting_strategy(
+        log.info(f"Starting backtestion option {info.option.title}");
+        self.backtesting_strategy = (self.get_backtesting_strategy(
                                          info.option.step))
         self.info = info
 
@@ -110,6 +112,8 @@ class ApiV3BotBacketster:
         roi: ROI = self.provider.get_refreshed_bot(self.info.bot_guid).roi
 
         self.info.option = sample.option
+        log.info(f"Setting best result for {sample.option.title} "
+                f"with value: {sample.option.value} and ROI: {roi} ")
         self._backtest()
 
         return BacktestResult(sample.option, roi)
