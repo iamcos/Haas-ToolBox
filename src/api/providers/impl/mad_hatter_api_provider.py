@@ -1,6 +1,7 @@
 from api.domain.dtos import InterfaceOptionInfo
 from api.domain.types import GUID, Interface, Bot, InterfaceOption
 from api.exceptions import MadHatterException
+from api.loader import log
 from api.wrappers.interface_wrapper import InterfaceWrapper
 from typing import Any, Type, cast
 from re import sub
@@ -12,6 +13,8 @@ from haasomeapi.dataobjects.util.HaasomeClientResponse import HaasomeClientRespo
 from haasomeapi.enums.EnumCustomBotType import EnumCustomBotType
 from haasomeapi.enums.EnumErrorCode import EnumErrorCode
 from haasomeapi.enums.EnumMadHatterIndicators import EnumMadHatterIndicators
+
+from cli.bots.config.ignored_options import ignored_options
 
 
 class MadHatterApiProvider:
@@ -51,13 +54,18 @@ class MadHatterApiProvider:
             self._api.get_all_custom_bots(), "Can't get bots list")
         return tuple(bot for bot in bots if bot.botType == 15)
 
-    def get_all_bot_interfaces(self, bot_guid: GUID) -> tuple[Interface, ...]:
+    def get_all_bot_interfaces(
+        self,
+        bot_guid: GUID,
+        filtered: bool = False
+    ) -> tuple[Interface, ...]:
         bot: MadHatterBot = self.get_refreshed_bot(bot_guid)
         res: list[Interface] = []
 
         for i in self.indicators:
             indicator = self._get_as_dict(bot, i)
-            res.append(self._create_indicator(indicator))
+            interface = self._create_indicator(indicator, filtered)
+            res.append(interface)
 
         return tuple(res)
 
@@ -67,7 +75,7 @@ class MadHatterApiProvider:
             interface = vars(interface)
         return interface
 
-    def _create_indicator(self, d: dict) -> Indicator:
+    def _create_indicator(self, d: dict, filtered: bool) -> Indicator:
         if "indicatorName" in d.keys():
             indicator_name: str = d["indicatorName"]
         else:
@@ -88,9 +96,15 @@ class MadHatterApiProvider:
         indicator.enabled = True # type: ignore
         indicator.guid = indicator_name
 
+        if filtered:
+            tofilter = ignored_options["MadHatterBot"][indicator_name]
+        else:
+            tofilter = tuple()
+
         indicator.indicatorInterface = [
             self._create_option(options_dict[i])
             for i in self.options_names[indicator_name]
+            if i not in tofilter
         ]
 
         return indicator
