@@ -1,7 +1,7 @@
 import re
 import numpy as np
 from dataclasses import dataclass
-from typing import NamedTuple, Type
+from typing import NamedTuple, Optional, Type
 from api.domain.types import ROI, GUID, Interface, InterfaceOption
 
 
@@ -83,7 +83,6 @@ class BacktestSetupInfo:
 
 class BacktestResult(NamedTuple):
     option: InterfaceOption
-    value: str
     roi: ROI
 
 
@@ -97,10 +96,10 @@ class BotConfigSetup:
 
 
 @dataclass
-class UpAndDownBacktesterSetup:
-    length: int
-    interface_name: str
-    option: InterfaceOption
-    ticks: int
+class InterfaceUpAndDownBacktesterSetup:
     bot_guid: GUID
+    interface: Interface
+    ticks: int
+    direction: Optional[list[str]]
+    length: int = 10
 
