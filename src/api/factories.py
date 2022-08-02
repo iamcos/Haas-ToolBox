@@ -4,12 +4,13 @@ from haasomeapi.dataobjects.custombots.BaseCustomBot import BaseCustomBot
 from haasomeapi.dataobjects.custombots.MadHatterBot import MadHatterBot
 from haasomeapi.dataobjects.custombots.ScalperBot import ScalperBot
 from haasomeapi.dataobjects.tradebot.TradeBot import TradeBot
+from api.backtesting.BotFineTuneBacktester import BotFineTuneBacktester
 from api.backtesting.backtesting_cache import BacktestingCache, SetBacktestingCache
 from api.backtesting.backtesting_strategy import BacktestingStrategy, FloatBacktestingStrategy, IntBacktestingStrategy
 from api.backtesting.bot_backtester import ApiV3BotBacketster, BotBacktester
 from api.backtesting.fine_tune_backtester import FineTuneBacktester
 from api.backtesting.interface_fine_tune_backtester import InterfaceFineTuneBacktester
-from api.loader import main_context
+from api.loader import main_context, log
 from api.bot_manager import ApiV3BotManager, BotManager
 
 from api.domain.types import Bot
@@ -57,11 +58,15 @@ def get_bot_manager_by_bot(bot: Bot) -> BotManager:
 
 
 def get_backtesting_strategy(value) -> BacktestingStrategy:
-    if type(value) is int or str(value).replace(".0", "").isdigit():
+    log.debug(f"{value=}")
+    if type(value) is int or str(value).endswith(".0"):
+        log.debug("Integer backtesting strategy")
         return IntBacktestingStrategy()
     elif type(value) is str and "." in value and value.replace(".", "").isdigit():
+        log.debug("Float backtesting strategy")
         return FloatBacktestingStrategy()
     elif type(value) is float:
+        log.debug("Float backtesting strategy")
         return FloatBacktestingStrategy()
 
     raise BacktestingStrategyCreationException(
@@ -91,4 +96,11 @@ def get_interface_fine_tune_backtester(
     fine_tune_backtester: FineTuneBacktester = get_fine_tune_backtester(
             backtester)
     return InterfaceFineTuneBacktester(fine_tune_backtester)
+
+
+def get_bot_fine_tune_backtester(
+    provider: BotApiProvider
+) -> BotFineTuneBacktester:
+    interface_fine_tune = get_interface_fine_tune_backtester(provider)
+    return BotFineTuneBacktester(interface_fine_tune)
 
