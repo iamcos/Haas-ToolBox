@@ -41,6 +41,7 @@ class FloatBacktestingStrategy:
             lambda v: type(v) is str and not (value
                 .replace(".", "")
                 .replace(",", "")
+                .replace("-", "")
                 .isdigit()),
         )
 
@@ -75,7 +76,7 @@ class IntBacktestingStrategy:
     def _check_value(self, value: Any) -> None:
         checkers = (
             lambda v: v is None,
-            lambda v: type(v) is str and not value.isdigit(),
+            lambda v: type(v) is str and not value.replace("-", "").isdigit(),
         )
 
         for checker in checkers:
