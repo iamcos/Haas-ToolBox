@@ -35,7 +35,11 @@ class TradeBotApiProvider:
         return tuple(self._process_response(
             response, "Error while getting tradebots list"))
 
-    def get_all_bot_interfaces(self, bot_guid: GUID) -> tuple[Interface, ...]:
+    def get_all_bot_interfaces(
+        self,
+        bot_guid: GUID,
+        filtered: bool = False
+    ) -> tuple[Interface, ...]:
         bot: Bot = self.get_refreshed_bot(bot_guid)
         return tuple(itertools.chain(*[
             self.get_bot_interfaces_by_type(bot, t)

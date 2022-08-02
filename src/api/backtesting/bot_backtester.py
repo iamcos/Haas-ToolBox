@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import Protocol
+from collections.abc import Callable
+from typing import Any, Protocol
 
-from api import factories
 from copy import deepcopy
 
 from api.backtesting.backtesting_cache import BacktestingCache
@@ -31,7 +31,7 @@ class BotBacktester(Protocol):
     def backtest_down(self) -> BacktestResult: ...
     def backtesting_length_x2(self) -> int: ...
     def backtesting_length_devide2(self) -> int: ...
-    def set_best_result(self) -> None: ...
+    def set_best_result(self) -> BacktestResult: ...
 
 
 class ApiV3BotBacketster:
@@ -40,21 +40,25 @@ class ApiV3BotBacketster:
         self, 
         provider: BotApiProvider,
         cache: BacktestingCache,
-        ticks: int
+        get_backtesting_strategy: Callable[[Any], BacktestingStrategy]
     ) -> None:
         self.provider: BotApiProvider = provider
         self.cache: BacktestingCache = cache
+        self.get_backtesting_strategy: Callable[[Any], BacktestingStrategy] = \
+                get_backtesting_strategy
 
         self.backtesting_strategy: BacktestingStrategy
         self.info: BacktestSetupInfo
-        self.ticks = ticks
 
     def setup(self, info: BacktestSetupInfo) -> None:
-        self.backtesting_strategy = (factories.get_backtesting_strategy(
-                                         info.option.step))
-        self.info = info
+        self.cache.clear()
 
-        option = deepcopy(info.option)
+        log.info(f"Starting backtesting option {info.option.title}");
+        self.backtesting_strategy = (self.get_backtesting_strategy(
+                                         info.option.step))
+        self.info = deepcopy(info)
+
+        option = self.info.option
         roi: ROI = self.provider.get_refreshed_bot(info.bot_guid).roi
 
         sample = BacktestSample(
@@ -70,12 +74,9 @@ class ApiV3BotBacketster:
     @timeit
     def backtest_up(self) -> BacktestResult:
         log.info("Backtesting up")
-
         value = self.backtesting_strategy.count_up(
             self.info.option.value,
             self.cache.get_used_values(self.info.ticks))
-
-        log.info(f"{value=}")
 
         self.info.option.value = value
 
@@ -105,10 +106,16 @@ class ApiV3BotBacketster:
         log.info(f"{self.info.ticks=}")
         return self.info.ticks
 
-    def set_best_result(self) -> None:
+    def set_best_result(self) -> BacktestResult:
         sample: BacktestSample = self.cache.get_top_samples().pop()
+        roi: ROI = self.provider.get_refreshed_bot(self.info.bot_guid).roi
+
         self.info.option = sample.option
+        log.info(f"Setting best result for {sample.option.title} "
+                f"with value: {sample.option.value} and ROI: {roi} ")
         self._backtest()
+
+        return BacktestResult(sample.option, roi)
 
     def _backtest(self) -> BacktestResult:
         interface_name: str = InterfaceWrapper(self.info.interface).name
@@ -135,5 +142,5 @@ class ApiV3BotBacketster:
 
         self.cache.add(sample)
 
-        return BacktestResult(new_option, new_option.value, roi)
+        return BacktestResult(new_option, roi)
 

@@ -7,6 +7,7 @@ class BacktestingCache(Protocol):
     def get_top_samples(self, count: int = 1) -> list[BacktestSample]: ...
     def get_used_samples(self, ticks: int) -> list[BacktestSample]: ...
     def get_used_values(self, ticks: int) -> list[str]: ...
+    def clear(self) -> None: ...
 
 
 class SetBacktestingCache:
@@ -39,4 +40,8 @@ class SetBacktestingCache:
 
     def get_used_values(self, ticks: int) -> list[str]:
         return [s.option.value for s in self._cache if s.ticks == ticks]
+
+    def clear(self) -> None:
+        self._cache = set()
+        self.start_sample = None
 

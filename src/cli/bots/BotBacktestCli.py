@@ -1,6 +1,7 @@
 from InquirerPy.prompts.list import ListPrompt
 from InquirerPy import inquirer
 from InquirerPy.separator import Separator
+from api import factories
 from api.loader import main_context
 from api.backtesting.backtesting_cache import BacktestingCache, SetBacktestingCache
 from api.domain.dtos import BacktestSetupInfo
@@ -9,7 +10,7 @@ from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import Indica
 
 from api.domain.types import GUID, Interface, InterfaceOption
 from api.backtesting.bot_backtester import ApiV3BotBacketster, BotBacktester
-from api.backtesting.up_and_down_backtester import UpAndDownBacktester
+from api.backtesting.fine_tune_backtester import FineTuneBacktester
 from loguru import logger as log
 
 
@@ -18,11 +19,8 @@ class BacktestCliException(Exception): pass
 
 class BotBacktestCli:
     def __init__(self, provider: BotApiProvider) -> None:
-        cache: BacktestingCache = SetBacktestingCache()
         self.ticks: int = main_context.config_manager.read_ticks()
-        log.info(f"{self.ticks=}")
-        self.backtester: BotBacktester = ApiV3BotBacketster(
-                provider, cache, self.ticks)
+        self.backtester: BotBacktester = factories.get_bot_backtester(provider)
         self.provider: BotApiProvider = provider
 
     def process_backtest(
@@ -35,14 +33,14 @@ class BotBacktestCli:
         if option.step is None:
             raise BacktestCliException("Step must be not None")
 
-        info: BacktestSetupInfo = BacktestSetupInfo(
+        self.info: BacktestSetupInfo = BacktestSetupInfo(
             bot_guid,
             interface,
             option,
             self.ticks
         )
 
-        self.backtester.setup(info)
+        self.backtester.setup(self.info)
 
         action = self._get_backtest_promt(option, self.backtester, bot_guid)
 
@@ -56,7 +54,7 @@ class BotBacktestCli:
                 backtest_data.option, self.backtester, bot_guid
             ).execute()
 
-        self.backtester.stop_backtesting()
+        self.backtester.set_best_result()
 
 
     def _get_backtest_promt(
@@ -76,8 +74,8 @@ class BotBacktestCli:
                 "value": backtester.backtest_down
             },
             {
-                "name": "Up&Down",
-                "value": UpAndDownBacktester(backtester).execute
+                "name": "Fine tune",
+                "value": lambda: FineTuneBacktester(backtester).execute(self.info)
             },
             {
                 "name": "backtesting length X 2",

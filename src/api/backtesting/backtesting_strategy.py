@@ -1,3 +1,4 @@
+from api.loader import log
 from typing import Any, Iterable, Protocol
 
 
@@ -14,7 +15,7 @@ class FloatBacktestingStrategy:
 
     def count_up(self, value: str, used_values: Iterable[str]) -> str:
         self._check_value(value)
-        new_value: float = self._smart_round(value)
+        new_value: float = self._smart_round(value) + self._step
 
         while str(new_value) in used_values:
             new_value += self._step
@@ -31,8 +32,6 @@ class FloatBacktestingStrategy:
         return str(new_value)
 
     def _smart_round(self, value: str) -> float:
-        # numbers_after_dot: int = len(str(self._step)[2:])
-        # return round(float(value), numbers_after_dot)
         return float(value)
 
     def _check_value(self, value: Any) -> None:
@@ -41,6 +40,7 @@ class FloatBacktestingStrategy:
             lambda v: type(v) is str and not (value
                 .replace(".", "")
                 .replace(",", "")
+                .replace("-", "")
                 .isdigit()),
         )
 
@@ -56,7 +56,7 @@ class IntBacktestingStrategy:
 
     def count_up(self, value: str, used_values: Iterable) -> str:
         self._check_value(value)
-        new_value: int = int(value)
+        new_value: int = int(value) + self._step
 
         while str(new_value) in used_values:
             new_value += self._step
@@ -75,7 +75,7 @@ class IntBacktestingStrategy:
     def _check_value(self, value: Any) -> None:
         checkers = (
             lambda v: v is None,
-            lambda v: type(v) is str and not value.isdigit(),
+            lambda v: type(v) is str and not value.replace("-", "").isdigit(),
         )
 
         for checker in checkers:

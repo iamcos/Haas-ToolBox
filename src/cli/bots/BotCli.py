@@ -1,12 +1,16 @@
+from api.backtesting.BotFineTuneBacktester import BotFineTuneBacktester
+from api.backtesting.interface_fine_tune_backtester import InterfaceFineTuneBacktester
+from api.domain.dtos import BotFineTuneSetup, InterfaceFineTuneSetup
 import api.factories as factories
-
-from api.loader import log
+from api.loader import log, main_context
 from api.domain.types import GUID, Interface, Bot, InterfaceOption
 from api.providers.bot_api_provider import BotApiProvider
+from api.wrappers.interface_wrapper import InterfaceWrapper
 from cli.bots.BotSelectorCli import BotSelectorCli
 from cli.bots.InterfaceSelectorCli import InterfaceSelectorCli
 from cli.bots.InterfaceOptionSelectorCli import InterfaceOptionSelectorCli
 from cli.bots.BotBacktestCli import BotBacktestCli
+from cli.bots.config.ignored_options import ignored_options
 from cli.bots.multibots.MultiBotCli import MultiBotCli
 from haasomeapi.dataobjects.custombots.dataobjects.IndicatorOption import IndicatorOption
 from typing import Optional, Type, Any, cast, Callable
@@ -31,6 +35,9 @@ class BotCli:
             f"Select another {self.bot_name}": (
                 self.select_bots,
                 self._process_bots
+            ),
+            "Bot Fine Tune": (
+                self.bot_fine_tune,
             ),
             "Quit": (
                 self._process_keyboard_interrupt,
@@ -76,7 +83,6 @@ class BotCli:
         if interface_or_back == "Back":
             return self._do_action()
 
-        print(f"{interface_or_back=}")
         return cast(Interface, interface_or_back)
 
 
@@ -84,6 +90,22 @@ class BotCli:
         return BotSelectorCli(self.provider, self.bot_name).select_bots()
 
     def _process_interface(self, choice: Interface) -> None:
+        action: str = inquirer.select(
+                message="Select action",
+                choices=[
+                    {"name": "Select interface option", "value": 1},
+                    {"name": "Start interface fine tune", "value": 2}
+                ]).execute()
+
+        if action == 1:
+            self._process_interface_option(choice)
+        elif action == 2:
+            self._process_interface_fine_tune(choice)
+        else:
+            log.error("Unknow option selected")
+
+
+    def _process_interface_option(self, choice: Interface) -> None:
         option: InterfaceOption | str = InterfaceOptionSelectorCli(
                 self.provider, self.bot_name, self.bot_guid).select_option(choice)
 
@@ -97,9 +119,32 @@ class BotCli:
             )
             return self._process_interface(choice)
 
+    def _process_interface_fine_tune(self, choice: Interface) -> None:
+        backtester: InterfaceFineTuneBacktester = \
+                factories.get_interface_fine_tune_backtester(self.provider)
+
+        setup = InterfaceFineTuneSetup(
+                bot_guid=self.bot_guid,
+                interface=choice,
+                ticks=main_context.config_manager.read_ticks())
+
+        backtester.execute(setup)
+
+
     def _process_keyboard_interrupt(self) -> None:
         log.info("Bye :)")
         exit("666")
+
+    def bot_fine_tune(self) -> None:
+        backtester = factories.get_bot_fine_tune_backtester(self.provider)
+        interfaces = self.provider.get_all_bot_interfaces(self.bot_guid, filtered=True)
+
+        setup = BotFineTuneSetup(
+            bot_guid=self.bot_guid,
+            ticks=main_context.config_manager.read_ticks(),
+            interfaces=interfaces)
+
+        backtester.execute(setup)
 
     def add_menu_action(
             self,

@@ -37,7 +37,10 @@ class InterfaceSelectorCli:
 
             choices.extend(iterface_selector)
 
-        choices.extend([Separator(""), "Refresh", Separator(""), "Back"])
+        choices.extend([
+            Separator(""), "Refresh",
+            Separator(""), "Back",
+        ])
 
         return choices
 
