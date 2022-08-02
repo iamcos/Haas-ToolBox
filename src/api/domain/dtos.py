@@ -101,5 +101,14 @@ class InterfaceFineTuneSetup:
     interface: Interface
     ticks: int
     direction: Optional[list[str]] = None
-    length: int = 10
+    length: int = 1
+
+
+@dataclass
+class BotFineTuneSetup:
+    bot_guid: GUID
+    ticks: int
+    interfaces: tuple[Interface, ...]
+    direction: Optional[list[str]] = None
+    length: int = 1
 
