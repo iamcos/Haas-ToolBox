@@ -96,7 +96,7 @@ class BotConfigSetup:
 
 
 @dataclass
-class InterfaceUpAndDownBacktesterSetup:
+class InterfaceFineTuneSetup:
     bot_guid: GUID
     interface: Interface
     ticks: int
