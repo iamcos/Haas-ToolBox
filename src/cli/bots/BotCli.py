@@ -76,7 +76,6 @@ class BotCli:
         if interface_or_back == "Back":
             return self._do_action()
 
-        print(f"{interface_or_back=}")
         return cast(Interface, interface_or_back)
 
 
