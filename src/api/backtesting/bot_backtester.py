@@ -31,7 +31,7 @@ class BotBacktester(Protocol):
     def backtest_down(self) -> BacktestResult: ...
     def backtesting_length_x2(self) -> int: ...
     def backtesting_length_devide2(self) -> int: ...
-    def set_best_result(self) -> None: ...
+    def set_best_result(self) -> BacktestResult: ...
 
 
 class ApiV3BotBacketster:
@@ -105,10 +105,14 @@ class ApiV3BotBacketster:
         log.info(f"{self.info.ticks=}")
         return self.info.ticks
 
-    def set_best_result(self) -> None:
+    def set_best_result(self) -> BacktestResult:
         sample: BacktestSample = self.cache.get_top_samples().pop()
+        roi: ROI = self.provider.get_refreshed_bot(self.info.bot_guid).roi
+
         self.info.option = sample.option
         self._backtest()
+
+        return BacktestResult(sample.option, roi)
 
     def _backtest(self) -> BacktestResult:
         interface_name: str = InterfaceWrapper(self.info.interface).name
@@ -135,5 +139,5 @@ class ApiV3BotBacketster:
 
         self.cache.add(sample)
 
-        return BacktestResult(new_option, new_option.value, roi)
+        return BacktestResult(new_option, roi)
 
