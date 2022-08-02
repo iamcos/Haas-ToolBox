@@ -100,6 +100,6 @@ class InterfaceFineTuneSetup:
     bot_guid: GUID
     interface: Interface
     ticks: int
-    direction: Optional[list[str]]
+    direction: Optional[list[str]] = None
     length: int = 10
 
