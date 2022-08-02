@@ -1,6 +1,7 @@
 from InquirerPy.prompts.list import ListPrompt
 from InquirerPy import inquirer
 from InquirerPy.separator import Separator
+from api import factories
 from api.loader import main_context
 from api.backtesting.backtesting_cache import BacktestingCache, SetBacktestingCache
 from api.domain.dtos import BacktestSetupInfo
@@ -18,13 +19,8 @@ class BacktestCliException(Exception): pass
 
 class BotBacktestCli:
     def __init__(self, provider: BotApiProvider) -> None:
-        cache: BacktestingCache = SetBacktestingCache()
         self.ticks: int = main_context.config_manager.read_ticks()
-
-        log.info(f"Ticks: {self.ticks}")
-
-        self.backtester: BotBacktester = ApiV3BotBacketster(
-                provider, cache, self.ticks)
+        self.backtester: BotBacktester = factories.get_bot_backtester(provider)
         self.provider: BotApiProvider = provider
 
     def process_backtest(
