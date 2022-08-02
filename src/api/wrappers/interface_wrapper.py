@@ -21,6 +21,7 @@ class InterfaceWrapper:
                 return tuple(self.interface.insuranceInterface)
             case Indicator():
                 return tuple(self.interface.indicatorInterface)
+
         raise BoostedInterfaceException(
             f"Passed not an interface: {self.interface}")
 
@@ -34,11 +35,11 @@ class InterfaceWrapper:
                 return self.interface.insuranceName
             case Indicator():
                 return self.interface.indicatorName
+
         raise BoostedInterfaceException(
             f"Passed not an interface: {self.interface}")
 
     @property
     def guid(self) -> str:
         return self.interface.guid
-
 
